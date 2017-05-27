@@ -49,12 +49,20 @@
 %
 \usepackage{verbatim}
 \usepackage{listings}
+\usepackage{lipsum}
 %\usepackage{algorithmic} %old version; we can use algorithmicx instead
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode} %for pseudo code, include algorithmicsx automatically
 \usepackage{appendix}
 \usepackage{makeidx} % for index support
 \usepackage{titlesec}
+
+\usepackage[cm-default]{fontspec}
+\usepackage{xunicode}
+\usepackage{fontenc}
+\usepackage{textcomp}
+\usepackage{url}
+\usepackage{courier}
 
 \titleformat{\paragraph}
 {\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
@@ -85,9 +93,9 @@
 
 % for better Haskell code outlook
 \lstdefinelanguage{Haskell}{
-  basicstyle=\small\ttfamily,
   flexiblecolumns=false,
   basewidth={0.5em,0.45em},
+  morecomment=[l]--,
   literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
            {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
            {\\\\}{{\char`\\\char`\\}}1
@@ -98,10 +106,16 @@
            {|}{{$\mid$}}1
 }[keywords,comments,strings]
 
-\lstloadlanguages{C, C++, Lisp, Haskell, Python, Smalltalk}
+\lstloadlanguages{Java, C, C++, Lisp, Haskell, Python, Smalltalk}
 
 \lstset{
-  showstringspaces = false
+  basicstyle=\small,
+  %commentstyle=\rmfamily,
+  %keywordstyle=\bfseries,
+  texcl=true,
+  showstringspaces = false,
+  upquote=true,
+  flexiblecolumns=false
 }
 
 % ======================================================================
@@ -130,3 +144,6 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
+
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
