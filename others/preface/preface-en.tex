@@ -38,39 +38,33 @@
 say that they seldom use any serious data structures or algorithms
 in real work such as commercial application development. Even when they need
 some of them, they have already been provided by libraries. For example,
-the C++ standard template library (STL) provides sort and selection
-algorithms as well as the vector, queue, and set data structures.
+the JDK provides sort and search algorithms as well as the array, list, queue, and set data structures.
 It seems that knowing about how to use the library as a tool is quite
 enough.
 
-Instead of answering this question directly, I would like to
-say algorithms and data structures are critical in solving `interesting
-problems', the usefulness of the problem set aside.
-
-Let's start with two problems that looks like they can be
-solved in a brute-force way even by a fresh programmer.
+Algorithms and data structures are critical in solving `interesting
+problems', the usefulness of the problem set aside. Let's start with two examples.
 
 % ================================================================
 %      Mininum free ID problem. The power of algorithms
 % ================================================================
-\section{The smallest free ID problem, the power of algorithms}
+\section{The smallest free number problem, the power of algorithms}
 \label{min-free} \index{minimum free number}
 
 This problem is discussed in Chapter 1 of Richard Bird's book \cite{Bird-book}.
-It's common that applications and systems use ID (identifier)
-to manage objects and entities. At any time, some IDs are used, and
-some of them are available for use. When some client tries to acquire
-a new ID, we want to always allocate it the smallest available one.
-Suppose IDs are non-negative integers and all IDs in use are kept
-in a list (or an array) which is not ordered. For example:
+It's common to manage entities with numeric identifiers.
+At any time, some numbers are used, while the rest are available for use.
+When a client tries to acquire a new identifier, we want to always allocate
+it the smallest available one. Suppose identifiers are non-negative integers
+and all identifiers in use are kept in a list which is not ordered. For example:
 
 \begin{verbatim}
-[18, 4, 8, 9, 16, 1, 14, 7, 19, 3, 0, 5, 2, 11, 6]
+\{18, 4, 8, 9, 16, 1, 14, 7, 19, 3, 0, 5, 2, 11, 6\}
 \end{verbatim}
 
-How can you find the smallest free ID, which is 10, from the list?
+How can we find the smallest free number, which is 10, from the list?
 
-It seems the solution is quite easy even without any serious algorithms.
+It seems the solution is quite straightforward.
 
 \begin{algorithmic}[1]
 \Function{Min-Free}{$A$}
