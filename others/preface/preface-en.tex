@@ -92,35 +92,35 @@ Where the $\notin$ is realized like below.
 \EndFunction
 \end{algorithmic}
 
-Some languages provide handy tools which wrap this linear time
-process. For example in Python, this algorithm can be directly translated
-as the following.
+Below example in Java demonstrates this idea.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def brute_force(lst):
-    i = 0
-    while True:
-        if i not in lst:
-            return i
-        i = i + 1
+int findMinFree1(int[] nums) {
+    int i;
+    for(i = 0; contains(i, nums); i++) {}
+    return i;
+}
+
+boolean contains(int x, int[] nums) {
+    for (int n : nums)
+        if (x == n) return true;
+    return false;
+}
 \end{lstlisting}
 
 It seems this problem is trivial. However, There will be millions of
-IDs in a large system. The speed of this solution is poor in such case for
-it takes $O(n^2)$ time, where $n$ is the length of the ID list.
+identifiers in a large system. The speed of this solution is poor to handle long list as it takes $O(n^2)$ time, where $n$ is the length of the list.
 In my computer (2 Cores 2.10 GHz, with 2G RAM), a C program using this
-solution takes an average of 5.4~seconds to search a minimum free number
-among 100,000 IDs\footnote{All programs can be downloaded along
-with this series posts.}. And it takes more than 8~minutes to handle
-a million numbers.
+solution takes an average of 5.4~seconds to search among 100,000 numbers.
+And it takes more than 8~minutes to handle a million numbers.
 
 \subsection{Improvement 1}
 The key idea to improve the solution is based on a fact that for a
 series of $n$ numbers $x_1, x_2, ..., x_n$, if there are free numbers,
 some of the $x_i$ are outside the range $[0, n)$; otherwise the list is
 exactly a permutation of $0, 1, ..., n-1$ and $n$ should be
-returned as the minimum free number. We have the following fact.
+returned as the answer. We have the following fact.
 
 \be
 minfree(x_1, x_2, ..., x_n) \leq n
@@ -159,7 +159,7 @@ Although the algorithm only takes $O(n)$ time, it needs extra
 $O(n)$ spaces to store the flags.
 
 This solution is much faster than the brute force one. On my
-computer, the relevant Python program takes
+computer, the relevant program takes
 an average of 0.02 second when dealing with 100,000 numbers.
 
 We haven't fine tuned this algorithm yet. Observe that each time
@@ -170,52 +170,29 @@ expensive thus they cost us a lot of processing time.
 
 There are two ways in which we can improve on
 this solution. One is to allocate the flags array in advance
-and reuse it for all the calls of our function to find the smallest free
-number. The other is to use bit-wise flags instead of a flag
-array. The following is the C program based on these two
-minor improvements.
+and reuse it for all the furthur searches.
+The other is to use bit-wise flags instead of an array.
+Below example in Java illustrates these two minor chagnes.
 
-\lstset{language = C}
+\lstset{language = Java}
 \begin{lstlisting}
-#define N 1000000 // 1 million
-#define WORD_LENGTH (sizeof(int) * 8)
+final static int N = 1000000;
 
-void setbit(unsigned int* bits, unsigned int i){
-  bits[i / WORD_LENGTH] |= 1<<(i % WORD_LENGTH);
-}
+final BitSet FLAGS = new BitSet(N);
 
-int testbit(unsigned int* bits, unsigned int i){
-  return bits[i/WORD_LENGTH] & (1<<(i % WORD_LENGTH));
-}
-
-unsigned int bits[N/WORD_LENGTH+1];
-
-int min_free(int* xs, int n){
-  int i, len = N/WORD_LENGTH+1;
-  for(i=0; i<len; ++i)
-    bits[i]=0;
-  for(i=0; i<n; ++i)
-    if(xs[i]<n)
-      setbit(bits, xs[i]);
-  for(i=0; i<=n; ++i)
-    if(!testbit(bits, i))
-      return i;
+int findMinFree3(int[] nums) {
+    int i;
+    FLAGS.clear();
+    for (int x : nums)
+        if (x <= nums.length)
+            FLAGS.set(x);
+    for (i = 0; i < nums.length && FLAGS.get(i); i++) {}
+    return i;
 }
 \end{lstlisting}
 
-This C program can handle 1,000,000 (1 million) IDs in just 0.023 second
+This program can find the answer from 1 million numbers in just 0.023 second
 on my computer.
-
-The last for-loop can be further improved as seen below but this is just minor
-fine-tuning.
-
-\begin{lstlisting}
-  for(i=0; ; ++i)
-    if(~bits[i] !=0 )
-      for(j=0; ; ++j)
-	if(!testbit(bits, i*WORD_LENGTH+j))
-	  return i*WORD_LENGTH+j;
-\end{lstlisting}
 
 \subsection{Improvement 2, Divide and Conquer}
 Although the above improvement is much faster, it costs $O(n)$ extra
