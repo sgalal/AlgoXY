@@ -5,10 +5,15 @@
 
 import scala.annotation.tailrec
 import scala.language.postfixOps
+import scala.util.Random
+import scala.collection.mutable.BitSet
 
 object MinFree {
-  def minFree(xs : List[Int]) : Int = {
-    @tailrec def bsearch(xs : List[Int], l : Int, u : Int) : Int = {
+
+  // Divide and Conquer method
+
+  def minFree(xs : Seq[Int]) : Int = {
+    @tailrec def bsearch(xs : Seq[Int], l : Int, u : Int) : Int = {
       val m = (l + u) / 2
       val (as, bs) = xs partition (_ <= m)
       if (xs isEmpty)
@@ -21,8 +26,32 @@ object MinFree {
     bsearch(xs, 0, xs length)
   }
 
+  // flag array with BitSet
+
+  val flags = BitSet()
+
+  def minFree2(xs : Seq[Int]) : Int = {
+    val n = xs.length
+    flags.clear()
+    for(x <- xs if x < n) flags += x
+    (0 to n).find(!flags(_)) match {
+      case Some(i) => i
+      case None => n
+    }
+  }
+
+  // verification
+
+  val N = 1000
+
   def test() {
-    val test = minFree(List(8, 23, 9, 0, 12, 11, 1, 10, 13, 7, 41, 4, 14, 21, 5, 17, 3, 19, 2, 6))
-    println(s"==>$test");
+    val r = Random
+    for (_ <- 1 to N) {
+      val ys = r.shuffle(0 to N - 1).take(r.nextInt(N))
+      val a = minFree(ys)
+      val b = minFree2(ys)
+      assert(a == b, println(s"d&c = $a, flags = $b"));
+    }
+    println(s"$N tests passed.");
   }
 }
