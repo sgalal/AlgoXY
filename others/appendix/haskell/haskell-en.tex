@@ -1,0 +1,63 @@
+\ifx\wholebook\relax \else
+% ------------------------
+
+\documentclass{article}
+%------------------- Other types of document example ------------------------
+%
+%\documentclass[twocolumn]{IEEEtran-new}
+%\documentclass[12pt,twoside,draft]{IEEEtran}
+%\documentstyle[9pt,twocolumn,technote,twoside]{IEEEtran}
+%
+%-----------------------------------------------------------------------------
+%\input{../../../common.tex}
+\input{../../../common-en.tex}
+
+\setcounter{page}{1}
+
+\begin{document}
+
+%--------------------------
+
+% ================================================================
+%                 COVER PAGE
+% ================================================================
+
+\title{Haskell example code}
+
+\author{Larry~LIU~Xinyu
+\thanks{{\bfseries Larry LIU Xinyu } \newline
+  Email: liuxinyu95@gmail.com \newline}
+  }
+
+\maketitle
+\fi
+
+\markboth{Sequences}{Elementary Algorithms}
+
+\ifx\wholebook\relax
+\chapter{Lists}
+\numberwithin{Exercise}{chapter}
+\fi
+
+This appendix list the example Haskell code for reference.
+
+\subsection{Minimum free number puzzle}
+The divide and conquer solution to the mininum free number puzzle.
+
+\lstset{language=Haskell}
+\begin{lstlisting}
+import Data.List
+
+minFree xs = bsearch xs 0 (length xs - 1)
+
+bsearch xs l u | xs == [] = l
+               | length as == m - l + 1 = bsearch bs (m + 1) u
+               | otherwise = bsearch as l m
+    where
+      m = (l + u) `div` 2
+      (as, bs) = partition (<=m) xs
+\end{lstlisting}
+
+\ifx\wholebook\relax \else
+\end{document}
+\fi

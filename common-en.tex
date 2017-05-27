@@ -91,11 +91,27 @@
   tabsize=2
 }[keywords,comments,strings]
 
-% for better Haskell code outlook
+%% \lstdefinestyle{Haskell}{
+%%   flexiblecolumns=false,
+%%   basewidth={0.5em,0.45em},
+%%   morecomment=[l]--,
+%%   literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
+%%            {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
+%%            {\\\\}{{\char`\\\char`\\}}1
+%%            {->}{{$\rightarrow$}}2 {>=}{{$\geq$}}2 {<-}{{$\leftarrow$}}2
+%%            {<=}{{$\leq$}}2 {=>}{{$\Rightarrow$}}2
+%%            {\ .}{{$\circ$}}2 {\ .\ }{{$\circ$}}2
+%%            {>>}{{>>}}2 {>>=}{{>>=}}2
+%%            {|}{{$\mid$}}1
+%% }
+
+% For better Haskell code outlook
 \lstdefinelanguage{Haskell}{
   flexiblecolumns=false,
   basewidth={0.5em,0.45em},
   morecomment=[l]--,
+  morekeywords={case, class, do, else, True, False, if, import,
+    instance, module, type, data, deriving, where},
   literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
            {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
            {\\\\}{{\char`\\\char`\\}}1
