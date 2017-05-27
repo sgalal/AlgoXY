@@ -196,18 +196,17 @@ on my computer.
 
 \subsection{Improvement 2, Divide and Conquer}
 Although the above improvement is much faster, it costs $O(n)$ extra
-spaces to keep a check list. if $n$ is huge number this means
-a huge amount of space is wasted.
+spaces to keep a flag list. if $n$ is big this means
+a large amount of space is wasted.
 
 The typical divide and conquer strategy is to break the problem
 into some smaller ones, and solve these to get the final answer.
 
 We can put all numbers $x_i \leq \lfloor n/2 \rfloor$ as a sub-list $A'$ and put all the others as
-a second sub-list $A''$. Based on formula \ref{min-free} if the length of $A'$ is exactly $\lfloor n/2 \rfloor$, this means
+a second sub-list $A''$. Based on formula (\ref{min-free}) if the length of $A'$ is exactly $\lfloor n/2 \rfloor$, this means
 the first half of numbers are `full', which indicates that the
 minimum free number must be in $A''$ and so we'll need to recursively seek
-in the shorter list $A''$. Otherwise, it means the minimum free
-number is located in $A'$, which again leads to a smaller problem.
+in the shorter list $A''$. Otherwise, it means the answer is located in $A'$, which again leads to a smaller problem.
 
 When we search the minimum free number in $A''$, the conditions changes
 a little bit, we are not searching the smallest free number starting from
@@ -215,8 +214,7 @@ $0$, but actually from $\lfloor n/2 \rfloor + 1$ as the lower bound.
 So the algorithm is something like $minfree(A, l, u)$, where $l$ is
 the lower bound and $u$ is the upper bound index of the element.
 
-Note that there is a trivial case, that if the number list is
-empty, we merely return the lower bound as the result.
+There is a trivial case. If the list is empty, we merely return the lower bound as the result.
 
 This divide and conquer solution can be formally expressed
 as a function :
@@ -246,16 +244,16 @@ A'' = \{ \forall x \in A \wedge x > m \} \\
 \end{array} \]
 
 It is obvious that this algorithm doesn't need any extra
-space\footnote{Procedural programmer may note that it
+space\footnote{One may argue that it
 actually takes $O(\lg n)$ stack spaces for book-keeping. As
 we'll see later, this can be eliminated either by tail
-recursion optimization, for instance gcc -O2. or by manually
+recursion optimization, or by manually
 changing the recursion to iteration}. Each call
 performs $O(|A|)$ comparison to build $A'$ and $A''$.
 After that the problem scale halves.
 So the time needed for this algorithm is $T(n) = T(n/2) + O(n)$
-which reduce to $O(n)$. Another way to analyze the performance
-is by observing that the first call takes $O(n)$
+which reduce to $O(n)$ by the master therom. Another way to analyze the performance
+is to observe that the first call takes $O(n)$
 to build $A'$ and $A''$ and the second call takes
 $O(n/2)$, and $O(n/4)$ for the third... The total
 time is $O(n + n/2 + n/4 + ...) = O(2n) = O(n)$ .
