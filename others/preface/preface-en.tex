@@ -96,7 +96,7 @@ Below example in Java demonstrates this idea.
 
 \lstset{language=Java}
 \begin{lstlisting}
-int findMinFree1(int[] nums) {
+int findMinFree(int[] nums) {
     int i;
     for(i = 0; contains(i, nums); i++) {}
     return i;
@@ -180,7 +180,7 @@ final static int N = 1000000;
 
 final BitSet FLAGS = new BitSet(N);
 
-int findMinFree3(int[] nums) {
+int findMinFree(int[] nums) {
     int i;
     FLAGS.clear();
     for (int x : nums)
@@ -262,18 +262,21 @@ In functional programming languages such as Haskell,
 partitioning a list has already been provided in the basic library
 and this algorithm can be translated as the following.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-import Data.List
-
-minFree xs = bsearch xs 0 (length xs - 1)
-
-bsearch xs l u | xs == [] = l
-               | length as == m - l + 1 = bsearch bs (m+1) u
-               | otherwise = bsearch as l m
-    where
-      m = (l + u) `div` 2
-      (as, bs) = partition (<=m) xs
+def minFree(xs : Seq[Int]) : Int = {
+  @tailrec def bsearch(xs : Seq[Int], l : Int, u : Int) : Int = {
+    val m = (l + u) / 2
+    val (as, bs) = xs partition (_ <= m)
+    if (xs isEmpty)
+      l
+    else if ((as length) == m - l + 1)
+      bsearch(bs, m + 1, u)
+    else
+      bsearch(as, l, m)
+  }
+  bsearch(xs, 0, xs length)
+}
 \end{lstlisting}
 
 \subsection{Expressiveness vs. Performance}
