@@ -292,28 +292,26 @@ perfectly to this transformation. In Scala, the annotation @tailrec instructs th
 
 \lstset{language=Java}
 \begin{lstlisting}
-int min_free(int* xs, int n){
-  int l=0;
-  int u=n-1;
-  while(n){
-    int m = (l + u) / 2;
-    int right, left = 0;
-    for(right = 0; right < n; ++ right)
-      if(xs[right] <= m){
-	swap(xs[left], xs[right]);
-	++left;
-      }
-    if(left == m - l + 1){
-      xs = xs + left;
-      n  = n - left;
-      l  = m+1;
+int findMinFree(int[] nums) {
+    int l = 0, u = nums.length;
+    while (u - l > 0) {
+        int m = l + (u - l) / 2;
+        int left, right;
+        for (left = right = l; right < u; ++right)
+            if (nums[right] <= m)
+                swap(nums, left++, right);
+        if (left < m + 1)
+            u = left;
+        else
+            l = left;
     }
-    else{
-      n = left;
-      u = m;
-    }
-  }
-  return l;
+    return l;
+}
+
+static final void swap(int[] nums, int i , int j) {
+    int t = nums[i];
+    nums[i] = nums[j];
+    nums[j] = t;
 }
 \end{lstlisting}
 
@@ -324,12 +322,22 @@ than $m$. This is shown in figure \ref{fig:divide}.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[scale=1]{img/divide-by-m.ps}
+      \begin{tikzpicture}[scale=0.8]
+      \draw (1, 0) rectangle (5, 1) node (leq) [pos=.5] {$x[i] \leq m$}
+            (5, 0) rectangle (9, 1) node (ge) [pos=.5] {$x[i] > m$}
+            (9, 0) rectangle (11, 1) node (rest) [pos=.5] {...?...};
+      \fill [black] (5, 0) rectangle (5.1, 1) node (leftbar) [pos=.5] {}
+                    (9, 0) rectangle (9.1, 1) node (rightbar) [pos=.5] {};
+      \draw (5, 2) node (left) {$left$}
+            (9, 2) node (right) {$right$};
+      \draw[thick, ->] (left) edge [bend right] (leftbar)
+                       (right) edge [bend right] (rightbar);
+      \end{tikzpicture}
   \caption{Divide the array, all $x[i] \leq m$ where $0 \leq i < left$; while all $x[i] > m$ where $left \leq i < right$. The left elements are unknown.} \label{fig:divide}
 \end{figure}
 
 This program is fast and it doesn't need extra stack space. However,
-compared to the previous Haskell program, it's hard to read and the
+compared to the previous recursive Scala program, it's hard to read and the
 expressiveness decreased. We have to balance performance
 and expressiveness.
 
