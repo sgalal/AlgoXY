@@ -287,10 +287,10 @@ calls is in $O(\lg n)$
 It's not free in terms of space. But if we want to avoid that
 , we can eliminate the recursion by replacing it by an iteration
 \footnote{This is done automatically in most functional languages
-since our function is in tail recursive form which lends itself
+since the function is in tail recursive form which lends itself
 perfectly to this transformation. In Scala, the annotation @tailrec instructs the compiler to perform this optimization.} which leads to the following Java program.
 
-\lstset{language=C}
+\lstset{language=Java}
 \begin{lstlisting}
 int min_free(int* xs, int n){
   int l=0;

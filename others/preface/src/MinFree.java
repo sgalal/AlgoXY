@@ -1,5 +1,6 @@
 import java.util.*;
 import java.util.stream.*;
+import java.lang.Exception;
 
 /*
  * The puzzle:
@@ -51,6 +52,32 @@ public class MinFree {
         return i;
     }
 
+    /* non-recursive divide and conquer */
+
+    static int findMinFree4(int[] nums) {
+        int l = 0, u = nums.length;
+        while (u - l > 0) {
+            int m = l + (u - l) / 2;
+            int left, right;
+            for (left = right = l; right < u; ++right)
+                if (nums[right] <= m)
+                    swap(nums, left++, right);
+            if (left < m + 1) // left - l < m - l + 1 ==> left isn't full
+                u = left;
+            else
+                l = left;
+        }
+        return l;
+    }
+
+    static final void swap(int[] nums, int i , int j) {
+        int t = nums[i];
+        nums[i] = nums[j];
+        nums[j] = t;
+    }
+
+    // verification
+
     static int[] fromList(List<Integer> xs) {
         return xs.stream().mapToInt(Integer::intValue).toArray();
     }
@@ -60,7 +87,14 @@ public class MinFree {
             .collect(Collectors.joining(delim));
     }
 
-    public static void main(String[] args) {
+    static void assertEq(int x, int y, int[] nums, String fmt) {
+        if (x != y) {
+            System.out.format(fmt+"\n[%s]", x, y, join(nums, ", "));
+            throw new RuntimeException("assert fail");
+        }
+    }
+
+    static void test() {
         int k, m;
         List<Integer> xs = IntStream.range(0, N).boxed().collect(Collectors.toList());
         Random gen = new Random();
@@ -68,17 +102,17 @@ public class MinFree {
             Collections.shuffle(xs);
             int n = gen.nextInt(N);
             int[] nums = fromList(xs.subList(0, n));
-            if ((k = findMinFree1(nums)) != (m = findMinFree2(nums))) {
-                System.out.println(join(nums, ","));
-                System.out.format("brute force: %d\tflag array: %d\n", k, m);
-                return;
-            }
-            if ((k = findMinFree3(nums)) != m) {
-                System.out.println(join(nums, ","));
-                System.out.format("bitset flag: %d\tflag array: %d\n", k, m);
-                return;
-            }
+            assertEq(findMinFree1(nums), m = findMinFree2(nums), nums,
+                     "brute force: %d\tflag array: %d");
+            assertEq(findMinFree3(nums), m, nums,
+                     "bitset flag: %d\tflag array: %d");
+            assertEq(findMinFree4(nums), m, nums,
+                     "d&c: %d\tflag array: %d");
         }
         System.out.println("passed 100 tests");
+    }
+
+    public static void main(String[] args) {
+        test();
     }
 }
