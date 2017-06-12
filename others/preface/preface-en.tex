@@ -341,13 +341,13 @@ compared to the previous recursive Scala program, it's hard to read and the
 expressiveness decreased. We have to balance performance
 and expressiveness.
 
-There are also linear time, constant space imperative solutions. The exercise behind this preface gives some examples.
+There are also linear time, constant space imperative solutions. The exercise behind this preface gives two examples.
 
 \section{The number puzzle, power of data structure}
 
-If the first problem, to find the minimum free number, is a some what
+If the first problem, to find the minimum free number, is some what
 useful in practice, this problem is a `pure' one for fun. The puzzle
-is to find the 1,500th number, which only contains factor 2, 3 or 5.
+is to find the 1,500th number, which only contains factor 2, 3 or 5\footnote{TODO: add footnote about regular number}.
 The first 3 numbers are of course 2, 3, and 5. Number $60 = 2^23^15^1$,
 However it is the 25th number. Number $21 = 2^03^17^1$, isn't a valid
 number because it contains a factor 7. The first 10 such numbers are list
@@ -412,7 +412,7 @@ The problem turns to be how to generate the candidate number in order?
 One handy way is to utilize the queue data structure.
 
 A queue data structure is used to push elements at one end, and pops
-them at the other end. So that the element be pushed first is also
+them at the other. So that the element be pushed first is also
 be popped out first. This property is called FIFO (First-In-First-Out).
 
 The idea is to push 1 as the only element to the queue, then we pop
