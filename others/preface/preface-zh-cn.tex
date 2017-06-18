@@ -399,17 +399,15 @@ X \cup Y = \left \{
 \begin{lstlisting}[style=Haskell]
 ns = 1:merge (map (*2) ns) (merge (map (*3) ns) (map (*5) ns))
 
-merge [] l = l
-merge l [] = l
 merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
                     | x ==y = x : merge xs ys
                     | otherwise = y : merge (x:xs) ys
 \end{lstlisting}
 
-通过求\texttt{ns !! (n-1)}，我们可以得到第1500个丑数：
+通过求\texttt{last $ take 1500}，我们可以得到第1500个丑数：
 
 \begin{verbatim}
->ns !! (1500-1)
+>last $ take 1500 ns
 859963392
 \end{verbatim}
 
