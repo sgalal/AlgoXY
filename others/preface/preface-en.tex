@@ -515,7 +515,9 @@ support model the lazy evaluation with stream, The above infinity series functio
 \lstset{language=Scala}
 \begin{lstlisting}
 object RegNum {
-  lazy val ns: Stream[BigInt] = 1 #:: merge(ns map {_ * 2}, merge(ns map {_ * 3}, ns map {_ * 5}))
+  lazy val ns: Stream[BigInt] = 1 #:: merge(ns map {_ * 2},
+                                      merge(ns map {_ * 3},
+                                            ns map {_ * 5}))
 
   def merge(a: Stream[BigInt], b: Stream[BigInt]) : Stream[BigInt] =
     if (a.head < b.head) a.head #:: merge(a.tail, b)
