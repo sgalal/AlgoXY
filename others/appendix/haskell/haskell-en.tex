@@ -58,6 +58,22 @@ bsearch xs l u | xs == [] = l
       (as, bs) = partition (<=m) xs
 \end{lstlisting}
 
+\subsection{Regular number (Hamming number)}
+Find the k-th number that only contains factor 2, 3, or 5.
+
+\begin{lstlisting}
+merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
+                    | x ==y = x : merge xs ys
+                    | otherwise = y : merge (x:xs) ys
+
+ns = 1:merge (map (*2) ns) (merge (map (*3) ns) (map (*5) ns))
+\end{lstlisting}
+
+Below line gives the 1500th Rgular number.
+\begin{verbatim}
+last $ take 1500 ns
+\end{verbatim}
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi
