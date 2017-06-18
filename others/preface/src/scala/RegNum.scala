@@ -9,7 +9,7 @@ object RegNum {
    * As the tail will be forced to evaluat, which cause stack overflow
    */
 
-  def merge(a: Stream[BigInt], b: Stream[BigInt]) : Stream[BigInt] =
+  def merge[T <% Ordered[T]](a: Stream[T], b: Stream[T]) : Stream[T] =
     if (a.head < b.head) a.head #:: merge(a.tail, b)
     else if (a.head == b.head) a.head #:: merge(a.tail, b.tail)
     else b.head #:: merge(a, b.tail)

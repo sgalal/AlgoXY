@@ -347,7 +347,7 @@ There are also linear time, constant space imperative solutions. The exercise be
 
 If the first problem, to find the minimum free number, is some what
 useful in practice, this problem is a `pure' one for fun. The puzzle
-is to find the 1,500th number, which only contains factor 2, 3 or 5\footnote{TODO: add footnote about regular number}.
+is to find the 1,500th number, which only contains factor 2, 3 or 5\footnote{These numbers are known as Regular numbers or Hamming numbers. In numbere theory, they are called 5-smooth.}.
 The first 3 numbers are of course 2, 3, and 5. Number $60 = 2^23^15^1$,
 However it is the 25th number. Number $21 = 2^03^17^1$, isn't a valid
 number because it contains a factor 7. The first 10 such numbers are list
@@ -500,8 +500,6 @@ as well as unique to each other. Suppose that $X=\{x_1, x_2, x_3...\}$, $Y=\{y_1
 \[
 X \cup Y = \left \{
   \begin{array}{r@{\quad:\quad}l}
-  X & Y = \phi \\
-  Y & X = \phi \\
   \{ x_1, X' \cup Y \} & x_1 < y_1 \\
   \{ x_1, X' \cup Y' \} & x_1 = y_1 \\
   \{ y_1, X \cup Y' \} & x_1 > y_1
@@ -510,7 +508,7 @@ X \cup Y = \left \{
 \]
 
 In a functional programming language such as Scala, which supports
-support model the lazy evaluation with stream, The above infinity series functions can be translate into the following program.
+support model the lazy evaluation with stream, The above infinity series function can be translate into the following program.
 
 \lstset{language=Scala}
 \begin{lstlisting}
@@ -519,6 +517,7 @@ object RegNum {
                                       merge(ns map {_ * 3},
                                             ns map {_ * 5}))
 
+  def merge[T <% Ordered[T]](a: Stream[T], b: Stream[T]) : Stream[T] =
   def merge(a: Stream[BigInt], b: Stream[BigInt]) : Stream[BigInt] =
     if (a.head < b.head) a.head #:: merge(a.tail, b)
     else if (a.head == b.head) a.head #:: merge(a.tail, b.tail)
