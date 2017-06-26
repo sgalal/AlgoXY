@@ -517,24 +517,22 @@ object RegNum {
                                       merge(ns map {_ * 3},
                                             ns map {_ * 5}))
 
-  def merge[T <% Ordered[T]](a: Stream[T], b: Stream[T]) : Stream[T] =
-  def merge(a: Stream[BigInt], b: Stream[BigInt]) : Stream[BigInt] =
+  def merge(a: Stream[BigInt], b: Stream[BigInt]): Stream[BigInt] =
     if (a.head < b.head) a.head #:: merge(a.tail, b)
     else if (a.head == b.head) a.head #:: merge(a.tail, b.tail)
     else b.head #:: merge(a, b.tail)
 }
 \end{lstlisting}
 
-By evaluate \texttt{RegNum.ns.take(1500).last}, we can get the 1500th number 859963392.
+By evaluate \texttt{RegNum.ns.take(1500).last}, we can get the 1500th number, 859963392.
 
 \subsection{Improvement 2}
 Considering the above solution, although it is much faster than the brute-force one,
 It still has some drawbacks. It produces many duplicated numbers and they are
-finally dropped when examine the queue. Secondly, it does linear scan and insertion
-to keep the order of all elements in the queue, which degrade the ENQUEUE operation
+finally dropped when examine the queue. Secondly, it does linear time scan and insertion to keep the order of all elements in the queue, which degrade the ENQUEUE operation
 from $O(1)$ to $O(|Q|)$.
 
-If we use three queues instead of using only one, we can improve the solution one
+If we use three queues instead, we can improve the solution one
 step ahead. Denote these queues as $Q_2$, $Q_3$, and $Q_5$, and we initialize
 them as $Q_2=\{ 2 \}$, $Q_3 = \{ 3\}$ and $Q_5 = \{ 5 \}$. Each time we DEQUEUEed
 the smallest one from $Q_2$, $Q_3$, and $Q_5$ as $x$. And do the following test:
@@ -549,7 +547,7 @@ no need to ENQUEUE $2x$, $3x$ to $Q_2$, $Q_3$ because they have already been
 in the queues;
 \end{itemize}
 
-We repeatedly ENQUEUE the smallest one until we find the $n$-th element.
+We repeatedly DEQUEUE the smallest one until we find the $n$-th element.
 
 \begin{figure}[htbp]
        \begin{center}
