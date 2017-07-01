@@ -599,41 +599,39 @@ The algorithm based on this idea is implemented as below.
 This algorithm loops $n$ times, and within each loop, it extract one head
 element from the three queues, which takes constant time. Then it appends
 one to three new elements at the end of queues which bounds to constant time
-too. So the total time of the algorithm bounds to $O(n)$. The C++ program
-translated from this algorithm shown below takes less than 1 $\mu$s to
+too. So the total time of the algorithm bounds to $O(n)$. The Java program
+translated from this algorithm shown below takes less than 1 ms to
 produce the 1500th number, 859963392.
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-typedef unsigned long Integer;
+static long min(long a, long b, long c) {
+    return Math.min(a, Math.min(b, c));
+}
 
-Integer get_number(int n){
-  if(n==1)
-    return 1;
-  queue<Integer> Q2, Q3, Q5;
-  Q2.push(2);
-  Q3.push(3);
-  Q5.push(5);
-  Integer x;
-  while(n-- > 1){
-    x = min(min(Q2.front(), Q3.front()), Q5.front());
-    if(x==Q2.front()){
-      Q2.pop();
-      Q2.push(x*2);
-      Q3.push(x*3);
-      Q5.push(x*5);
+public long getAt(int n) {
+    if (n == 1) return 1;
+    Queue<Long> q2 = new LinkedList<>(Arrays.asList(new Long[]{2L})),
+                q3 = new LinkedList<>(Arrays.asList(new Long[]{3L})),
+                q5 = new LinkedList<>(Arrays.asList(new Long[]{5L}));
+    long x = 1;
+    while (n-- > 1) {
+        x = min(q2.peek(), q3.peek(), q5.peek());
+        if (x == q2.peek()) {
+            q2.poll();
+            q2.offer(x * 2);
+            q3.offer(x * 3);
+            q5.offer(x * 5);
+        } else if (x == q3.peek()) {
+            q3.poll();
+            q3.offer(x * 3);
+            q5.offer(x * 5);
+        } else {
+            q5.poll();
+            q5.offer(x * 5);
+        }
     }
-    else if(x==Q3.front()){
-      Q3.pop();
-      Q3.push(x*3);
-      Q5.push(x*5);
-    }
-    else{
-      Q5.pop();
-      Q5.push(x*5);
-    }
-  }
-  return x;
+    return x;
 }
 \end{lstlisting}
 
