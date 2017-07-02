@@ -665,23 +665,41 @@ Where
  \right.
 \]
 
-And these functional definition can be realized in Haskell as the following.
+And these functional definition can be realized in Scala as the following.
 
-TODO: Change to Scala, and move the Haskell one to the appendix
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-ks 1 xs _ = xs
-ks n xs (q2, q3, q5) = ks (n-1) (xs++[x]) update
-    where
-      x = minimum $ map head [q2, q3, q5]
-      update | x == head q2 = ((tail q2)++[x*2], q3++[x*3], q5++[x*5])
-             | x == head q3 = (q2, (tail q3)++[x*3], q5++[x*5])
-             | otherwise = (q2, q3, (tail q5)++[x*5])
+def get(n: Int) = {
+  var xs : Seq[BigInt] = Seq(1)
+  val q2 : Queue[BigInt] = Queue(2)
+  val q3 : Queue[BigInt] = Queue(3)
+  val q5 : Queue[BigInt] = Queue(5)
+  def generate(n : Int) : Seq[BigInt] = {
+    if (n == 1) xs
+    else {
+      val x = q2.head min q3.head min q5.head
+      xs = xs :+ x
+      if (x == q2.head) {
+        q2.dequeue
+        q2 enqueue 2 * x
+        q3 enqueue 3 * x
+        q5 enqueue 5 * x
+      } else if (x == q3.head) {
+        q3.dequeue
+        q3 enqueue 3 * x
+        q5 enqueue 5 * x
+      } else {
+        q5.dequeue
+        q5 enqueue 5 * x
+      }
+      generate(n - 1)
+    }
+  }
+  generate(n)
+}
+\end{lstlisting}
 
-takeN n = ks n [1] ([2], [3], [5])
-\end{lstlisting} %$
-
-Invoke `last takeN 1500' will generate the correct answer 859963392.
+Run \texttt{get(1500).last} will generate the correct answer 859963392.
 
 % ================================================================
 %                 Short summary

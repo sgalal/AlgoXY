@@ -59,11 +59,12 @@ bsearch xs l u | xs == [] = l
 \end{lstlisting}
 
 \subsection{Regular number (Hamming number)}
-Find the k-th number that only contains factor 2, 3, or 5.
+Find the k-th number that only contains factor 2, 3, or 5. Below Haskell
+example based on the idea of infinite stream and lazy evaluation.
 
 \begin{lstlisting}
 merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
-                    | x ==y = x : merge xs ys
+                    | x == y = x : merge xs ys
                     | otherwise = y : merge (x:xs) ys
 
 ns = 1:merge (map (*2) ns) (merge (map (*3) ns) (map (*5) ns))
@@ -73,6 +74,22 @@ Below line gives the 1500th Rgular number.
 \begin{verbatim}
 last $ take 1500 ns
 \end{verbatim}
+
+Alternatively, we can use three queues to populate the regular numbers.
+
+\begin{lstlisting}
+ks 1 xs _ = xs
+ks n xs (q2, q3, q5) = ks (n-1) (xs++[x]) update
+    where
+      x = minimum $ map head [q2, q3, q5]
+      update | x == head q2 = ((tail q2)++[x*2], q3++[x*3], q5++[x*5])
+             | x == head q3 = (q2, (tail q3)++[x*3], q5++[x*5])
+             | otherwise = (q2, q3, (tail q5)++[x*5])
+
+takeN n = ks n [1] ([2], [3], [5])
+\end{lstlisting}
+
+Run \texttt{last $ takeN 1500} will generate the 1500th number 859963392.
 
 \ifx\wholebook\relax \else
 \end{document}
