@@ -1,7 +1,5 @@
 /* Regular Number, generate numbers only with factors of 2, 3, 5. */
 import scala.math.BigInt
-import scala.collection.mutable.Queue
-import scala.collection.mutable.Seq
 
 object RegNum {
   lazy val ns: Stream[BigInt] = 1 #:: merge(ns map {_ * 2}, merge(ns map {_ * 3}, ns map {_ * 5}))
@@ -18,7 +16,36 @@ object RegNum {
 
   //ns.take(1500).last
 
+  /*
+   * 3 queues approach. Using immutable containers.
+   */
+  def take(n: Int) = {
+    import scala.collection.immutable.Queue
+    import scala.collection.immutable.Seq
+
+    def generate(n: Int, xs: Seq[BigInt],
+                 q2: Queue[BigInt], q3: Queue[BigInt], q5: Queue[BigInt]) : Seq[BigInt] = {
+      if (n == 1) xs
+      else {
+        val x = q2.head min q3.head min q5.head
+        if (x == q2.head)
+          generate(n - 1, xs :+ x, q2.tail :+ 2 * x, q3 :+ 3 * x, q5 :+ 5 * x)
+        else if (x == q3.head)
+          generate(n - 1, xs :+ x, q2, q3.tail :+ 3 * x, q5 :+ 5 * x)
+        else
+          generate(n - 1, xs :+ x, q2, q3, q5.tail :+ 5 * x)
+      }
+    }
+    generate(n, Seq(1), Queue(2), Queue(3), Queue(5))
+  }
+
+  /*
+   * Using mutable queue and Seq. This is not a `pure' approach
+   */
   def get(n: Int) = {
+    import scala.collection.mutable.Queue
+    import scala.collection.mutable.Seq
+
     var xs : Seq[BigInt] = Seq(1)
     val q2 : Queue[BigInt] = Queue(2)
     val q3 : Queue[BigInt] = Queue(3)
