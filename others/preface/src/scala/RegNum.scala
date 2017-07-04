@@ -75,4 +75,15 @@ object RegNum {
   }
 
   //get(1500).last
+
+  def test() = {
+    val n = 100
+    val xs = ns.take(n)
+    val ys = take(n)
+    val zs = get(n)
+    assert(xs.size == ys.size && ys.size == zs.size, println("size not same"))
+    assert((xs zip ys).forall{case (x, y) => x == y}, println("xs != ys"))
+    assert((ys zip zs).forall{case (y, z) => y == z}, println("ys != zs"))
+    println(s"$n tests passed.");
+  }
 }
