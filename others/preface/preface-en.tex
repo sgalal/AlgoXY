@@ -508,7 +508,7 @@ X \cup Y = \left \{
 \]
 
 In a functional programming language such as Scala, which supports
-support model the lazy evaluation with stream, The above infinity series function can be translate into the following program.
+support model the lazy evaluation with stream, The above infinity series function can be translate into the following program\footnote{Refer to Appendix B for the Haskell example, which support lazy evaluation by default.}.
 
 \lstset{language=Scala}
 \begin{lstlisting}
@@ -678,9 +678,13 @@ def take(n: Int) = {
     else {
       val x = q2.head min q3.head min q5.head
       if (x == q2.head)
-        generate(n - 1, xs :+ x, q2.tail :+ 2 * x, q3 :+ 3 * x, q5 :+ 5 * x)
+        generate(n - 1, xs :+ x, q2.tail :+ 2 * x,
+                                 q3 :+ 3 * x,
+                                 q5 :+ 5 * x)
       else if (x == q3.head)
-        generate(n - 1, xs :+ x, q2, q3.tail :+ 3 * x, q5 :+ 5 * x)
+        generate(n - 1, xs :+ x, q2,
+                                 q3.tail :+ 3 * x,
+                                 q5 :+ 5 * x)
       else
         generate(n - 1, xs :+ x, q2, q3, q5.tail :+ 5 * x)
     }
@@ -697,7 +701,7 @@ Run \texttt{take(1500).last} will generate the correct answer 859963392.
 \section{Notes and short summary}
 If review the 2 puzzles, we found in both cases, the brute-force solutions
 are so weak. In the first problem, it's quite poor in dealing with
-long ID list, while in the second problem, it doesn't work at all.
+long number list, while in the second problem, it doesn't work at all.
 
 The first problem shows the power of algorithms, while the second
 problem tells why data structure is important. There are plenty
@@ -710,18 +714,16 @@ like this.
 While there have been already a lot of wonderful books about
 algorithms, data structures and math, however, few of them
 provide the comparison between the procedural solution and
-the functional solution. From the above discussion, it can be
-found that functional solution sometimes is very expressive
+the functional solution. From the above examples, functional solution
+can very expressive
 and they are close to what we are familiar in mathematics.
 
-This series of post focus on providing both imperative and functional
+This book focus on providing both imperative and functional
 algorithms and data structures. Many functional data structures
 can be referenced from Okasaki's book\cite{okasaki-book}. While
-the imperative ones can be founded in classic text books \cite{CLRS}
-or even in WIKIpedia.
-Multiple
-programming languages, including, C, C++, Python, Haskell, and
-Scheme/Lisp will be used. In order to make it easy to read
+the imperative ones can be founded in classic text books e.g. \cite{CLRS}
+or even in WIKIpedia. This edition provoides examples in Java
+and Scala. In order to make it easy to read
 by programmers with different background, pseudo code and mathematical
 function are the regular descriptions of each post.
 
@@ -732,15 +734,13 @@ feedback, comments, or criticizes are welcome.
 
 \section{Structure of the contents}
 In the following series of post, I'll first introduce about
-elementary data structures before algorithms, because many
+elementary data structures, because many
 algorithms need knowledge of data structures as prerequisite.
 
 The `hello world' data structure, binary search tree is the
 first topic; Then we introduce how to solve the balance problem
 of binary search tree. After that, I'll show other interesting
-trees. Trie, Patricia, suffix trees are useful in text manipulation.
-While B-trees are commonly used in file system and data base
-implementation.
+trees, like Radix trees and B-trees.
 
 The second part of data structures is about heaps. We'll
 provide a general Heap definition and introduce about binary
@@ -760,12 +760,42 @@ The final part is about searching, besides the element
 searching, we'll also show string matching algorithms
 such as KMP.
 
+\begin{Exercise}
+\begin{itemize}
+\item There are purely imperative methods to achieve the linear time, constant space solution for the min-free number problem. Here are two of them.
+  \begin{itemize}
+  \item Pigeonhole sort. We can put the $i$-th number $x$ to the position where it should be, the $x$-th number. When $x > n$, we can skip it. Otherwise, we exchange the number at the $i$-th and the $x$-th positions. Since the number we swapped to $i$-th position may not be $i$, we need repeatedly do this till either it exceeds $n$, or it becomes $i$. We iterate on $i$ from 1 to $n$, process all numbers. As each number will only swapped one time, this processing is linear (can you prove it formally?). Next we scan the array with the second round, if at any position $i$, the number isn't $i$, we find the answer. Otherwise, it means the array is 'full', and we return $n+1$ as the min free number.
+  \item Sign encoding. We want to know if a number does exist. Exist or not is a kind of binary information. we can encode it as the sign of the number. If number $x$ exists in the sequence, we mark the $x$-th number as negative. After we complete this marking for all numbers which are not greater than $n$, we can scan the sequence from left, find the first positive number. And that position is the answer.
+  \end{itemize}
+Realize these two methods in your favorate imperative programming langauge.
+\item When Andrew Koening started the discussion about Hamming number problem in Dr. Dobbs, Cassio Neri gave a ``flattened'' method to realize the infinite lazy merge. This can be expressed as the below algorithm.
+\begin{algorithmic}[1]
+\State $H \gets \{1, ...\}$
+\State $n \gets 0$
+\State $i \gets 0$, $j \gets 0$, $k \gets 0$
+\State $x_2 \gets 2H[i]$, $x_3 \gets 3H[j]$, $x_5 \gets 5H[k]$
+\Loop
+  \State $n \gets n + 1$
+  \State $H[n] \gets$ \Call{min}{$x_2, x_3, x_5$}
+  \If{$x_2 = H[n]$}
+    \State $i \gets i + 1$
+    \State $x_2 \gets 2H[i]$
+  \EndIf
+  \If{$x_3 = H[n]$}
+    \State $j \gets j + 1$
+    \State $x_3 \gets 2H[j]$
+  \EndIf
+  \If{$x_5 = H[n]$}
+    \State $k \gets k + 1$
+    \State $x_5 \gets 2H[k]$
+  \EndIf
+\EndLoop
+\end{algorithmic}
+Realize this algorithm in your favorate imperative programming language.
+\end{itemize}
+\end{Exercise}
 //TODO:
 1. Move the reference to the end of the book
-2. Add excecises:
-   1, pigeonhole sort based min-free number solution
-   2, sgn encoding solution for min-free number puzzle;
-   3, Imperative flattened merge method for Hamming number
 
 \begin{thebibliography}{99}
 
