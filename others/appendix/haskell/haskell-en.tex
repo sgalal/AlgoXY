@@ -89,7 +89,7 @@ ks n xs (q2, q3, q5) = ks (n-1) (xs++[x]) update
 takeN n = ks n [1] ([2], [3], [5])
 \end{lstlisting}
 
-Run \texttt{last $ takeN 1500} will generate the 1500th number 859963392.
+Run \texttt{last \$ takeN 1500} will generate the 1500th number 859963392.
 
 \ifx\wholebook\relax \else
 \end{document}
