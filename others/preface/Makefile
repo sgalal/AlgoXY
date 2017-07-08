@@ -1,12 +1,12 @@
-HEADER =
-SOURCE = preface-en.tex
-OBJECT = preface-en
+SRC = preface
+OBJ = $(SRC)-en.pdf
+OBJ_CN = $(SRC)-zh-cn.pdf
 TEX = xelatex
 
 .PHONY: all
 
-all: pdf
-tex: pdf
+all: tex
+tex: $(OBJ) $(OBJ_CN)
 
 cpp:
 	$(MAKE) cpp -C src
@@ -23,9 +23,9 @@ tool:
 image:
 	$(MAKE) -C img
 
-pdf: image
-	$(TEX) $(OBJECT)
-	$(TEX) $(OBJECT)
+%.pdf: %.tex image
+	$(TEX) $<
+	$(TEX) $<
 
 html: image
 	htlatex.bat $(OBJECT) "html, imgdir:img/"

@@ -35,8 +35,7 @@ CHAPTER_CN_OBJS = $(foreach file, $(CHAPTERS), $(file)-zh-cn.pdf)
 all: $(BOOK) #$(BOOK_CN)
 
 %.pdf : %.tex
-	echo $(@D)
-	$(MAKE) -C $(@D) tex
+	$(MAKE) -C $(@D) $(@F)
 
 image:
 	$(MAKE) -C img

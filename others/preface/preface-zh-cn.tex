@@ -404,7 +404,7 @@ merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
                     | otherwise = y : merge (x:xs) ys
 \end{lstlisting}
 
-通过求\texttt{last $ take 1500}，我们可以得到第1500个丑数：
+通过求\texttt{last \$ take 1500}，我们可以得到第1500个丑数：
 
 \begin{verbatim}
 >last $ take 1500 ns
@@ -543,7 +543,7 @@ ks n xs (q2, q3, q5) = ks (n-1) (xs++[x]) update
 takeN n = ks n [1] ([2], [3], [5])
 \end{lstlisting} %$
 
-执行\texttt{last $ takeN 1500}就可输出答案859963392。
+执行\texttt{last \$ takeN 1500}就可输出答案859963392。
 
 % ================================================================
 %                 Short summary
