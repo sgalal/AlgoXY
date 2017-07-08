@@ -80,16 +80,21 @@
 \EndFunction
 \end{algorithmic}
 
-有些编程语言内置了这一线性查找的实现，例如Python。我们可以直接将这一解法翻译成下面的程序。
+我们可以直接将这一解法翻译成下面的Java例子程序。
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def brute_force(lst):
-    i = 0
-    while True:
-        if i not in lst:
-            return i
-        i = i + 1
+int findMinFree(int[] nums) {
+    int i;
+    for(i = 0; contains(i, nums); i++) {}
+    return i;
+}
+
+boolean contains(int x, int[] nums) {
+    for (int n : nums)
+        if (x == n) return true;
+    return false;
+}
 \end{lstlisting}
 
 但是这道题目仅仅是看上去简单。在一个存储了几百万个ID的大型系统中，这个方法的的性能很差。对于一个长度为n的ID列表，它需要$O(n^2)$的时间才能找到最小可分配的ID。在我的计算机上（双核2.10GHz处理器，2G内存），使用这一方法的C语言程序平均要5.4秒才能在十万个ID中找到答案。当ID的数量上升到一百万时，平均用时则长达8分钟。
