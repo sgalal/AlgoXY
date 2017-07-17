@@ -22,7 +22,7 @@
 %                 COVER PAGE
 % ================================================================
 
-\title{Haskell examples}
+\title{Haskell例子程序}
 
 \author{Larry~LIU~Xinyu
 \thanks{{\bfseries Larry LIU Xinyu } \newline
@@ -32,17 +32,17 @@
 \maketitle
 \fi
 
-\markboth{Haskell Examples}{Elementary Algorithms}
+\markboth{Haskell例子程序}{Elementary Algorithms}
 
 \ifx\wholebook\relax
-\chapter{Haskell examples}
+\chapter{Haskell例子程序}
 \numberwithin{Exercise}{chapter}
 \fi
 
-This appendix list the example Haskell code for reference.
+本附录列出了各个章节中对应的Haskell例子程序。
 
-\subsection{Minimum free number puzzle}
-The divide and conquer solution to the mininum free number puzzle.
+\subsection{最小可用数字问题}
+分而治之的最小可用数字问题解法。
 
 \lstset{language=Haskell}
 \begin{lstlisting}
@@ -58,9 +58,8 @@ bsearch xs l u | xs == [] = l
       (as, bs) = partition (<=m) xs
 \end{lstlisting}
 
-\subsection{Regular number (Hamming number)}
-Find the k-th number that only contains factor 2, 3, or 5. Below Haskell
-example based on the idea of infinite stream and lazy evaluation.
+\subsection{正规数（哈明数）问题}
+寻找只包含2、3、或5为因子的第$k$个数。下面的方法使用了Haskell的惰性求值特性和无穷流。
 
 \begin{lstlisting}
 merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
@@ -70,12 +69,12 @@ merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
 ns = 1:merge (map (*2) ns) (merge (map (*3) ns) (map (*5) ns))
 \end{lstlisting}
 
-Below line gives the 1500th Regular number.
+下面的代码给出第1500个正规数。
 \begin{verbatim}
 last $ take 1500 ns
 \end{verbatim}
 
-Alternatively, we can use three queues to populate the regular numbers.
+我们也可以使用三个队列来产生正规数。
 
 \begin{lstlisting}
 ks 1 xs _ = xs
@@ -89,7 +88,7 @@ ks n xs (q2, q3, q5) = ks (n-1) (xs++[x]) update
 takeN n = ks n [1] ([2], [3], [5])
 \end{lstlisting}
 
-Run \texttt{last \$ takeN 1500} will generate the 1500th number 859963392.
+执行\texttt{last \$ takeN 1500}即产生第1500个正规数859963392。
 
 \ifx\wholebook\relax \else
 \end{document}
