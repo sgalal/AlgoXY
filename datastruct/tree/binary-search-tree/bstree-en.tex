@@ -54,31 +54,35 @@ linked lists are the elementary building blocks used to create arrays and other 
 Considering these factors, we start with Binary Search Trees (BST) as the `hello world'
 data structure. Here is an interesting problem Jon Bentley mentioned in `Programming Pearls'
 \cite{Bentley}. The problem is to count the number of times each word occurs
-in a large text. One solution in C++ is below:\index{word counter}
+in a large text. One solution in Java is below\footnote{HashMap is more common in practical Java program. However, TreeMap offers ordered output in term of word count.}:
+\index{word counter}
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-int main(int, char** ){
-  map<string, int> dict;
-  string s;
-  while(cin>>s)
-    ++dict[s];
-  map<string, int>::iterator it=dict.begin();
-  for(; it!=dict.end(); ++it)
-    cout<<it->first<<": "<<it->second<<"\n";
+import java.util.*;
+
+public class WordCount {
+    public static void main(String[] args) {
+        Map<String, Integer> dict = new TreeMap<>();
+        Scanner sc = new Scanner(System.in);
+        while (sc.hasNext()) {
+            String key = sc.next();
+            dict.put(key, 1 + (dict.containsKey(key) ? dict.get(key) : 0));
+        }
+        for (Map.Entry<String, Integer> e : dict.entrySet())
+            System.out.format("%s: %d\n", e.getKey(), e.getValue());
+    }
 }
 \end{lstlisting}
 
-And we can run it to produce the result using the following UNIX commands
-\footnote{This is not a UNIX unique command, in Windows OS, it can be achieved
-by: \texttt{type bbe.txt | wordcount.exe > wc.txt}}.
+And we can run it to produce the result using the following UNIX commands.
 
 \begin{verbatim}
-$ g++ wordcount.cpp -o wordcount
-$ cat bbe.txt | ./wordcount > wc.txt
+$ javac WordCount.java
+$ cat bbe.txt | java WordCount > wc.txt
 \end{verbatim}
 
-The map provided in the standard template library is a kind of balanced BST
+The TreeMap provided in the Standard library is a kind of balanced BST (Red-black tree)
 with augmented data. Here we use the words in the text as the keys and the number of
 occurrences as the augmented data. This program is fast, and it reflects the power of
 BSTs. We'll introduce how to implement BSTs in this section and show how
