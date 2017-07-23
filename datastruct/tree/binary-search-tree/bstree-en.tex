@@ -185,7 +185,7 @@ of a BST in Scala\footnote{We use sealed trait and case classes to mimic the Alg
 \begin{lstlisting}
 sealed trait Tree[+A]
 case object Empty extends Tree[Nothing]
-case class Node[A] (key: A, left: Tree[A], right: Tree[A]) extends Tree[A]
+case class Node[A] (left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
 \end{lstlisting}
 
 % ================================================================
@@ -224,15 +224,19 @@ Where $T_l$ is the left child, $T_r$ is the right child, and $k'$ is the key whe
 The node function creates a new node given the left subtree,
 a key and a right subtree as parameters. $\phi$ means NIL or empty.
 
-Translating the above functions directly to Haskell yields the following
-program:
+Translating the above functions directly to Scala yields the following
+program.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-insert Empty k = Node Empty k Empty
-insert (Node l x r) k | k < x = Node (insert l k) x r
-                      | otherwise = Node l x (insert r k)
-\end{lstlisting}
+def insert[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+  tr match {
+    case Empty => Node(Empty, x, Empty)
+    case Node(left, y, right) =>
+      if (x < y) Node(insert(left, x), y, right)
+      else Node(left, y, insert(right, x))
+  }
+\end{lstlisting} %
 
 This program utilized the pattern matching features provided by the
 language. However, even in functional settings without this feature
@@ -289,14 +293,11 @@ This algorithm can be expressed imperatively using iteration, completely free of
 \end{algorithmic}
 
 While more complex than the functional algorithm, it is still fast, even when presented with very deep trees.
-Complete C++ and python programs are available along with this section for reference.
 
 \section{Traversing}
 \index{binary search tree!traverse}
 
-Traversing means visiting every element one-by-one in a BST. There are 3 ways to traverse a binary tree: a
-pre-order tree walk, an in-order tree walk and a post-order tree walk. The names of these traversal methods
-highlight the order in which we visit the root of a BST.
+Traversing means visiting every element one-by-one in a BST. There are 3 ways to traverse a binary tree: 1) pre-order traversal; 2) in-order traversal; and 3) post-order traversal. The names of these methods highlight the order in which we visit the root of a BST.
 
 \begin{itemize}
 \item pre-order traversal:, visit the key, then the left child, finally the right child;
@@ -321,11 +322,11 @@ are the three different traversal results.
 The in-order walk of a BST outputs the elements in increasing order. The definition
 of a BST ensures this interesting property, while the proof of this fact is left as an exercise to the reader.
 
-The in-order tree walk algorithm can be described as:
+The in-order tree traversal algorithm can be described as:
 \begin{itemize}
-\item If the tree is empty, just return;
-\item traverse the left child by in-order walk, then access the key,
-finally traverse the right child by in-order walk.
+\item If the tree is empty, return;
+\item in-order traverse the left child, then access the key,
+finally in-order traverse the right child.
 \end{itemize}
 
 Translating the above description yields a generic map function:
@@ -352,8 +353,8 @@ Where
 
 And $T_l$, $T_r$ and $k$ are the children and key when the tree isn't empty.
 
-If we only need access the key without create the transformed tree,
-we can realize this algorithm in procedural way lie the below C++
+If we only need access the key without creating the transformed tree,
+we can realize this algorithm in procedural way like the below Java
 program.
 
 \lstset{language=C++}

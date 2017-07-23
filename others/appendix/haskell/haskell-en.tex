@@ -104,6 +104,13 @@ data Tree a = Empty
             | Node (Tree a) a (Tree a)
 \end{lstlisting}
 
+\subsection{insertion}
+
+\begin{lstlisting}
+insert Empty k = Node Empty k Empty
+insert (Node l x r) k | k < x = Node (insert l k) x r
+                      | otherwise = Node l x (insert r k)
+\end{lstlisting}
 
 \ifx\wholebook\relax \else
 \end{document}
