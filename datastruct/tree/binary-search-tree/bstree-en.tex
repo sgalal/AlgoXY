@@ -139,16 +139,8 @@ Based on the recursive definition of BSTs, we can draw the
 data layout in a procedural setting with pointers as in Figure
 \ref{fig:node-layout-parent}.
 
-%\begin{figure}[htbp]
-%       \begin{center}
-%        \includegraphics[scale=0.8]{img/node-layout.ps}
-%        \caption{Node layout.} \label{fig:node-layout}
-%       \end{center}
-%\end{figure}
-
 The node first contains a field for the key, which can be augmented with satellite
-data. The next two fields contain pointers to the left and right children, respectively. To make backtracking to ancestors easy, a parent field is sometimes provided as well.
-%Figure \ref{fig:node-layout-parent} shows the layout with parent field.
+data. The next two fields contain pointers to the left and right children, respectively. In order to make it easy to backtrack to ancestors, a parent field can be provided as well.
 
 \begin{figure}[htbp]
        \begin{center}
@@ -157,23 +149,20 @@ data. The next two fields contain pointers to the left and right children, respe
        \end{center}
 \end{figure}
 
-In this section, we'll ignore the satellite data for the sake of simplifying the illustrations. Based on this layout, the node of BST can be defined in a procedural language, such as C++:
+In this section, we'll ignore the satellite data for illustration purpose. Based on this layout, the node of BST can be defined in a procedural language, such as Java as below\footnote{A formal definition often makes all fields private, and provide getter and setter methods to access them. We define them as public for illustration purpose.}.
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-template<class T>
-struct node{
-  node(T x):key(x), left(0), right(0), parent(0){}
-  ~node(){
-    delete left;
-    delete right;
-  }
+public class Node<T> {
+    public T key;
+    public Node left;
+    public Node right;
+    public Node parent; //optional, mainly used for succ/pred.
 
-  node* left;
-  node* right;
-  node* parent; //Optional, it's helpful for succ and pred
-  T key;
-};
+    public Node(T x) {
+        key = x;
+    }
+}
 \end{lstlisting}
 
 There is another setting, for instance in Scheme/Lisp languages, the elementary
@@ -186,16 +175,17 @@ data structure is a linked list. Figure \ref{fig:lisp-layout} shows how a BST no
        \end{center}
 \end{figure}
 
-In more functional settings, it's hard to use pointers for backtracking (and typically, there is no need for backtracking, since there are usually top-down recursive solutions), and so the `parent' field has been omitted in that layout.
+In purely functional settings, it's rare to to use pointers for backtracking (and typically, there is no need for backtracking, since there are usually top-down recursive solutions), and so the `parent' field has been omitted in that layout.
 
 To simplify things, we'll skip the detailed layouts in the future and only
 focus on the logic layouts of data structures. For example, below is the definition
-of a BST node in Haskell:
+of a BST in Scala\footnote{We use sealed trait and case classes to mimic the Algebraic data type in Haskell. Please refer to Appendix B for Haskell definition.}.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-data Tree a = Empty
-            | Node (Tree a) a (Tree a)
+sealed trait Tree[+A]
+case object Empty extends Tree[Nothing]
+case class Node[A] (key: A, left: Tree[A], right: Tree[A]) extends Tree[A]
 \end{lstlisting}
 
 % ================================================================
