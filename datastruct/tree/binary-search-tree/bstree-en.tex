@@ -155,9 +155,9 @@ In this section, we'll ignore the satellite data for illustration purpose. Based
 \begin{lstlisting}
 public class Node<T> {
     public T key;
-    public Node left;
-    public Node right;
-    public Node parent; //optional, mainly used for succ/pred.
+    public Node<T> left;
+    public Node<T> right;
+    public Node<T> parent; //optional, mainly used for succ/pred.
 
     public Node(T x) {
         key = x;
@@ -357,20 +357,20 @@ If we only need access the key without creating the transformed tree,
 we can realize this algorithm in procedural way like the below Java
 program.
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-template<class T, class F>
-void in_order_walk(node<T>* t, F f){
-  if(t){
-    in_order_walk(t->left, f);
-    f(t->value);
-    in_order_walk(t->right, f);
-  }
+public static <T> void traverse(Node<T> t, Consumer<T> f) {
+    if (t != null) {
+        traverse(t.left, f);
+        f.accept(t.key);
+        traverse(t.right, f);
+    }
 }
 \end{lstlisting}
 
-The function takes a parameter f, it can be a real function, or a function
-object, this program will apply f to the node by in-order tree walk.
+The function takes a parameter \texttt{f}, it's essentially a function
+which can be applied to the given key. This program will apply \texttt{f}
+to the keys one by one by in-order traversing.
 
 We can simplified this algorithm one more step to define a function
 which turns a BST to a sorted list by in-order traversing.
@@ -385,12 +385,15 @@ toList(T) = \left \{
 \right .
 \ee
 
-Below is the Haskell program based on this definition.
+Below is the Scala program based on this definition.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-toList Empty = []
-toList (Node l x r) = toList l ++ [x] ++ toList r
+def toList[A] (tr: Tree[A]) : List[A] =
+  tr match {
+    case Empty => List()
+    case Node(left, x, right) => toList(left) ::: (x :: toList(right))
+  }
 \end{lstlisting}
 
 This provides us a method to sort a list of elements. We can first

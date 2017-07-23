@@ -112,6 +112,13 @@ insert (Node l x r) k | k < x = Node (insert l k) x r
                       | otherwise = Node l x (insert r k)
 \end{lstlisting}
 
+\subsection{Flatten the BST to ordered list}
+
+\begin{lstlisting}
+toList Empty = []
+toList (Node l x r) = toList l ++ [x] ++ toList r
+\end{lstlisting}
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi
