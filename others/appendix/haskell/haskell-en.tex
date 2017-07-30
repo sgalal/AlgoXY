@@ -119,6 +119,16 @@ toList Empty = []
 toList (Node l x r) = toList l ++ [x] ++ toList r
 \end{lstlisting}
 
+\subsection{BST look up}
+
+\begin{lstlisting}
+lookup Empty _ = Empty
+lookup t@(Node l k r) x | k == x = t
+                        | x < k = lookup l x
+                        | otherwise = lookup r x
+\end{lstlisting}
+
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi

@@ -153,7 +153,7 @@ In this section, we'll ignore the satellite data for illustration purpose. Based
 
 \lstset{language=Java}
 \begin{lstlisting}
-public static class Node {
+public class Node {
     public int key;
     public Node left;
     public Node right;
@@ -508,14 +508,18 @@ lookup(T, x) = \left \{
 Where $T_l$, $T_r$ and $k$ are the sub-trees and key when $T$ isn't empty.
 In the real application, we may return the satellite data instead of the
 node as the search result. This algorithm is simple and straightforward.
-Here is a translation of Haskell program.
+Here is a translation of Scala program.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-lookup Empty _ = Empty
-lookup t@(Node l k r) x | k == x = t
-                        | x < k = lookup l x
-                        | otherwise = lookup r x
+def lookup[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+  tr match {
+    case Empty => Empty
+    case Node(left, y, right) =>
+      if (x == y) tr
+      else if (x < y) lookup(left, x)
+      else lookup(right, x)
+  }
 \end{lstlisting}
 
 If the BST is well balanced, which means that almost
@@ -542,17 +546,14 @@ a procedural manner.
 \EndFunction
 \end{algorithmic}
 
-Below is the C++ program based on this algorithm.
+Below is the Java program based on this algorithm.
 
 \lstset{language=C++}
 \begin{lstlisting}
-template<class T>
-node<T>* search(node<T>* t, T x){
-  while(t && t->key!=x){
-    if(x < t->key) t=t->left;
-    else t=t->right;
-  }
-  return t;
+public static Node search(Node tr, int x) {
+    while (tr != null && tr.key != x)
+        tr = x < tr.key ? tr.left : tr.right;
+    return tr;
 }
 \end{lstlisting}
 

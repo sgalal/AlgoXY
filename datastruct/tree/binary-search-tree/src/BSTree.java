@@ -41,6 +41,12 @@ public class BSTree {
         return root;
     }
 
+    public static <T extends Comparable<? super T>> Node<T> search(Node<T> tr, T x) {
+        while (tr != null && !tr.key.equals(x))
+            tr = (x.compareTo(tr.key) < 0) ? tr.left : tr.right;
+        return tr;
+    }
+
     // verification
 
     static <T extends Comparable<? super T>> Node<T> fromList(Collection<T> xs) {
@@ -52,7 +58,7 @@ public class BSTree {
 
     static <T> List<T> toList(Node<T> t) {
         if (t == null) return new ArrayList<T>();
-        List<T> xs = toList(t.left);
+        final List<T> xs = toList(t.left);
         xs.add(t.key);
         xs.addAll(toList(t.right));
         return xs;
@@ -61,7 +67,7 @@ public class BSTree {
     static final int N = 100;
 
     static List<Integer> genList(Random gen) {
-        List<Integer> xs = IntStream.range(0, N).boxed().collect(Collectors.toList());
+        final List<Integer> xs = IntStream.range(0, N).boxed().collect(Collectors.toList());
         Collections.shuffle(xs);
         return xs.subList(0, gen.nextInt(N));
     }
@@ -81,10 +87,23 @@ public class BSTree {
         assertEq(toList(fromList(xs)), xs.stream().sorted().collect(Collectors.toList()));
     }
 
+    static void testSearch(List<Integer> xs, int x) {
+        final Node<Integer> tr = search(fromList(xs), x);
+        if (tr == null) {
+            if (xs.contains(x))
+                throw new RuntimeException(String.format("%d exits", x));
+        } else {
+            if (!tr.key.equals(x))
+                throw new RuntimeException(String.format("given %d, found %d", x, tr.key));
+        }
+    }
+
     public static void main(String[] args) {
-        Random gen = new Random();
+        final Random gen = new Random();
         for (int i = 0; i < 100; ++i) {
-            testBuild(genList(gen));
+            final List<Integer> xs = genList(gen);
+            testBuild(xs);
+            testSearch(xs, gen.nextInt(N));
         }
         System.out.println("passed 100 tests.");
         traverse(fromList(genList(gen)), System.out::println);

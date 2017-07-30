@@ -42,6 +42,12 @@ public class IntBSTree {
         return root;
     }
 
+    public static Node search(Node tr, int x) {
+        while (tr != null && tr.key != x)
+            tr = x < tr.key ? tr.left : tr.right;
+        return tr;
+    }
+
     // verification
 
     static Node fromList(Collection<Integer> xs) {
@@ -82,10 +88,23 @@ public class IntBSTree {
         assertEq(toList(fromList(xs)), xs.stream().sorted().collect(Collectors.toList()));
     }
 
+    static void testSearch(List<Integer> xs, int x) {
+        final Node tr = search(fromList(xs), x);
+        if (tr == null) {
+            if (xs.contains(x))
+                throw new RuntimeException(String.format("%d exits", x));
+        } else {
+            if (tr.key != x)
+                throw new RuntimeException(String.format("given %d, found %d", x, tr.key));
+        }
+    }
+
     public static void main(String[] args) {
-        Random gen = new Random();
+        final Random gen = new Random();
         for (int i = 0; i < 100; ++i) {
-            testBuild(genList(gen));
+            final List<Integer> xs = genList(gen);
+            testBuild(xs);
+            testSearch(xs, gen.nextInt(N));
         }
         System.out.println("passed 100 tests.");
         traverse(fromList(genList(gen)), System.out::println);
