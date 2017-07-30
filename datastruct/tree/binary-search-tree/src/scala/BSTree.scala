@@ -63,10 +63,19 @@ object BSTree {
     assert(toList(fromList(xs)) == xs.sortWith(_ < _), println("violate build invariant"))
   }
 
+  def testLookup(xs: Seq[Int], x: Int) = {
+    lookup(fromList(xs), x) match {
+      case Empty => assert(!xs.contains(x), println(s"$x exists"))
+      case Node(_, y, _) => assert(x == y, println(s"given $x, found $y"))
+    }
+  }
+
   def test() = {
     val r = Random
     for (_ <- 1 to N) {
-      testBuild(genList(r))
+      val xs = genList(r)
+      testBuild(xs)
+      testLookup(xs, r.nextInt(N))
     }
     println(s"$N tests passed");
   }
