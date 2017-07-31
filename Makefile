@@ -61,3 +61,4 @@ clean:
 
 distclean: clean
 	rm -f *.pdf *.dvi *~
+	rm -f $(CHAPTER_OBJS) $(CHAPTER_CN_OBJS)

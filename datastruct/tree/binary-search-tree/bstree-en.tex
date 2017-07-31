@@ -601,12 +601,12 @@ It is useful when a tree is treated as a generic container and traversed with
 iterator. We need access the parent of a node to make the implementation
 simple.
 
-It seems hard to find the functional solution, because there
-is no pointer like field linking to the parent node\footnote{There is \texttt{ref} in ML and OCaml, but we only consider the purely functional settings.}. One solution is
+It seems hard to find the purely functional solution, because there
+is no pointer like field linking to the parent node\footnote{There is \texttt{ref} in ML and OCaml, so as to the Scala, but we only consider the purely functional settings.}. One solution is
 to left `breadcrumbs' when we visit the tree, and use these information
 to back-track or even re-construct the whole tree. Such data structure,
 that contains both the tree and `breadcrumbs' is called zipper.
-please refer to \cite{zipper-hbook} for details.
+please refer to the last chapter of \cite{zipper-hbook} for details.
 
 However, If we consider
 the original purpose of providing $succ$/$pred$ function, `to traverse all the
@@ -615,18 +615,21 @@ that they don't make significant sense in functional settings because
 we can traverse the tree in increase order by $map$ function we defined
 previously.
 
-We'll meet many problems in this series of post that they are only valid
-in imperative settings, and they are not meaningful problems in functional
-settings at all. One good example is how to delete an element in
+We'll meet many problems in this book that they are only valid
+in imperative settings. They are not meaningful problems in functional
+settings sometimes. One good example is how to delete an element in
 red-black-tree\cite{okasaki-blog}.
 
 In this section, we'll only present the imperative algorithm for finding
 the successor and predecessor in a BST.
 
 When finding the successor of element $x$, which is the smallest one $y$
-that satisfies $y > x$, there are two cases. If the node with value $x$
-has non-NIL right child, the minimum element in right child is the answer;
-For example, in Figure \ref{fig:bst-succ}, in order to find the successor
+that satisfies $y > x$, there are two cases. For the node with value $x$,
+If the right sub-tree isn't empty the minimum element in right sub-tree
+is the answer; It's possible that there is some ancestor of this node
+is greater than $x$, however, it must be greater than the minium element
+in the right sub-tree (can you figure out why?), so it can't be the successor
+of $x$. For example, in Figure \ref{fig:bst-succ}, in order to find the successor
 of 8, we search it's right sub tree for the minimum one, which yields 9
 as the result. While if node $x$ don't have right child, we need
 back-track to find the closest ancestor whose left child is also ancestor
