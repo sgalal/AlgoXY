@@ -681,26 +681,32 @@ are symmetrical to each other.
 \EndFunction
 \end{algorithmic}
 
-Below are the Python programs based on these algorithms. They are changed
+Below are the Java example code based on these algorithms. They are changed
 a bit in while loop conditions.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def succ(x):
-    if x.right is not None: return tree_min(x.right)
-    p = x.parent
-    while p is not None and p.left != x:
-        x = p
-        p = p.parent
-    return p
+public static Node succ(Node x) {
+    if (x.right != null)
+        return min(x.right);
+    Node p = x.parent;
+    while (p != null && p.left != x) {
+        x = p;
+        p = p.parent;
+    }
+    return p;
+}
 
-def pred(x):
-    if x.left is not None: return tree_max(x.left)
-    p = x.parent
-    while p is not None and p.right != x:
-        x = p
-        p = p.parent
-    return p
+public static Node pred(Node x) {
+    if (x.left != null)
+        return max(x.left);
+    Node p = x.parent;
+    while (p != null && p.right != x) {
+        x = p;
+        p = p.parent;
+    }
+    return p;
+}
 \end{lstlisting}
 
 \begin{Exercise}
