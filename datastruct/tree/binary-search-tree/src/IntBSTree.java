@@ -114,10 +114,9 @@ public class IntBSTree {
     }
 
     static <T> void assertEq(List<T> xs, List<T> ys) {
-        if (xs.size() != ys.size() || !xs.equals(ys)) {
-            System.out.format("[%s] != [%y]", join(xs), join(ys));
-            throw new RuntimeException("length compare fail");
-        }
+        if (xs.size() != ys.size() || !xs.equals(ys))
+
+            throw new RuntimeException(String.format("[%s] != [%s]", join(xs), join(ys)));
     }
 
     static void testBuild(List<Integer> xs) {
@@ -173,6 +172,6 @@ public class IntBSTree {
             testSuccPred(xs);
         }
         System.out.println("passed 100 tests.");
-        traverse(fromList(genList(gen)), System.out::println);
+        //traverse(fromList(genList(gen)), System.out::println);
     }
 }

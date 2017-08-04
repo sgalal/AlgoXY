@@ -717,9 +717,9 @@ by using \textproc{Pred}/\textproc{Succ}? What's the performance of such travers
 process in terms of big-O?
 
 \item A reader discussed about traversing all elements inside a
-range $[a, b]$. In C++, the algorithm looks like the below code:
+range $[a, b]$. In Java, the algorithm looks like the below code:
 
-\texttt{for\_each (m.lower\_bound(12), m.upper\_bound(26), f);}
+\texttt{tree.subSet(from, to).stream().forEach(System.out::println);}
 
 Can you provide the purely function solution for this problem?
 \index{range traverse}
