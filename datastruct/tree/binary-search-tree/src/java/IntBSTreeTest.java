@@ -10,7 +10,7 @@ public class IntBSTreeTest extends IntBSTree {
     }
 
     static void testSearch(List<Integer> xs, int x) {
-        final Node tr = search(IntBSTree.fromList(xs), x);
+        final Node tr = search(fromList(xs), x);
         if (tr == null) {
             if (xs.contains(x))
                 throw new RuntimeException(String.format("%d exits", x));
