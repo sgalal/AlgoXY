@@ -45,6 +45,41 @@ public class BSTree {
         return tr;
     }
 
+    public static <T> Node<T> min(Node<T> tr) {
+        while (tr != null && tr.left != null)
+            tr = tr.left;
+        return tr;
+    }
+
+    public static <T> Node<T> max(Node<T> t) {
+        while (t != null && t.right != null)
+            t = t.right;
+        return t;
+    }
+
+    public static <T> Node<T> succ(Node<T> x) {
+        if (x.right != null)
+            return min(x.right);
+        Node<T> p = x.parent;
+        while (p != null && p.left != x) {
+            x = p;
+            p = p.parent;
+        }
+        return p;
+    }
+
+    public static <T> Node<T> pred(Node<T> x) {
+        if (x.left != null)
+            return max(x.left);
+        Node<T> p = x.parent;
+        while (p != null && p.right != x) {
+            x = p;
+            p = p.parent;
+        }
+        return p;
+    }
+
+
     // auxiliary utilities
     public static <T extends Comparable<? super T>> Node<T> fromList(Collection<T> xs) {
         Node<T> t = null;
