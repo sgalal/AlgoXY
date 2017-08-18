@@ -32,20 +32,25 @@ public class IntBSTreeTest extends IntBSTree {
     }
 
     static void testSuccPred(List<Integer> xs) {
+        if (xs.isEmpty()) return;
         final Node t = fromList(xs);
         List<Integer> ys = xs.stream().sorted().collect(Collectors.toList());
-        for (int i = 0; i < xs.size(); ++i) {
-            Node x = search(t, ys.get(i));
-            Node y = succ(x), z = pred(x);
-            if (i == 0 && z != null)
-                throw new RuntimeException("succ(first) != null");
-            if (i == xs.size() - 1 && y != null)
-                throw new RuntimeException("pred(last) != null");
-            if (i > 0 && z.key != ys.get(i - 1))
-                throw new RuntimeException(String.format("pred(%d) = %d != %d", x.key, z.key, ys.get(i - 1)));
-            if (i != xs.size() - 1 && y.key != ys.get(i + 1))
-                throw new RuntimeException(String.format("succ(%d) = %d != %d", x.key, y.key, ys.get(i + 1)));
+        List<Integer> zs = new ArrayList<>();
+        Node p = search(t, ys.get(0));
+        while (p != null) {
+            zs.add(p.key);
+            p = succ(p);
         }
+        TestUtil.assertEq(ys, zs);
+
+        p = search(t, ys.get(ys.size() - 1));
+        zs.clear();
+        while (p != null) {
+            zs.add(p.key);
+            p = pred(p);
+        }
+        Collections.reverse(zs);
+        TestUtil.assertEq(ys, zs);
     }
 
     public static void main(String[] args) {
