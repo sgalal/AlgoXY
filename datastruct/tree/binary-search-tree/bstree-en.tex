@@ -735,30 +735,30 @@ Can you provide the purely function solution for this problem?
 Deletion is another `imperative only' topic for binary search tree.
 This is because deletion mutate the tree, while in purely functional
 settings, we don't modify the tree after building it in most
-application.
+applications.
 
-However, One method of deleting element from binary search
-tree in purely functional way is shown in this section. It's actually
-reconstructing the tree but not modifying the tree.
+However, we'll give a method about how to delete the element from
+binary search tree in purely functional manner in this section.
+It actually reconstructs but not modifies the tree.
 
 Deletion is the most complex operation for binary search tree.
 this is because we must keep the BST property, that for any node,
-all keys in left sub tree are less than the key of this node, and
-they are all less than any keys in right sub tree. Deleting a node
+all keys in left sub tree are less than the key in this node, and
+that key is less than any keys in right sub tree. Deleting a node
 can break this property.
 
-In this post, different with the algorithm described in \cite{CLRS},
-A simpler one from SGI STL implementation is used.\cite{sgi-stl}
+Different with the algorithm described in some textbooks like \cite{CLRS},
+our method shown in this chatper is based on SGI STL implementation.\cite{sgi-stl}
 
-To delete a node $x$ from a tree.
+To delete a node $x$ from a binary search tree.
 \begin{itemize}
-\item If $x$ has no child or only one child, splice x out;
-\item Otherwise ($x$ has two children), use minimum element of its right sub tree to replace $x$, and splice the original minimum element out.
+\item If $x$ has no child or only one child, splice $x$ out;
+\item Otherwise ($x$ has two children), use the minimum element of its right sub tree to replace $x$, and splice that minimum element out.
 \end{itemize}
 
 The simplicity comes from the truth that, the minimum element is stored
-in a node in the right sub tree, which can't have two non-NIL children.
-It ends up in the trivial case, the node can be directly splice
+in a node in the right sub tree, which can't have two none empty children.
+It ends up the trivial case, that the node can be directly spliced
 out from the tree.
 
 Figure \ref{fig:del-leaf}, \ref{fig:del-1child}, and \ref{fig:del-branch}
@@ -776,7 +776,7 @@ illustrate these different cases when deleting a node from the tree.
   \subfloat[After delete $x$, $x$ is spliced out, and replaced by its left child.]{\includegraphics[scale=0.5]{img/del-lc-after.ps}} \\
   \subfloat[Before delete $x$.]{\includegraphics[scale=0.5]{img/del-rc-before.ps}}
   \subfloat[After delete $x$, $x$ is spliced out, and replaced by its right child.]{\includegraphics[scale=0.5]{img/del-rc-after.ps}}
-  \caption{Delete a node which has only one non-NIL child.}
+  \caption{Delete a node which has only one none empty child.}
   \label{fig:del-1child}
 \end{figure}
 
@@ -784,7 +784,7 @@ illustrate these different cases when deleting a node from the tree.
   \centering
   \subfloat[Before delete $x$.]{\includegraphics[scale=0.5]{img/del-branch-before.ps}}
   \subfloat[After delete $x$, $x$ is replaced by splicing the minimum element from its right child.]{ \includegraphics[scale=0.5]{img/del-branch-after.ps}}
-  \caption{Delete a node which has both children.}
+  \caption{Delete a node with two none empty children.}
   \label{fig:del-branch}
 \end{figure}
 
@@ -795,7 +795,7 @@ delete(T, x) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   \phi & T = \phi \\
-  node(delete(T_l, x), K, T_r) & x < k \\
+  node(delete(T_l, x), k, T_r) & x < k \\
   node(T_l, k, delete(T_r, x)) & x > k \\
   T_r & x = k \land T_l = \phi \\
   T_l & x = k \land T_r = \phi \\
@@ -814,7 +814,7 @@ y = min(T_r)
 \end{array}
 \]
 
-Translating the function to Haskell yields the below program.
+Below is the Haskell example program that implements this definition.
 
 \lstset{language=Haskell}
 \begin{lstlisting}
@@ -828,17 +828,17 @@ delete (Node l k r) x | x < k = (Node (delete l x) k r)
                           where k' = min r
 \end{lstlisting}
 
-Function \texttt{isEmpty} is to test if a tree is empty ($\phi$).
-Note that the algorithm first performs search to locate the node
-where the element need be deleted, after that it execute the
+Function \texttt{isEmpty} tests if a tree is empty ($\phi$).
+The algorithm firstly performs search to locate the node
+where the element need be deleted, after that it executes the
 deletion. This algorithm takes $O(h)$ time where $h$ is the height
 of the tree.
 
-It's also possible to pass the node but not the element to the
-algorithm for deletion. Thus the searching is no more needed.
-
-The imperative algorithm is more complex because it need set the
-parent properly. The function will return the root of the result tree.
+It's also common to pass the node but not the element to the
+algorithm for deletion. Thus the searching can be skipped.
+The imperative algorithm shown as below is more complex because
+it need set the parent properly. The function returns the
+root of the result tree.
 
 \begin{algorithmic}[1]
 \Function{Delete}{$T, x$}
@@ -886,20 +886,20 @@ parent properly. The function will return the root of the result tree.
 \end{algorithmic}
 
 Here we assume the node to be deleted is not empty (otherwise we can
-simply returns the original tree). In other cases, it will first record
-the root of the tree, create copy pointers to $x$, and its parent.
+simply returns the original tree). The algorithm firstly records
+the root of the tree, creates copy pointers to $x$, and its parent.
 
-If either of the children is empty, the algorithm just splice $x$ out.
-If it has two non-NIL children, we first located the minimum of right
-child, replace the key of $x$ to $y$'s, copy the satellite data as
-well, then splice $y$ out. Note that there is a special case that $y$
-is the root node of $x$'s right sub tree.
+If either of the children is empty, the algorithm splices $x$ out.
+If it has two none empty children, we firstly locate the minimum element
+of the right child, replace the key of $x$ to $y$'s, copy the
+satellite data as well, then splice $y$ out. Note that there is a
+special case that $y$ is the root node of $x$'s right sub tree.
 
 Finally we need reset the stored parent if the original $x$ has only
-one non-NIL child.
+one none empty child.
 If the parent pointer we copied before is empty, it
 means that we are deleting the root node, so we need return the new root. After
-the parent is set properly, we finally remove the old $x$ from memory.
+the parent is set properly, we finally release the old $x$.
 
 The relative Python program for deleting algorithm is given as below.
 Because Python provides GC, we needn't explicitly remove the node
