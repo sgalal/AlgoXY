@@ -82,6 +82,46 @@ public class IntBSTree {
         return p;
     }
 
+    static void cleanup(Node x) {
+        if (x != null)
+            x.left = x.right = x.parent = null;
+    }
+
+    public static Node delete(Node t, Node x) {
+        if (x == null) return t;
+        Node root = t;
+        Node node = x;
+        Node parent = x.parent;
+        if (x.left == null)
+            x = x.right;
+        else if (x.right == null)
+            x = x.left;
+        else {
+            Node y = min(x.right);
+            x.key = y.key;
+            if (y.parent != x)
+                y.parent.left = y.right;
+            else
+                x.right = y.right;
+            if (y.right != null)
+                y.right.parent = y.parent;
+            cleanup(y);
+            return root;
+        }
+        if (x != null)
+            x.parent = parent;
+        if (parent == null)
+            root = x;
+        else {
+            if (parent.left == node)
+                parent.left = x;
+            else
+                parent.right = x;
+        }
+        cleanup(node);
+        return root;
+    }
+
     // Auxiliary
 
     public static Node fromList(Collection<Integer> xs) {

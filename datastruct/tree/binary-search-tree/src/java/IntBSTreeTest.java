@@ -53,6 +53,17 @@ public class IntBSTreeTest extends IntBSTree {
         TestUtil.assertEq(ys, zs);
     }
 
+    static void testDelete(List<Integer> xs) {
+        if (xs.isEmpty()) return;
+        Node t = fromList(xs);
+        List<Integer> ys = xs.stream().sorted().collect(Collectors.toList());
+        for (Integer x : xs) {
+            t = delete(t, search(t, x));
+            ys.remove(x);
+            TestUtil.assertEq(ys, toList(t));
+        }
+    }
+
     public static void main(String[] args) {
         final Random gen = new Random();
         for (int i = 0; i < N; ++i) {
@@ -61,6 +72,7 @@ public class IntBSTreeTest extends IntBSTree {
             testSearch(xs, gen.nextInt(N));
             testMinMax(xs);
             testSuccPred(xs);
+            testDelete(xs);
         }
         System.out.format("passed %d tests.\n", N);
         //traverse(fromList(genList(gen)), System.out::println);
