@@ -814,18 +814,35 @@ y = min(T_r)
 \end{array}
 \]
 
-Below is the Haskell example program that implements this definition.
+Below is the Scala example program that implements this definition.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-delete Empty _ = Empty
-delete (Node l k r) x | x < k = (Node (delete l x) k r)
-                      | x > k = (Node l k (delete r x))
-                      -- x == k
-                      | isEmpty l = r
-                      | isEmpty r = l
-                      | otherwise = (Node l k' (delete r k'))
-                          where k' = min r
+def delete[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+  tr match {
+    case Empty => Empty
+    case Node(left, y, right) =>
+      if (x < y) Node(delete(left, x), y, right)
+      else if (y < x) Node(left, y, delete(right, x))
+      else if (isEmpty(left)) right
+      else if (isEmpty(right)) left
+      else {
+        val z = min(right)
+        Node(left, z, delete(right, z))
+      }
+  }
+
+def isEmpty[A] (tr: Tree[A]): Boolean =
+  tr match {
+    case Empty => true
+    case _ => false
+  }
+
+def min[A] (tr: Tree[A]): A =
+  tr match {
+    case Node(Empty, x, _) => x
+    case Node(left, _, _) => min(left)
+  }
 \end{lstlisting}
 
 Function \texttt{isEmpty} tests if a tree is empty ($\phi$).

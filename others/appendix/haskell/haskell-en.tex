@@ -128,6 +128,19 @@ lookup t@(Node l k r) x | k == x = t
                         | otherwise = lookup r x
 \end{lstlisting}
 
+\subsection{delete element from BST}
+
+\begin{lstlisting}
+delete Empty _ = Empty
+delete (Node l k r) x | x < k = (Node (delete l x) k r)
+                      | x > k = (Node l k (delete r x))
+                      -- x == k
+                      | isEmpty l = r
+                      | isEmpty r = l
+                      | otherwise = (Node l k' (delete r k'))
+                          where k' = min r
+\end{lstlisting}
+
 
 \ifx\wholebook\relax \else
 \end{document}
