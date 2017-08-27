@@ -12,6 +12,12 @@ object BSTree {
   // helpers
   def leaf[A] (x: A) : Tree[A] = Node(Empty, x, Empty)
 
+  def isEmpty[A] (tr: Tree[A]): Boolean =
+    tr match {
+      case Empty => true
+      case _ => false
+    }
+
   // in-order traverse
   def map [A, B] (f: A => B, tr: Tree[A]): Tree[B] =
     tr match {
@@ -48,6 +54,20 @@ object BSTree {
         else Node(left, y, insert(right, x))
     }
 
+  def delete[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+    tr match {
+      case Empty => Empty
+      case Node(left, y, right) =>
+        if (x < y) Node(delete(left, x), y, right)
+        else if (y < x) Node(left, y, delete(right, x))
+        else if (isEmpty(left)) right
+        else if (isEmpty(right)) left
+        else {
+          val z = min(right)
+          Node(left, z, delete(right, z))
+        }
+    }
+
   def fromList [A <% Ordered[A]] (xs: Seq[A]) : Tree[A] = ((Empty: Tree[A]) /: xs) (insert)
 
   def toList[A] (tr: Tree[A]) : List[A] =
@@ -70,12 +90,35 @@ object BSTree {
     }
   }
 
+  def testMinMax(xs: Seq[Int]) = {
+    if (!xs.isEmpty) {
+      val tr = fromList(xs)
+      assert(xs.min == min(tr), println(s"failed to find the min in $xs"))
+      assert(xs.max == max(tr), println(s"failed to find the max in $xs"))
+    }
+  }
+
+  def testDelete(xs: Seq[Int]) = {
+    if (!xs.isEmpty) {
+      xs.foldLeft((xs.sorted, fromList(xs))) {
+        (t, x) => {
+          val ys = t._1
+          val tr = t._2
+          assert(ys == toList(tr), println(s"inconsist delete result: $ys"))
+          (ys diff List(x), delete(tr, x))
+        }
+      }
+    }
+  }
+
   def test() = {
     val r = Random
     for (_ <- 1 to N) {
       val xs = genList(r)
       testBuild(xs)
       testLookup(xs, r.nextInt(N))
+      testMinMax(xs)
+      testDelete(xs)
     }
     println(s"$N tests passed");
   }
