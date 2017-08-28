@@ -149,7 +149,7 @@ data. The next two fields contain pointers to the left and right children, respe
        \end{center}
 \end{figure}
 
-In this section, we'll ignore the satellite data for illustration purpose. Based on this layout, the node of BST can be defined in a procedural language, such as Java as below\footnote{A formal definition often makes all fields private, and provide getter and setter methods to access them. We define them as public for illustration purpose.}. We don't use generic to abstract the type, but use integeral key. Please refer to the the exercise of this chapter about the generic key type BST.
+In this section, we'll ignore the satellite data for illustration purpose. Based on this layout, the node of BST can be defined in a procedural language, such as Java as below\footnote{A formal definition often makes all fields private, and provide getter and setter methods to access them. Or using annotation to generate access code like Lombok, We define them as public for illustration purpose.}. We don't use generic to abstract the type, but use integeral key. Please refer to the the exercise of this chapter about the generic key type BST.
 
 \lstset{language=Java}
 \begin{lstlisting}
@@ -189,7 +189,7 @@ case class Node[A] (left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
 \end{lstlisting}
 
 % ================================================================
-% Insert
+% Insertion
 % ================================================================
 \section{Insertion}
 \index{binary search tree!insertion}
@@ -224,7 +224,7 @@ Where $T_l$ is the left child, $T_r$ is the right child, and $k'$ is the key whe
 The node function creates a new node given the left subtree,
 a key and a right subtree as parameters. $\phi$ means NIL or empty.
 
-Translating the above functions directly to Scala yields the following
+Translating the above functions directly to Scala gives the following
 program.
 
 \lstset{language=Scala}

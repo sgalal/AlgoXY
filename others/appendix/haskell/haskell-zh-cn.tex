@@ -90,6 +90,54 @@ takeN n = ks n [1] ([2], [3], [5])
 
 执行\texttt{last \$ takeN 1500}即产生第1500个正规数859963392。
 
+\section{二叉搜索树}
+
+\subsection{二叉搜索树的定义}
+
+二叉搜索树的代数数据类型定义。
+
+\begin{lstlisting}
+data Tree a = Empty
+            | Node (Tree a) a (Tree a)
+\end{lstlisting}
+
+\subsection{插入}
+
+\begin{lstlisting}
+insert Empty k = Node Empty k Empty
+insert (Node l x r) k | k < x = Node (insert l k) x r
+                      | otherwise = Node l x (insert r k)
+\end{lstlisting}
+
+\subsection{将二叉搜索树转换为有序列表}
+
+\begin{lstlisting}
+toList Empty = []
+toList (Node l x r) = toList l ++ [x] ++ toList r
+\end{lstlisting}
+
+\subsection{二叉搜索树的查找}
+
+\begin{lstlisting}
+lookup Empty _ = Empty
+lookup t@(Node l k r) x | k == x = t
+                        | x < k = lookup l x
+                        | otherwise = lookup r x
+\end{lstlisting}
+
+\subsection{从二叉搜索树中删除元素}
+
+\begin{lstlisting}
+delete Empty _ = Empty
+delete (Node l k r) x | x < k = (Node (delete l x) k r)
+                      | x > k = (Node l k (delete r x))
+                      -- x == k
+                      | isEmpty l = r
+                      | isEmpty r = l
+                      | otherwise = (Node l k' (delete r k'))
+                          where k' = min r
+\end{lstlisting}
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi
