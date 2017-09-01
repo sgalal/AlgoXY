@@ -513,7 +513,7 @@ max(T) = \left \{
 
 有些情况下，需要把二叉搜索树当作通用容器，使用迭代器（iterator）进行遍历。这就需要查找一个给定元素的前驱（上一个）或后继（下一个）元素。为了方便实现，我们需要每个节点都存储它的父节点。
 
-很难找到简单的函数式算法来寻找前驱和后继元素。这主要是因为在纯函数的环境下，没有办法使用像指针这样的概念来引用父节点\footnote{ML或OCaml语言中有\texttt{ref}（引用）概念，Scala中也可以使用引用，但是这里我们讨论纯函数式的情况。}。一种折衷的方案是在遍历树的时候，留下一些“面包屑”作为标记。它们将来可以用来回溯甚至重建整个树。这种同时包含树和“面包屑”信息的数据结构称为zipper。读者可以参考\cite{learn-haskell}的最后一章。
+很难找到简单的函数式算法来寻找前驱和后继元素。这主要是因为在纯函数的环境下，没有办法使用像指针这样的概念来引用父节点\footnote{ML或OCaml语言中有\texttt{ref}（引用）概念，Scala中也可以使用引用，但是这里我们讨论纯函数式的情况。}。一种折衷的方案是在遍历树的时候，留下一些“面包屑”作为标记。它们将来可以用来回溯甚至重建整个树。这种同时包含树和“面包屑”信息的数据结构称为zipper。读者可以参考\cite{zipper-hbook}的最后一章。
 
 但是，如果仔细考虑查找前驱和后继元素的初衷：“作为一个通用容器，遍历二叉搜索树中的全部元素”，我们就会意识到，在纯函数的环境中，根本不需要查找前驱和后继。因为我们可以用前面定义的$map$函数，按照升序遍历所有元素。
 
@@ -618,7 +618,7 @@ Node pred(Node x) {
 
 删除操作是二叉搜索树中最复杂的操作。这是因为，我们必须保证删除后二叉搜索树的属性不能被破坏。也就是说，对于任何节点，所有左侧分支的元素仍然小于节点的key，而所有右侧分支的元素仍然大于节点的key。不做任何额外处理的删除会破坏这一性质。
 
-本书采用的删除算法和\cite{CLRS}中的不同，我们采用了SGI STL中的一种简单实现\cite{sgi-stl}。
+本书采用的删除算法和一些教科书\cite{CLRS}中的有所不同，我们采用了SGI STL中的一种简单实现\cite{sgi-stl}。
 
 从二叉搜索树中删除节点$x$的方法如下：
 \begin{itemize}
@@ -680,17 +680,35 @@ y = min(T_r)
 \end{array}
 \]
 
-这一函数可以翻译为下面的Haskell例子程序。
+这一函数可以翻译为下面的Scala例子程序。
 
-\begin{lstlisting}[style=Haskell]
-delete Empty _ = Empty
-delete (Node l k r) x | x < k = (Node (delete l x) k r)
-                      | x > k = (Node l k (delete r x))
-                      -- x == k
-                      | isEmpty l = r
-                      | isEmpty r = l
-                      | otherwise = (Node l k' (delete r k'))
-                          where k' = min r
+\lstset{language=Scala}
+\begin{lstlisting}
+def delete[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+  tr match {
+    case Empty => Empty
+    case Node(left, y, right) =>
+      if (x < y) Node(delete(left, x), y, right)
+      else if (y < x) Node(left, y, delete(right, x))
+      else if (isEmpty(left)) right
+      else if (isEmpty(right)) left
+      else {
+        val z = min(right)
+        Node(left, z, delete(right, z))
+      }
+  }
+
+def isEmpty[A] (tr: Tree[A]): Boolean =
+  tr match {
+    case Empty => true
+    case _ => false
+  }
+
+def min[A] (tr: Tree[A]): A =
+  tr match {
+    case Node(Empty, x, _) => x
+    case Node(left, _, _) => min(left)
+  }
 \end{lstlisting}
 
 函数\texttt{isEmpty}用来判断一棵树是否为空（$\phi$）。这一算法首先进行查找以定位到要删除的节点，然后执行删除操作。如果树的高度为$h$，则算法的复杂度为$O(h)$。
@@ -747,36 +765,49 @@ delete (Node l k r) x | x < k = (Node (delete l x) k r)
 
 我们还需要把之前保存的父节点重新设好。如果该父节点为空，则说明要删除的节点是根节点。这种情况下，我们需要返回新的根。最后，当父节点被设置好后，就可以把$x$从内存中删除了。
 
-下面的Python程序实现了删除算法，由于Python有垃圾回收（GC）的机制，因此无需显示地回收内存。
+下面的Java程序实现了删除算法。
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def tree_delete(t, x):
-    if x is None:
-        return t
-    [root, old_x, parent] = [t, x, x.parent]
-    if x.left is None:
-        x = x.right
-    elif x.right is None:
-        x = x.left
-    else:
-        y = tree_min(x.right)
-        x.key = y.key
-        if y.parent != x:
-            y.parent.left = y.right
-        else:
-            x.right = y.right
-        return root
-    if x is not None:
-        x.parent = parent
-    if parent is None:
-        root = x
-    else:
-        if parent.left == old_x:
-            parent.left = x
-        else:
-            parent.right = x
-    return root
+Node delete(Node t, Node x) {
+    if (x == null) return t;
+    Node root = t;
+    Node node = x;
+    Node parent = x.parent;
+    if (x.left == null)
+        x = x.right;
+    else if (x.right == null)
+        x = x.left;
+    else {
+        Node y = min(x.right);
+        x.key = y.key;
+        if (y.parent != x)
+            y.parent.left = y.right;
+        else
+            x.right = y.right;
+        if (y.right != null)
+            y.right.parent = y.parent;
+        cleanup(y);
+        return root;
+    }
+    if (x != null)
+        x.parent = parent;
+    if (parent == null)
+        root = x;
+    else {
+        if (parent.left == node)
+            parent.left = x;
+        else
+            parent.right = x;
+    }
+    cleanup(node);
+    return root;
+}
+
+void cleanup(Node x) {
+    if (x != null)
+        x.left = x.right = x.parent = null;
+}
 \end{lstlisting}
 
 由于算法有可能搜索子树中的最小元素，因此对于高度为$h$的树，其复杂度为$O(h)$。
@@ -792,7 +823,7 @@ def tree_delete(t, x):
 \section{随机构建二叉搜索树}
 \index{二叉搜索树!随机构建}
 
-本章给出的所有算法的复杂度都依赖于二叉树的高度$h$。如果树非常不平衡，$h$就会接近$O(n)$，因此$O(h)$退化为线性复杂度。反之，如果树很平衡，$h$接近$O(\lg n)$，我们给出的这些二叉树算法的性能就会很好。
+本章给出的所有算法的复杂度都依赖于二叉树的高度$h$。如果树非常不平衡，$h$就会接近$O(n)$，因此$O(h)$退化为线性复杂度。反之，如果树平衡，$h$接近$O(\lg n)$，我们给出的这些二叉树算法的性能就会很好。
 
 在接下来的章节中，我们会仔细讨论如何保证二叉搜索树的平衡性。但是这里可以给出一个简单的方法。如\cite{CLRS}中所述，二叉搜索树可以通过随机构建来避免不平衡（严格地说是减小可能性）。也就是说，在我们构建二叉搜索树前，先通过随机函数打乱元素的次序，然后再依次把这些元素插入。
 
@@ -800,6 +831,7 @@ def tree_delete(t, x):
 
 \begin{itemize}
 \item 编程实现随机构建二叉搜索树。
+\item 本章中的的Java例子代码使用整数作为key。请使用Java中的泛型抽象key的类型。注意：为了满足二叉搜索树的性质，类型要满足可比较的限制。
 \item 请读者用自己实现的二叉搜索树来统计一篇文章中各个单词出现的次数。
 \item 如何在一棵二叉树中找到“距离最远”的两个节点？
 \end{itemize}
@@ -835,7 +867,7 @@ http://en.wikipedia.org/wiki/Function\_composition
 \bibitem{curry}
 http://en.wikipedia.org/wiki/Partial\_application
 
-\bibitem{learn-haskell}
+\bibitem{zipper-hbook}
 Miran Lipovaca. ``Learn You a Haskell for Great Good! A Beginner's Guide''. the last chapter. No Starch Press; 1 edition April 2011, 400 pp. ISBN: 978-1-59327-283-8
 
 \end{thebibliography}
