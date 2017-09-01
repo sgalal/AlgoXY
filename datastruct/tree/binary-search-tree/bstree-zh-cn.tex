@@ -124,7 +124,7 @@ $ cat bbe.txt | java WordCount > wc.txt
 
 \lstset{language=Java, commentstyle=\rmfamily, texcl=true}
 \begin{lstlisting}
-public class Node {
+class Node {
     public int key;
     public Node left;
     public Node right;
@@ -311,7 +311,7 @@ map(f, T) = \left \{
 
 \lstset{language=Java}
 \begin{lstlisting}
-public static void traverse(Node t, Consumer<Integer> f) {
+void traverse(Node t, Consumer<Integer> f) {
     if (t != null) {
         traverse(t.left, f);
         f.accept(t.key);
@@ -435,13 +435,18 @@ lookup(T, x) = \left \{
 \right .
 \ee
 
-在实际应用中，我们也可以返回这一key对应的数据（satellite data）而不是整个节点。这一算法简单直观，可以直接翻译为下面的Haskell例子程序。
+在实际应用中，我们也可以返回这一key对应的数据（satellite data）而不是整个节点。这一算法简单直观，可以直接翻译为下面的Scala例子程序。
 
-\begin{lstlisting}[style=Haskell]
-lookup Empty _ = Empty
-lookup t@(Node l k r) x | k == x = t
-                        | x < k = lookup l x
-                        | otherwise = lookup r x
+\lstset{language=Scala}
+\begin{lstlisting}
+def lookup[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+  tr match {
+    case Empty => Empty
+    case Node(left, y, right) =>
+      if (x == y) tr
+      else if (x < y) lookup(left, x)
+      else lookup(right, x)
+  }
 \end{lstlisting}
 
 如果二叉树很平衡，绝大多数节点都有非空的左右分支，对于$n$个元素的二叉树，搜索算法的性能为$O(\lg n)$。我们将在红黑树一章给出平衡的正式定义。如果二叉树很不平衡，最坏情况下，查找的时间会退化到$O(n)$。如果记树的高度为$h$，则算法的性能可以统一成$O(h)$的形式。
@@ -461,17 +466,14 @@ lookup t@(Node l k r) x | k == x = t
 \EndFunction
 \end{algorithmic}
 
-下面的C++程序实现了这一消除递归的算法。
+下面的Java程序实现了这一消除递归的算法。
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-template<class T>
-node<T>* lookup(node<T>* t, T x) {
-    while(t && t->key!=x) {
-        if(x < t->key) t=t->left;
-        else t=t->right;
-    }
-    return t;
+Node search(Node tr, int x) {
+    while (tr != null && tr.key != x)
+        tr = x < tr.key ? tr.left : tr.right;
+    return tr;
 }
 \end{lstlisting}
 
@@ -511,7 +513,7 @@ max(T) = \left \{
 
 有些情况下，需要把二叉搜索树当作通用容器，使用迭代器（iterator）进行遍历。这就需要查找一个给定元素的前驱（上一个）或后继（下一个）元素。为了方便实现，我们需要每个节点都存储它的父节点。
 
-很难找到简单的函数式算法来寻找前驱和后继元素。这主要是因为在纯函数的环境下，没有办法使用像指针这样的概念来引用父节点\footnote{ML或OCaml语言中有\texttt{ref}（引用）概念，但是这里我们讨论纯函数式的情况。}。一种折衷的方案是在遍历树的时候，留下一些“面包屑”作为标记。它们将来可以用来回溯甚至重建整个树。这种同时包含树和“面包屑”信息的数据结构称为zipper。读者可以参考\cite{learn-haskell}的最后一章。
+很难找到简单的函数式算法来寻找前驱和后继元素。这主要是因为在纯函数的环境下，没有办法使用像指针这样的概念来引用父节点\footnote{ML或OCaml语言中有\texttt{ref}（引用）概念，Scala中也可以使用引用，但是这里我们讨论纯函数式的情况。}。一种折衷的方案是在遍历树的时候，留下一些“面包屑”作为标记。它们将来可以用来回溯甚至重建整个树。这种同时包含树和“面包屑”信息的数据结构称为zipper。读者可以参考\cite{learn-haskell}的最后一章。
 
 但是，如果仔细考虑查找前驱和后继元素的初衷：“作为一个通用容器，遍历二叉搜索树中的全部元素”，我们就会意识到，在纯函数的环境中，根本不需要查找前驱和后继。因为我们可以用前面定义的$map$函数，按照升序遍历所有元素。
 
@@ -526,7 +528,8 @@ max(T) = \left \{
            为了获得2的后继元素，首先向上找到1，它没有左子树，所以继续向上找到3，3的左侧孩子同样是2的祖先，故而后继元素为3。} \label{fig:bst-succ}
 \end{figure}
 
-给定元素$x$，它的后继元素$y$是满足$y>x$的最小值。有两种情况：如果$x$所在的节点有一个非空的右子树，则右子树中的最小值就是答案。如图\ref{fig:bst-succ}所示，8的后继元素为9，它是元素8的右子树中的最小值。另外一种情况是，如果$x$没有非空的右子树，我们需要向上回溯，找到最近的一个祖先，使得该祖先的左侧孩子，也为$x$的祖先。如图\ref{fig:bst-succ}所示，元素2所在的节点没有右侧分支，我们向上回溯一步找到元素1，但是1没有左侧分支，因此需要继续向上查找，这次我们到达了元素3所在的节点。而3的左侧孩子，同样也是2的祖先。至此，我们找到了2的后继元素3。
+给定元素$x$，它的后继元素$y$是满足$y>x$的最小值。有两种情况：如果$x$所在的节点有一个非空的右子树，则右子树中的最小值就是答案。尽管$x$可能有某个祖先节点也大于它，但是这样的祖先节点的值一定大于$x$右子树中的最小值（请读者思考一下原因），因此不是$x$的后继元素。
+如图\ref{fig:bst-succ}所示，8的后继元素为9，它是元素8的右子树中的最小值。另外一种情况是，如果$x$没有非空的右子树，我们需要向上回溯，找到最近的一个祖先，使得该祖先的左侧孩子，也为$x$的祖先。如图\ref{fig:bst-succ}所示，元素2所在的节点没有右侧分支，我们向上回溯一步找到元素1，但是1没有左侧分支，因此需要继续向上查找，这次我们到达了元素3所在的节点。而3的左侧孩子，同样也是2的祖先。至此，我们找到了2的后继元素3。
 
 我们可以给出查找后继元素的算法如下：
 
@@ -562,25 +565,31 @@ max(T) = \left \{
 \EndFunction
 \end{algorithmic}
 
-下面的Python例子程序实现了前驱与后继元素的查找算法。
+下面的Java例子程序实现了前驱与后继元素的查找算法。和上述算法相比，我们对它们的循环条件进行了修改。
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def succ(x):
-    if x.right is not None: return tree_min(x.right)
-    p = x.parent
-    while p is not None and p.left != x:
-        x = p
-        p = p.parent
-    return p
+Node succ(Node x) {
+    if (x.right != null)
+        return min(x.right);
+    Node p = x.parent;
+    while (p != null && p.left != x) {
+        x = p;
+        p = p.parent;
+    }
+    return p;
+}
 
-def pred(x):
-    if x.left is not None: return tree_max(x.left)
-    p = x.parent
-    while p is not None and p.right != x:
-        x = p
-        p = p.parent
-    return p
+Node pred(Node x) {
+    if (x.left != null)
+        return max(x.left);
+    Node p = x.parent;
+    while (p != null && p.right != x) {
+        x = p;
+        p = p.parent;
+    }
+    return p;
+}
 \end{lstlisting}
 
 \begin{Exercise}
@@ -590,7 +599,7 @@ def pred(x):
 
 \item 为了遍历一个区间$[a, b]$内的元素，在C++中，这一算法可用如下代码实现：
 
-\texttt{for\_each (m.lower\_bound(12), m.upper\_bound(26), f);}
+\texttt{tree.subSet(from, to).stream().forEach(System.out::println);}
 
 您能找到纯函数式的方法来解决这一问题么？
 \index{区间遍历}
@@ -652,7 +661,7 @@ delete(T, x) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   \phi & T = \phi \\
-  node(delete(T_l, x), K, T_r) & x < k \\
+  node(delete(T_l, x), k, T_r) & x < k \\
   node(T_l, k, delete(T_r, x)) & x > k \\
   T_r & x = k \land T_l = \phi \\
   T_l & x = k \land T_r = \phi \\

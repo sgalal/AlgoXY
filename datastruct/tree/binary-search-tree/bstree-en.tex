@@ -153,7 +153,7 @@ In this section, we'll ignore the satellite data for illustration purpose. Based
 
 \lstset{language=Java}
 \begin{lstlisting}
-public class Node {
+class Node {
     public int key;
     public Node left;
     public Node right;
@@ -359,7 +359,7 @@ program.
 
 \lstset{language=Java}
 \begin{lstlisting}
-public static void traverse(Node t, Consumer<Integer> f) {
+void traverse(Node t, Consumer<Integer> f) {
     if (t != null) {
         traverse(t.left, f);
         f.accept(t.key);
@@ -523,7 +523,7 @@ def lookup[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
 \end{lstlisting}
 
 If the BST is well balanced, which means that almost
-all nodes have both non-NIL left child and right child, for $n$ elements,
+all nodes have both none empty left child and right child, for $n$ elements,
 the search algorithm takes $O(\lg n)$ time to perform. This is not
 formal definition of balance. We'll show it in later post about red-black-tree.
 If the tree is poor balanced, the worst case takes $O(n)$ time to
@@ -548,9 +548,9 @@ a procedural manner.
 
 Below is the Java program based on this algorithm.
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-public static Node search(Node tr, int x) {
+Node search(Node tr, int x) {
     while (tr != null && tr.key != x)
         tr = x < tr.key ? tr.left : tr.right;
     return tr;
@@ -602,7 +602,7 @@ iterator. We need access the parent of a node to make the implementation
 simple.
 
 It seems hard to find the purely functional solution, because there
-is no pointer like field linking to the parent node\footnote{There is \texttt{ref} in ML and OCaml, so as to the Scala, but we only consider the purely functional settings.}. One solution is
+is no pointer like field linking to the parent node\footnote{There is \texttt{ref} in ML, and OCaml, so as to the Scala, but we only consider the purely functional settings.}. One solution is
 to left `breadcrumbs' when we visit the tree, and use these information
 to back-track or even re-construct the whole tree. Such data structure,
 that contains both the tree and `breadcrumbs' is called zipper.
@@ -681,12 +681,12 @@ are symmetrical to each other.
 \EndFunction
 \end{algorithmic}
 
-Below are the Java example code based on these algorithms. They are changed
+Below are the Java examples based on these algorithms. They are changed
 a bit in while loop conditions.
 
 \lstset{language=Java}
 \begin{lstlisting}
-public static Node succ(Node x) {
+Node succ(Node x) {
     if (x.right != null)
         return min(x.right);
     Node p = x.parent;
@@ -697,7 +697,7 @@ public static Node succ(Node x) {
     return p;
 }
 
-public static Node pred(Node x) {
+Node pred(Node x) {
     if (x.left != null)
         return max(x.left);
     Node p = x.parent;
