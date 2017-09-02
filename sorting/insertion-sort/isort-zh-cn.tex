@@ -72,7 +72,7 @@
 我们在二叉搜索树一章曾经提到过fold的概念，插入排序也可以用fold来定义：
 
 \be
-  insert = foldL \quad insert \quad \phi
+  sort = foldL \quad insert \quad \phi
 \ee
 
 由于使用了$X$来存储排序结果，这一算法不是就地更新（in-place）的。我们也可以去掉$x$，直接复用原序列的存储空间。记待排序序列为$A = \{a_1, a_2, ... a_n\}$。
