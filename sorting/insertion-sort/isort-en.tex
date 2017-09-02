@@ -107,14 +107,14 @@ algorithm. Denote the sequence as $A = \{a_1, a_2, ..., a_n\}$.
 \end{algorithmic}
 
 At any time, when we process the $i$-th element, all elements before $i$
-have already been sorted. we continuously insert the current elements
-until consume all the unsorted data. This idea is illustrated as in figure
+have already been sorted. we continuously insert the current element
+it consume all the unsorted data. This idea is illustrated as in figure
 \ref{fig:in-place-sort}.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.8]{img/in-place-sort.ps}
-  \caption{The left part is sorted data, continuously insert elements to sorted part.}
+  \caption{The left part is sorted data, continuously insert element to sorted part.}
   \label{fig:in-place-sort}
 \end{figure}
 
@@ -138,7 +138,7 @@ sort(A) = \left \{
 \index{insertion sort!insertion}
 
 We haven't answered the question about how to realize insertion however.
-It's a puzzle how does human locate the proper position so quickly.
+It's a mystery how does human locate the proper position so quickly.
 
 For computer, it's an obvious option to perform a scan. We can either
 scan from left to right or vice versa. However, if the sequence is
@@ -163,7 +163,7 @@ One may think scan from left to right is natural. However, it isn't
 as effect as above algorithm for plain array. The reason is that, it's
 expensive to insert an element in arbitrary position in an array.
 As array stores elements continuously, if we want to insert new element
-$x$ in position $i$, we must shift all elements after $i$, including
+$x$ at position $i$, we must shift all elements after $i$, including
 $i+1, i+2, ...$ one position to right. After that the cell at position $i$
 is empty, and we can put $x$ in it. This is illustrated in
 figure \ref{fig:array-shift}.
