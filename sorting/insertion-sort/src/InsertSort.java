@@ -30,6 +30,29 @@ public class InsertSort {
         xs[j] = tmp;
     }
 
+    /* Using binary search to locate the insert position */
+    static int[] insertSort(int[] xs) {
+        for(int i = 1; i < xs.length; ++i) {
+            int x = xs[i];
+            int p = binarySearch(xs, i, x);
+            for (int j = i; j > p; --j)
+                xs[j] = xs[j - 1];
+            xs[p] = x;
+        }
+        return xs;
+    }
+
+    static int binarySearch(int[] xs, int u, int x) {
+        int l = 0;
+        while (l < u) {
+            int m = l + (u - l) / 2;    // essentially: (l + u) / 2
+            if (xs[m] == x) return m;
+            else if (xs[m] < x) l = m + 1;
+            else u = m;
+        }
+        return l;
+    }
+
     /* verification and auxiliary functions */
 
     static List<Integer> genList(Random gen, int n) {
@@ -65,6 +88,8 @@ public class InsertSort {
             List<Integer> zs = toList(sort(fromList(xs)));
             assertEq(ys, zs);
             zs = toList(isort(fromList(xs)));
+            assertEq(ys, zs);
+            zs = toList(insertSort(fromList(xs)));
             assertEq(ys, zs);
         }
         System.out.format("passed %d tests\n", N);
