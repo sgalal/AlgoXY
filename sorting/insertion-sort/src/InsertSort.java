@@ -3,11 +3,6 @@ import java.util.stream.*;
 import java.lang.Exception;
 
 public class InsertSort {
-    static <T> void swap(T[] xs, int i, int j) {
-        T tmp = xs[i];
-        xs[i] = xs[j];
-        xs[j] = tmp;
-    }
 
     /* insert x[i] to xs[0...i-1] */
     static int[] sort(int[] xs) {
@@ -18,6 +13,21 @@ public class InsertSort {
             xs[j+1] = x;
         }
         return xs;
+    }
+
+    /* An equivalent insertion sort, but need more operations. */
+    static int[] isort(int[] xs) {
+        int i, j;
+        for (i = 1; i < xs.length; ++i)
+            for (j = i - 1; j >= 0 && xs[j + 1] < xs[j]; --j)
+                swap(xs, j, j + 1);
+        return xs;
+    }
+
+    static void swap(int[] xs, int i, int j) {
+        int tmp = xs[i];
+        xs[i] = xs[j];
+        xs[j] = tmp;
     }
 
     /* verification and auxiliary functions */
@@ -53,6 +63,8 @@ public class InsertSort {
             List<Integer> xs = genList(gen, N);
             List<Integer> ys = xs.stream().sorted().collect(Collectors.toList());
             List<Integer> zs = toList(sort(fromList(xs)));
+            assertEq(ys, zs);
+            zs = toList(isort(fromList(xs)));
             assertEq(ys, zs);
         }
         System.out.format("passed %d tests\n", N);
