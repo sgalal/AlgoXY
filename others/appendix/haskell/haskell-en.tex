@@ -141,6 +141,30 @@ delete (Node l k r) x | x < k = (Node (delete l x) k r)
                           where k' = min r
 \end{lstlisting}
 
+\section{Insertion Sort}
+
+\subsection{Insertion}
+
+\begin{lstlisting}
+insert [] x = [x]
+insert (y:ys) x = if x < y then x:y:ys else y:insert ys x
+\end{lstlisting}
+
+\subsection{Insertion Sort}
+
+Recursive defintion
+
+\begin{lstlisting}
+isort [] = []
+isort (x:xs) = insert (isort xs) x
+\end{lstlisting}
+
+Definition using folding.
+
+\begin{lstlisting}
+isort = foldl insert []
+\end{lstlisting}
+
 
 \ifx\wholebook\relax \else
 \end{document}

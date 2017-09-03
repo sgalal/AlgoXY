@@ -368,26 +368,33 @@ It can improve the insertion operation from $O(n)$ to constant time $O(1)$.
 \right.
 \ee
 
-Translating the algorithm to Haskell yields the below program.
+Below example Scala program implement this insertion algorithm.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-insert [] x = [x]
-insert (y:ys) x = if x < y then x:y:ys else y:insert ys x
+def insert[A <% Ordered[A]] (xs : List[A], x : A) : List[A] =
+  xs match {
+    case List() => List(x)
+    case y :: ys => if (x < y ) x :: xs else y :: insert(ys, x)
+  }
 \end{lstlisting}
 
 And we can complete the two versions of insertion sort program based on
 the first two equations in this chapter.
 
 \begin{lstlisting}
-isort [] = []
-isort (x:xs) = insert (isort xs) x
+def isort[A <% Ordered[A]] (xs : List[A]) : List[A] =
+  xs match {
+    case List() => List()
+    case y :: ys => insert(isort(ys), y)
+  }
 \end{lstlisting}
 
 Or we can represent the recursion with folding.
 
 \begin{lstlisting}
-isort = foldl insert []
+  def insertSort[A <% Ordered[A]] (xs : List[A]) : List[A] =
+    ((List(): List[A]) /: xs) (insert)
 \end{lstlisting}
 
 Linked-list setting solution can also be described imperatively. Suppose
