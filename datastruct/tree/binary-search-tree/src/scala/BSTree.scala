@@ -1,4 +1,4 @@
-import scala.util.Random
+import scala.util.Random                //for verification purpose
 import scala.language.postfixOps
 
 // BST definition

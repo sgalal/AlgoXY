@@ -350,9 +350,9 @@ programming language.
 \section{Improvement 2}
 \index{Insertion sort!linked-list setting}
 
-Although we improve the search time to $O(n \lg n)$ in previous section, the
-number of moves is still $O(n^2)$. The reason of why movement takes so long
-time, is because the sequence is stored in plain array. The nature of array
+Although we improved the search time to $O(n \lg n)$ in previous section, the
+number of moves is still $O(n^2)$. The reason why it takes so many movements
+is because the sequence is stored in plain array. The nature of array
 is continuously layout data structure, so the insertion operation is expensive.
 This hints us that we can use linked-list setting to represent the sequence.
 It can improve the insertion operation from $O(n)$ to constant time $O(1)$.
