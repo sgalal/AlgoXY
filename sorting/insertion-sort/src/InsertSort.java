@@ -5,7 +5,7 @@ import java.lang.Exception;
 public class InsertSort {
 
     /* insert x[i] to xs[0...i-1] */
-    static int[] sort(int[] xs) {
+    public static int[] sort(int[] xs) {
         for(int i = 1; i < xs.length; ++i) {
             int x = xs[i], j = i - 1;
             while(j >=0 && x < xs[j])
@@ -16,7 +16,7 @@ public class InsertSort {
     }
 
     /* An equivalent insertion sort, but need more operations. */
-    static int[] isort(int[] xs) {
+    public static int[] isort(int[] xs) {
         int i, j;
         for (i = 1; i < xs.length; ++i)
             for (j = i - 1; j >= 0 && xs[j + 1] < xs[j]; --j)
@@ -31,7 +31,7 @@ public class InsertSort {
     }
 
     /* Using binary search to locate the insert position */
-    static int[] insertSort(int[] xs) {
+    public static int[] insertSort(int[] xs) {
         for(int i = 1; i < xs.length; ++i) {
             int x = xs[i];
             int p = binarySearch(xs, i, x);
@@ -53,6 +53,42 @@ public class InsertSort {
         return l;
     }
 
+    /* Insertion Sort with linked list setting*/
+
+    public static class Node {
+        public int key;
+        public Node next;
+        public Node(int k, Node rest) {
+            key = k;
+            next = rest;
+        }
+    }
+
+    public static Node insert(Node list, Node node) {
+        Node prev = null;
+        Node head = list;
+        while (list != null && list.key < node.key) {
+            prev = list;
+            list = list.next;
+        }
+        node.next = list;
+        if (prev == null)    //node is the new head
+            head = node;
+        else
+            prev.next = node;
+        return head;
+    }
+
+    public static Node insertionSort(Node list) {
+        Node result = null;
+        while (list != null) {
+            Node node = list;
+            list = list.next;
+            result = insert(result, node);
+        }
+        return result;
+    }
+
     /* verification and auxiliary functions */
 
     static List<Integer> genList(Random gen, int n) {
@@ -67,6 +103,27 @@ public class InsertSort {
 
     static List<Integer> toList(int[] xs) {
         return IntStream.of(xs).boxed().collect(Collectors.toList());
+    }
+
+    static Node toLinkedList(List<Integer> xs) {
+        Node ys = null;
+        for (Integer x : xs)
+            ys = new Node(x, ys);
+        return reverse(ys);
+    }
+
+    static Node reverse(Node xs) {
+        Node ys = null;
+        for (; xs != null; xs = xs.next)
+            ys = new Node(xs.key, ys);
+        return ys;
+    }
+
+    static List<Integer> fromLinkedList(Node list) {
+        List<Integer> xs = new ArrayList<>();
+        for(; list != null; list = list.next)
+            xs.add(list.key);
+        return xs;
     }
 
     static <T> String join(Collection<T> xs) {
@@ -90,6 +147,8 @@ public class InsertSort {
             zs = toList(isort(fromList(xs)));
             assertEq(ys, zs);
             zs = toList(insertSort(fromList(xs)));
+            assertEq(ys, zs);
+            zs = fromLinkedList(insertionSort(toLinkedList(xs)));
             assertEq(ys, zs);
         }
         System.out.format("passed %d tests\n", N);
