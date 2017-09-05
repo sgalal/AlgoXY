@@ -419,29 +419,32 @@ $x$, and \textproc{Next}($x$) accesses the next node in the linked-list.
 \EndFunction
 \end{algorithmic}
 
-For example in ANSI C, the linked-list can be defined as the following.
+For example in Java, the linked-list can be defined as the following.
 
-\lstset{language=C}
+\lstset{language=Java}
 \begin{lstlisting}
-struct node{
-  Key key;
-  struct node* next;
-};
+public class Node {
+    public int key;
+    public Node next;
+}
 \end{lstlisting}
 
 Thus the insert function can be given as below.
 
 \begin{lstlisting}
-struct node* insert(struct node* lst, struct node* x){
-  struct node *p, *head;
-  p = NULL;
-  for(head = lst; lst && x->key > lst->key; lst = lst->next)
-    p = lst;
-  x->next = lst;
-  if(!p)
-    return x;
-  p->next = x;
-  return head;
+Node insert(Node list, Node node) {
+    Node prev = null;
+    Node head = list;
+    while (list != null && list.key < node.key) {
+        prev = list;
+        list = list.next;
+    }
+    node.next = list;
+    if (prev == null)
+        head = node;
+    else
+        prev.next = node;
+    return head;
 }
 \end{lstlisting}
 
