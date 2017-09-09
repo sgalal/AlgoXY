@@ -450,8 +450,11 @@ Node insert(Node list, Node node) {
 
 Instead of using explicit linked-list such as by pointer or reference
 based structure. Linked-list can also be realized by another index array.
-For any array element $A[i]$, $Next[i]$ stores the index of next element
+For any element $A[i]$, $Next[i]$ stores the index of next element
 follows $A[i]$. It means $A[Next[i]]$ is the next element after $A[i]$.
+We also need a variable to record the head of linked-list. It is the
+index $j$, that $A[j]$ is the first element in the list. We cas use
+$Next[\perp]$ for this porpuse.
 
 The insertion algorithm based on this solution is given like below.
 
@@ -466,35 +469,41 @@ The insertion algorithm based on this solution is given like below.
 \EndFunction
 \end{algorithmic}
 
-Here $\perp$ means the head of the $Next$ table.
-And the relative Python program for this algorithm is given as the following.
+Here $\perp$ is the special head index, that $Next[\prep]$ gives the
+which is the first element in $A$. When implement this algorithm, we
+can allocate the $Next$ array one extra element longer than $A$, and
+use the last one to index the head element.
 
-\lstset{language=Python}
+Below Java example program implements this algorithm.
+
+\lstset{language=Java}
 \begin{lstlisting}
-def isort(xs):
-    n = len(xs)
-    next = [-1]*(n+1)
-    for i in range(n):
-        insert(xs, next, i)
-    return next
+public int[] insSort(int[] xs) {
+    int[] next = new int[xs.length + 1]; //the last cell point to the head
+    Arrays.fill(next, -1);
+    for (int i = 0; i < xs.length; ++i)
+        ins(xs, next, i);
+    return next;
+}
 
-def insert(xs, next, i):
-    j = -1
-    while next[j] != -1 and xs[next[j]] < xs[i]:
-        j = next[j]
-    next[j], next[i] = i, next[j]
+void ins(int[] xs, int[] next, int i) {
+    int j = xs.length;  //traverse from head
+    while (next[j] != -1 && xs[next[j]] < xs[i])
+        j = next[j];
+    next[i] = next[j];
+    next[j] = i;
+}
 \end{lstlisting}
 
 Although we change the insertion operation to constant time by using
-linked-list. However, we have to traverse the linked-list to find the
+linked-list. However, we have to traverse the list to find the insertion
 position, which results $O(n^2)$ times comparison. This is because
 linked-list, unlike array, doesn't support random access. It means we
 can't use binary search with linked-list setting.
 
 \begin{Exercise}
 \begin{itemize}
-\item Complete the insertion sort by using linked-list insertion function
-in your favorate imperative programming language.
+\item Complete the insertion sort by using linked-list insertion function.
 \item The index based linked-list return the sequence of rearranged index
 as result. Write a program to re-order the original array of elements from
 this result.
