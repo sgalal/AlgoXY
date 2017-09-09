@@ -53,7 +53,7 @@ public class InsertSort {
         return l;
     }
 
-    /* Insertion Sort with linked list setting*/
+    /* Insertion Sort with linked list setting */
 
     public static class Node {
         public int key;
@@ -87,6 +87,31 @@ public class InsertSort {
             result = insert(result, node);
         }
         return result;
+    }
+
+    /* Insertion sort with index based linked-list setting */
+
+    public static int[] insSort(int[] xs) {
+        int[] next = new int[xs.length + 1]; //the last cell point to the head
+        Arrays.fill(next, -1);
+        for (int i = 0; i < xs.length; ++i)
+            ins(xs, next, i);
+        return reorder(xs, next);
+    }
+
+    static void ins(int[] xs, int[] next, int i) {
+        int j = xs.length;  //traverse from head
+        while (next[j] != -1 && xs[next[j]] < xs[i])
+            j = next[j];
+        next[i] = next[j];
+        next[j] = i;
+    }
+
+    static int[] reorder(int[] xs, int[] next) {
+        int[] ys = new int[xs.length];
+        for (int j = 0, i = xs.length; next[i] != -1; ++j, i = next[i])
+            ys[j] = xs[next[i]];
+        return ys;
     }
 
     /* verification and auxiliary functions */
@@ -149,6 +174,8 @@ public class InsertSort {
             zs = toList(insertSort(fromList(xs)));
             assertEq(ys, zs);
             zs = fromLinkedList(insertionSort(toLinkedList(xs)));
+            assertEq(ys, zs);
+            zs = toList(insSort(fromList(xs)));
             assertEq(ys, zs);
         }
         System.out.format("passed %d tests\n", N);
