@@ -360,7 +360,7 @@ struct node* insert(struct node* lst, struct node* x) {
 }
 \end{lstlisting}
 
-我们也可以不用基于指针或者引用的数据结构，而通过另一个索引数组来实现链表。对于任何数组元素$A[i]$，$Next[i]$保存了$A[i]$下一个元素的索引。也就是说$A[Next[i]]$是$A[i]$的下一个元素。
+我们也可以不用基于指针或者引用的数据结构，而通过另一个索引数组来实现链表。对于任何数组元素$A[i]$，$Next[i]$保存了$A[i]$下一个元素的索引。也就是说$A[Next[i]]$是$A[i]$的下一个元素。我们还需要一个变量来记录链表的表头。即索引$i_0$是的$A[i_0]$是链表中的第一个元素。我么可以使用$Next[\perp] = i_0$来代表这一特殊变量。
 
 利用这种索引链表，插入算法可以定义如下：
 
@@ -375,7 +375,9 @@ struct node* insert(struct node* lst, struct node* x) {
 \EndFunction
 \end{algorithmic}
 
-其中$\perp$表示索引表$Next$的头部。下面的Python例子程序实现了索引链表的插入排序。
+其中$\perp$表示索引表$Next$的头部。$Next[\perp]$给出了$A$中哪个元素是链表的表头。当实现这一算法时，我们可以在数组$A$的长度之上，再多给$Next$数组申请一个额外元素，并使用$Next$数组的最后一个元素来记录表头的索引。
+
+下面的Python例子程序实现了索引链表的插入排序。
 
 \lstset{language=Python}
 \begin{lstlisting}
