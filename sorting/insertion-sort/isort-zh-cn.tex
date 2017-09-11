@@ -202,7 +202,7 @@ void swap(Key* xs, int i, int j) {
 
 人的大脑是如何快速在一手牌中找到插入位置的？答案明显不是逐一扫描。任何时刻，我们手中的牌都是已序的，因此我们可以用二分查找来搜索插入位置。
 
-我们将来后面的章节中专门详细讨论搜索算法。本节仅仅对二分查找做一个简单介绍。
+我们将在后面的章节中专门详细讨论搜索算法。本节仅仅对二分查找做一个简单介绍。
 
 下面的排序算法改为调用二分查找来确定插入位置：
 
@@ -325,7 +325,7 @@ isort = foldl insert []
     \State $L \gets $ \Call{Next}{$L$}
   \EndWhile
   \State \Call{Next}{$x$} $\gets L$
-  \If{$p \neq$ NIL}
+  \If{$p \eq$ NIL}
     \State $H \gets x$
   \Else
     \State \Call{Next}{$p$} $\gets x$
