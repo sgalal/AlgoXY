@@ -1,11 +1,11 @@
-HEADER =
-SOURCE = rbtree-en.tex
-OBJECT = rbtree-en
+SRC = rbtree
+OBJ = $(SRC)-en.pdf
+OBJ_CN = $(SRC)-zh-cn.pdf
 TEX = xelatex
 
 .PHONY: all
 
-all: pdf
+all: tex
 
 cpp:
 	$(MAKE) cpp -C src
@@ -16,14 +16,11 @@ haskell:
 image:
 	$(MAKE) -C img
 
-pdf: $(OBJECT).dvi
-	dvipdfmx $(OBJECT)
+tex: $(OBJ) $(OBJ_CN)
 
-tex: pdf
-
-pdf: image
-	$(TEX) $(OBJECT)
-	$(TEX) $(OBJECT)
+%.pdf: %.tex image
+	$(TEX) $<
+	$(TEX) $<
 
 html:
 	htlatex $(OBJECT) "html, imgdir:img/"

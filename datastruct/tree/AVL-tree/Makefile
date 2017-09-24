@@ -1,11 +1,11 @@
-HEADER =
-SOURCE = avltree-en.tex
-OBJECT = avltree-en
+SRC = avltree
+OBJ = $(SRC)-en.pdf
+OBJ_CN = $(SRC)-zh-cn.pdf
 TEX = xelatex
 
 .PHONY: all
 
-all: pdf
+all: tex
 
 cpp:
 	$(MAKE) cpp -C src
@@ -16,11 +16,11 @@ haskell:
 image:
 	$(MAKE) -C img
 
-tex: pdf
+tex: $(OBJ) $(OBJ_CN)
 
-pdf: image
-	$(TEX) $(OBJECT)
-	$(TEX) $(OBJECT)
+%.pdf: %.tex image
+	$(TEX) $<
+	$(TEX) $<
 
 html:
 	htlatex $(OBJECT) "html, imgdir:img/"
