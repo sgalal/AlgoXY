@@ -294,24 +294,32 @@ int binarySearch(int[] xs, int u, int x) {
 \right.
 \ee
 
-这一算法可以翻译为下面的Haskell例子程序。
+这一算法可以翻译为下面的Scala例子程序。
 
-\begin{lstlisting}[style=Haskell]
-insert [] x = [x]
-insert (y:ys) x = if x < y then x:y:ys else y:insert ys x
+\lstset{language=Scala}
+\begin{lstlisting}
+def insert[A <% Ordered[A]] (xs : List[A], x : A) : List[A] =
+  xs match {
+    case List() => List(x)
+    case y :: ys => if (x < y ) x :: xs else y :: insert(ys, x)
+  }
 \end{lstlisting}
 
 本章开头部份给出的插入排序定义，可以通过调用这一函数来完成。
 
-\begin{lstlisting}[style=Haskell]
-isort [] = []
-isort (x:xs) = insert (isort xs) x
+\begin{lstlisting}
+def isort[A <% Ordered[A]] (xs : List[A]) : List[A] =
+  xs match {
+    case List() => List()
+    case y :: ys => insert(isort(ys), y)
+  }
 \end{lstlisting}
 
 或者用fold来实现：
 
-\begin{lstlisting}[style=Haskell]
-isort = foldl insert []
+\begin{lstlisting}
+  def insertSort[A <% Ordered[A]] (xs : List[A]) : List[A] =
+    ((List(): List[A]) /: xs) (insert)
 \end{lstlisting}
 
 我们也可以用命令式方式实现链表的插入排序。令函数\textproc{Key}($x$)返回节点$x$存储的元素，函数\textproc{Next}($x$)用以访问链表中的下一个节点。
@@ -334,33 +342,68 @@ isort = foldl insert []
 \EndFunction
 \end{algorithmic}
 
-下面的C语言例子代码定义了链表的节点：
+下面的Java语言例子代码定义了链表的节点：
 
-\lstset{language=C}
+\lstset{language=Java}
 \begin{lstlisting}
-struct node {
-    Key key;
-    struct node* next;
-};
+public class Node {
+    public int key;
+    public Node next;
+}
 \end{lstlisting}
 
 根据此定义，插入程序可以实现如下：
 
 \begin{lstlisting}
-struct node* insert(struct node* lst, struct node* x) {
-    struct node *p, *head;
-    p = NULL;
-    for(head = lst; lst && x->key > lst->key; lst = lst->next)
-        p = lst;
-    x->next = lst;
-    if(!p)
-        return x;
-    p->next = x;
+Node insert(Node list, Node node) {
+    Node prev = null;
+    Node head = list;
+    while (list != null && list.key < node.key) {
+        prev = list;
+        list = list.next;
+    }
+    node.next = list;
+    if (prev == null)
+        head = node;
+    else
+        prev.next = node;
     return head;
 }
 \end{lstlisting}
 
-我们也可以不用基于指针或者引用的数据结构，而通过另一个索引数组来实现链表。对于任何数组元素$A[i]$，$Next[i]$保存了$A[i]$下一个元素的索引。也就是说$A[Next[i]]$是$A[i]$的下一个元素。我们还需要一个变量来记录链表的表头。即索引$i_0$是的$A[i_0]$是链表中的第一个元素。我么可以使用$Next[\perp] = i_0$来代表这一特殊变量。
+我们也可以不用基于指针或者引用的数据结构，而通过另一个索引数组来实现链表。对于任何数组元素$A[i]$，$Next[i]$保存了$A[i]$下一个元素的索引。也就是说$A[Next[i]]$是$A[i]$的下一个元素。我们还需要一个变量来记录链表的表头。即索引$i_0$是的$A[i_0]$是链表中的第一个元素。我么可以使用$Next[\perp] = i_0$来代表这一特殊变量。我们还需要使用一个变量记录链表的表头索引$i_0$，使得$A[i_0]$表示链表的第一个元素。我们定义$Next[\perp] = i_0$。
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[scale=0.8]
+    \draw (-1, 0.5) node (next) {$Next$}
+          (0, 0) rectangle (1, 1) node (n1) [pos=.5] {5}
+          (1, 0) rectangle (2, 1) node (n2) [pos=.5] {3}
+          (2, 0) rectangle (3, 1) node (n3) [pos=.5] {1}
+          (3, 0) rectangle (4, 1) node (n4) [pos=.5] {-1}
+          (4, 0) rectangle (5, 1) node (n5) [pos=.5] {4}
+          (5, 0) rectangle (6, 1) node (n6) [pos=.5] {2}
+          (5.5, -1) node (hd) {$\perp$};
+    \draw (-1, 2.5) node (A) {$A$}
+          (0, 2) rectangle (1, 3) node (a1) [pos=.5] {3}
+          (1, 2) rectangle (2, 3) node (a2) [pos=.5] {1}
+          (2, 2) rectangle (3, 3) node (a3) [pos=.5] {2}
+          (3, 2) rectangle (4, 3) node (a4) [pos=.5] {5}
+          (4, 2) rectangle (5, 3) node (a5) [pos=.5] {4};
+    \draw[thick, ->] (n6) edge [bend left] (a2)
+                 %(a2) edge (n2)
+                 (n2) edge [bend right] (a3)
+                 %(a3) edge (n3)
+                 (n3) edge [bend left] (a1)
+                 %(a1) edge (n1)
+                 (n1) edge [bend right] (a5)
+                 %(a5) edge (n5)
+                 (n5) edge [bend left] (a4)
+                 %(a4) edge (n4)
+                 (hd) edge (n6);
+  \end{tikzpicture}
+  \caption{} \label{fig:indexed-link-list-isort}
+\end{figure}
 
 利用这种索引链表，插入算法可以定义如下：
 
@@ -377,22 +420,25 @@ struct node* insert(struct node* lst, struct node* x) {
 
 其中$\perp$表示索引表$Next$的头部。$Next[\perp]$给出了$A$中哪个元素是链表的表头。当实现这一算法时，我们可以在数组$A$的长度之上，再多给$Next$数组申请一个额外元素，并使用$Next$数组的最后一个元素来记录表头的索引。
 
-下面的Python例子程序实现了索引链表的插入排序。
+下面的Java例子程序实现了索引链表的插入排序。
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def isort(xs):
-    n = len(xs)
-    next = [-1]*(n+1)
-    for i in range(n):
-        insert(xs, next, i)
-    return next
+public int[] insSort(int[] xs) {
+    int[] next = new int[xs.length + 1]; //the last cell point to the head
+    Arrays.fill(next, -1);
+    for (int i = 0; i < xs.length; ++i)
+        ins(xs, next, i);
+    return next;
+}
 
-def insert(xs, next, i):
-    j = -1
-    while next[j] != -1 and xs[next[j]] < xs[i]:
-        j = next[j]
-    next[j], next[i] = i, next[j]
+void ins(int[] xs, int[] next, int i) {
+    int j = xs.length;  //traverse from head
+    while (next[j] != -1 && xs[next[j]] < xs[i])
+        j = next[j];
+    next[i] = next[j];
+    next[j] = i;
+}
 \end{lstlisting}
 
 虽然使用链表后，插入操作降低为常数时间。但是我们必须遍历链表才能找到合适的插入位置。整个排序算法需要进行$O(n^2)$次比较。与数组不同，链表不支持随机访问（random access），我们不能利用二分查找在链表中搜索插入位置。
@@ -429,9 +475,9 @@ def insert(xs, next, i):
 \EndFunction
 \end{algorithmic}
 
-其中函数\textproc{Insert-Tree}()和\textproc{To-List}()的定义在上一章。
+其中函数\textproc{Insert-Tree}($T, x$)和\textproc{To-List}($T$)的定义在上一章。
 
-根据我们对二叉搜索树的分析，树排序的性能为$O(n \lg n)$，达到了基于比较的排序算法的时间下限\cite{Knuth-V3}。
+根据我们对二叉搜索树的分析，树排序的性能为$O(n \lg n)$，达到了基于比较的排序算法的时间下限\cite{Knuth-V3}（第180——193页）、\cite{CLRS}（第167页）。
 
 \section{小结}
 本章展示了插入排序的进化过程。在经典的教科书中，插入排序通常作为第一个排序算法被介绍。它的思路简单直观，但是性能确是平方级别的。我们没有仅仅停留在这个结论上，而是设法分析它的性能瓶颈，并从不同方向上试图改进。我们首先尝试使用二分查找来减少比较操作，接着通过使用链表改变数据结构来改善插入操作。最后我们将两种改进结合起来，从而进化到了树排序。
