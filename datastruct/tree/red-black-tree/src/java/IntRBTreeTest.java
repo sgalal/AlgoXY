@@ -59,6 +59,12 @@ public class IntRBTreeTest extends IntRBTree {
         t = rotateRight(t, t.right); // rotate back
         System.out.format("rotate right back:\n%s\n", toStr(t));
         assertEq(t, t1);
+
+        t = rotateLeft(t, t);  // (2 5 (6 7 9)) ==> ((2 5 6) 7 9)
+        System.out.format("rotate left at root:\n%s\n", toStr(t));
+        t = rotateRight(t, t); // rotate back
+        System.out.format("rotate right back:\n%s\n", toStr(t));
+        assertEq(t, t1);
     }
 
     public void testInsert() {
