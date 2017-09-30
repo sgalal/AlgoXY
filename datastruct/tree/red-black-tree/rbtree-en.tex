@@ -339,17 +339,15 @@ As all NIL nodes are black, people often omit them when draw red-black tree. Fig
        \end{center}
 \end{figure}
 
-All read only operations such as search, min/max are as same as in
-binary search tree. While only the insertion and deletion are special.
+All read operations such as search, find the min/max, are same as the
+binary search tree. The insertion and deletion are special for the red-black tree.
 
-As we have shown in word occurrence example, many implementation of
-set or map container are based on red-black tree. One example is the
-C++ Standard library (STL)\cite{sgi-stl}.
+Many implementation of set or map container are based on red-black tree.
+One example is the \texttt{TreeMap} in the Java standard library.
 
-As mentioned previously, the only change in data layout is that
-there is color information augmented to binary search tree.
-This can be represented as a data field in imperative languages
-such as C++ like below.
+For the data layout, the only change is the color
+color information need be augmented to binary search tree.
+This can be represented as a data field. Like the below Java example.
 
 \lstset{language=C++}
 \begin{lstlisting}
@@ -1176,9 +1174,6 @@ Wikipedia. ``Red-black tree''. http://en.wikipedia.org/wiki/Red-black\_tree
 
 \bibitem{lyn}
 Lyn Turbak. ``Red-Black Trees''. cs.wellesley.edu/~cs231/fall01/red-black.pdf Nov. 2, 2001.
-
-\bibitem{sgi-stl}
-SGI STL. http://www.sgi.com/tech/stl/
 
 \bibitem{rosetta}
 Pattern matching. http://rosettacode.org/wiki/Pattern\_matching
