@@ -303,7 +303,7 @@ public class IntRBTree {
     public static String toStr(Node t) {
         if (t == null) return ".";
         return String.format("(%s %d:%s %s)", toStr(t.left),
-                             (t.color == Color.RED ? "R" : "B"),
+                             t.key, (t.color == Color.RED ? "R" : "B"),
                              toStr(t.right));
     }
 

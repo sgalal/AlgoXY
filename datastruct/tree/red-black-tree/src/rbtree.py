@@ -268,7 +268,7 @@ def list_to_tree(l):
 
 class Test:
     def __init__(self):
-        #t1 = ((1B 2R (4B 3R .)) 5B (6B 7R (8R 9B .)))
+        #t1 = ((1B 2R (4R 4B .)) 5B (6B 7R (8R 9B .)))
         self.t1=Node(5, BLACK)
         self.t1.set_children(Node(2), Node(7))
         self.t1.left.set_children(Node(1, BLACK), Node(4, BLACK))

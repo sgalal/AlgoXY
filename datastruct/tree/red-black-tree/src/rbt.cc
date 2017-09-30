@@ -1,20 +1,20 @@
 /*
  * rbt.cc
  * Copyright (C) 2016 Liu Xinyu (liuxinyu95@gmail.com)
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 #include <cstdlib>
 #include <string>
@@ -350,7 +350,7 @@ Node* fromList(XS xs) {
 struct Test {
     Node *t1, *t2;
     Test() {
-        // t1 = ((1:B, 2:R, (4:B, 3:R, .)), 5:B, (6:B, 7:R, (8:R, 9:B, .)))
+        // t1 = ((1:B, 2:R, (3:R, 4:B, .)), 5:B, (6:B, 7:R, (8:R, 9:B, .)))
         t1 = new Node(5, Color::BLACK);
         t1->setChildren(new Node(2), new Node(7));
         t1->left->setChildren(new Node(1, Color::BLACK), new Node(4, Color::BLACK));
