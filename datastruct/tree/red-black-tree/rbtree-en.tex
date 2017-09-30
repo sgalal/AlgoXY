@@ -57,25 +57,30 @@ By modifying a bit of the program for word occurrence counting
 yields the following code.
 
 \begin{lstlisting}
-int main(int, char** ){
-  ifstream f("yp.txt");
-  map<string, string> dict;
-  string name, phone;
-  while(f>>name && f>>phone)
-    dict[name]=phone;
-  for(;;){
-    cout<<"\nname: ";
-    cin>>name;
-    if(dict.find(name)==dict.end())
-      cout<<"not found";
-    else
-      cout<<"phone: "<<dict[name];
-  }
+public static void main(String[] args) {
+    Map<String, String> dict = new TreeMap<>();
+    try {
+        Scanner sc = new Scanner(new File("yp.txt"));
+        while (sc.hasNext()) {
+            String name = sc.next();
+            String phone = sc.next();
+            dict.put(name, phone);
+        }
+        sc = new Scanner(System.in);
+        while (true) {
+            System.out.print("name: ");
+            String name = sc.next();
+            String phone = dict.get(name);
+            System.out.println(phone == null ? "not found" : ("phone: " + phone));
+        }
+    } catch (FileNotFoundException e) {
+        System.out.println(e);
+    }
 }
 \end{lstlisting}
 
-This program works well. However, if you replace the STL map
-with the binary search tree as mentioned previously, the
+This program works well. However, if you replace the \texttt{TreeMap} provided in
+the standard library with the binary search tree we developed in previous chapter, the
 performance will be bad, especially when you search some names such
 as Zara, Zed, Zulu.
 
@@ -129,15 +134,14 @@ However, this method doesn't always work, for example the input is fed
 from user interactively, and the tree need to be built and updated online.
 
 There are many solutions people found to make binary search tree balanced.
-Many of them rely on the rotation operations to binary search tree.
+Many of them rely on the rotation operations to the binary search tree.
 Rotation operations change the tree structure while maintain the ordering
 of the elements. Thus it can be used to improve the balance property of the binary
 search tree.
 
-In this chapter, we'll first introduce about red-black tree, which is one of the
+In this chapter, we'll first introduce the red-black tree. It is one of the
 most popular and widely used self-adjusting balanced
-binary search tree. In next chapter, we'll introduce about AVL tree, which is
-another intuitive solution; In later chapter about binary heaps, we'll show another
+binary search tree. In next chapter, we'll introduce another intuitive solution, the AVL tree. In later chapter about binary heaps, we'll show another
 interesting tree called splay tree, which can gradually adjust the the tree to make it
 more and more balanced.
 
@@ -158,18 +162,18 @@ more and more balanced.
    \label{fig:tree-rotation}
 \end{figure}
 
-Tree rotation is a kind of special operation that can transform the tree structure
+Tree rotation is a set of operations that can transform the tree structure
 without changing the in-order traverse result. It based on the fact that
 for a specified ordering, there are multiple binary search trees correspond to it.
 Figure \ref{fig:tree-rotation} shows the tree rotation. For a binary search tree
 on the left side, left rotate transforms it to the tree on the right, and right
 rotate does the inverse transformation.
 
-Although tree rotation can be realized in procedural way, there exists quite
-simple functional description if using pattern matching. Denote the non-empty tree as $T = (T_l, k, T_r)$.
+Although tree rotation can be realized in procedural way, there exists
+simple functional definition by using pattern matching. Denote the non-empty tree as $T = (T_l, k, T_r)$, where $k$ is the key, and $T_l$, $T_r$ are left and right sub-trees.
 
 \be
-rotateL(T) = \left \{
+rotate_l(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   ((a, X, b), Y, c) & T = (a, X, (b, Y, c)) \\
@@ -179,7 +183,7 @@ rotateL(T) = \left \{
 \ee
 
 \be
-rotateR(T) = \left \{
+rotate_r(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   (a, X, (b, Y, c)) & T = ((a, X, b), Y, c)) \\
@@ -188,7 +192,7 @@ rotateR(T) = \left \{
 \right .
 \ee
 
-However, the pseudo code dealing imperatively has to set all fields accordingly.
+To perform tree rotation imperatively, we need set all fields of the node as the following.
 
 \begin{algorithmic}[1]
 \Function{Left-Rotate}{$T, x$}
@@ -222,6 +226,33 @@ However, the pseudo code dealing imperatively has to set all fields accordingly.
   \EndIf
   \State \Return $T$
 \EndFunction
+\end{algorithmic}
+
+Where procedure \textproc{Replace}($x$, $y$), uses $y$ to replace $x$.
+
+\begin{algorithmic}[1]
+\Function{Replace}{$x, y$}
+  \If{\Call{Parent}{$x$} = NIL}
+    \If{$y \ne$ NIL}
+      \Call{Parent}{$y$} $\gets$ NIL
+    \EndIf
+  \ElsIf{\textproc{Left}(\Call{Parent}{$x$}) $= x$}
+    \State \textproc{Set-Left}(\Call{Parent}{$x$}, $y$)
+  \Else
+    \State \textproc{Set-Right}(\Call{Parent}{$x$}, $y$)
+  \EndIf
+  \State \Call{Parent}{$x$} $\gets$ NIL
+\EndFunction
+\end{algorithmic}
+
+Procedure \textproc{Set-Children} assigns a pair of sub-trees
+as the left and right children of a given node.
+
+\begin{algorithmic}[1]
+\Function{Set-Children}{$x, L, R$}
+  \State \Call{Set-Left}{$x, L$}
+  \State \Call{Set-Right}{$x, R$}
+\EndFunction
 
 \Statex
 
@@ -240,40 +271,17 @@ However, the pseudo code dealing imperatively has to set all fields accordingly.
     \Call{Parent}{$y$} $\gets x$
   \EndIf
 \EndFunction
-
-\Statex
-
-\Function{Set-Children}{$x, L, R$}
-  \State \Call{Set-Left}{$x, L$}
-  \State \Call{Set-Right}{$x, R$}
-\EndFunction
-
-\Statex
-
-\Function{Replace}{$x, y$}
-  \If{\Call{Parent}{$x$} = NIL}
-    \If{$y \ne$ NIL}
-      \Call{Parent}{$y$} $\gets$ NIL
-    \EndIf
-  \ElsIf{\textproc{Left}(\Call{Parent}{$x$}) $= x$}
-    \State \textproc{Set-Left}(\Call{Parent}{$x$}, $y$)
-  \Else
-    \State \textproc{Set-Right}(\Call{Parent}{$x$}, $y$)
-  \EndIf
-  \State \Call{Parent}{$x$} $\gets$ NIL
-\EndFunction
 \end{algorithmic}
 
-Compare these pseudo codes with the pattern matching functions,
-the latter focus on the structure states changing, while the
+Compare the imperative operations with the pattern matching functions,
+we can found the latter focus on the structure change, while the
 former focus on the rotation process. As the title of this
 chapter indicated, red-black tree needn't be so complex as it
-was thought. Most traditional algorithm text books use the
-classic procedural way to teach red-black tree, there are
-several cases need to deal and all need carefulness to
-manipulate the node fields. However, by changing
-the mind to functional settings, things get intuitive and
-simple. Although there is some performance overhead.
+was thought. Many traditional algorithm text books use the
+classic procedural treatment to the red-black tree. When insert or delete
+keys, there are multiple cases with a series of node manipulation.
+On the other hand, in functional settings, the algorithm turns to be intuitive and
+simple, although there is some performance overhead.
 
 Most of the content in this chapter is based on Chris Okasaki's
 work in \cite{okasaki}.
