@@ -68,6 +68,9 @@ public class IntRBTreeTest extends IntRBTree {
     }
 
     public void testInsert() {
+        Node t = clone(t2);
+        t = insert(t, 4);
+        System.out.format("t2: after insert 4:\n%s\n", toStr(t));
     }
 
     public void testDelete() {
