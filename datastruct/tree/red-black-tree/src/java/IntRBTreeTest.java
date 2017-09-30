@@ -32,6 +32,16 @@ public class IntRBTreeTest extends IntRBTree {
                    5, 'B',
                    tr(nodeOf(6, 'B'), 7, 'R', tr(nodeOf(8, 'R'), 9, 'B', null)));
         System.out.format("t1 1..9\n%s\n", toStr(t1));
+
+        /*
+         * t2 as figure 13.4 in CLRS
+         * (((. 1:B .) 2:R ((. 5:R .) 7:B (. 8:R .))) 11:B (. 14:B (. 15:R .)))
+         */
+        t2 = tr(tr(nodeOf(1, 'B'), 2, 'R', tr(nodeOf(5, 'R'), 7, 'B', nodeOf(8, 'R'))),
+                11, 'B',
+                tr(null, 14, 'B', nodeOf(15, 'R')));
+        System.out.format("t2, CLRS fig 13.4\n%s\n", toStr(t2));
+
     }
 
     public void run() {
