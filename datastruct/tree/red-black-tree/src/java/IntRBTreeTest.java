@@ -44,7 +44,33 @@ public class IntRBTreeTest extends IntRBTree {
 
     }
 
+    static void assertEq(Node a, Node b) {
+        String s1 = toStr(a);
+        String s2 = toStr(b);
+        if (!s1.equals(s2))
+            throw new RuntimeException(String.format("%s != %s", s1, s2));
+    }
+
+    public void testRotate() {
+        Node t = clone(t1);
+        Node x = t.right;  // 7:R
+        t = rotateLeft(t, x); // (6 7 (8 9 .)) ==> ((6 7 8) 9 .)
+        System.out.format("rotate left at 7:R\n%s\n", toStr(t));
+        t = rotateRight(t, t.right); // rotate back
+        System.out.format("rotate right back:\n%s\n", toStr(t));
+        assertEq(t, t1);
+    }
+
+    public void testInsert() {
+    }
+
+    public void testDelete() {
+    }
+
     public void run() {
+        testRotate();
+        testInsert();
+        testDelete();
     }
 
     public static void main(String[] args) {
