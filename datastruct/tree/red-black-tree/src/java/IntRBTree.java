@@ -55,7 +55,15 @@ public class IntRBTree {
 
         Node grandparent() { return parent.parent; }
 
-        public static Node dbNil = new Node(0, Color.DOUBLY_BLACK);
+        public static Node NIL = new Node(0, Color.BLACK);
+    }
+
+    public static void replace(Node parent, Node x, Node y) {
+        if (parent == null) return;
+        if (parent.left == x)
+            parent.setLeft(y);
+        else
+            parent.setRight(y);
     }
 
     // auxiliary
@@ -195,24 +203,12 @@ public class IntRBTree {
 
     private static Node makeBlack(Node parent, Node x) {
         if (x == null) {
-            if (parent == null) return x;
-            if (isLeaf(parent)) {
-                System.out.println("============ NEVER ===========");
-                parent.color = Color.DOUBLY_BLACK;
-                return parent;
-            }
-            else {
-                Node.dbNil = new Node(0, Color.DOUBLY_BLACK);
-                if (parent.left == null)
-                    parent.setLeft(Node.dbNil);
-                else
-                    parent.setRight(Node.dbNil);
-                return Node.dbNil;
-            }
-        } else {
-            blacken(x);
-            return x;
+            if (parent == null) return null;
+            x = Node.NIL = new Node(0, Color.BLACK);;
+            replace(parent, x, Node.NIL);
         }
+        blacken(x);
+        return x;
     }
 
     public static Node del(Node t, Node x) {
@@ -299,12 +295,7 @@ public class IntRBTree {
             }
         }
         t.color = Color.BLACK;
-        if (Node.dbNil.parent != null) {
-            if (Node.dbNil.parent.left == Node.dbNil)
-                Node.dbNil.parent.left = null;
-            else
-                Node.dbNil.parent.right = null;
-        }
+        Node.NIL.replaceWith(null);
         return t;
     }
 
