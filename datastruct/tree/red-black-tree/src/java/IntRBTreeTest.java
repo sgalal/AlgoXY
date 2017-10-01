@@ -145,20 +145,26 @@ public class IntRBTreeTest extends IntRBTree {
          * 7:B
          * (((. 8:B .) 9:B .) 10:B ((. 11:B .) 12:B .)))
          */
+        /*
         t = tr(tr(tr(nodeOf(1, 'B'), 2, 'B', null), 3, 'B',
                   tr(nodeOf(4, 'B'), 5, 'B', nodeOf(6, 'B'))),
                7, 'B',
                tr(tr(nodeOf(8, 'B'), 9, 'B', null), 10, 'B',
                   tr(nodeOf(11, 'B'), 12, 'B', null)));
         System.out.format("test detailed case:\n%s\n", toStr(t));
+        System.out.println("original key rbt?");
+        assertRBTree(t);  // this will fail
+        System.out.println("verified original tree");
         testDeleteKey(t, 1);
 
         // test no sibling case
         t.left.setRight(null);
         System.out.format("test no sibling case:\n%s\n", toStr(t));
         testDeleteKey(t, 1);
+        */
 
         // test case 1
+        /*
         t = new Node(3, Color.BLACK);
         t.setChildren(new Node(2, Color.BLACK), new Node(6));
         t.left.setLeft(new Node(1, Color.BLACK));
@@ -166,7 +172,11 @@ public class IntRBTreeTest extends IntRBTree {
         t.right.left.setLeft(new Node(4, Color.BLACK));
         t.right.right.setRight(new Node(8, Color.BLACK));
         System.out.format("test case 1:\n%s\n", toStr(t));
+        System.out.println("original key rbt?");
+        assertRBTree(t);  // this will fail
+        System.out.println("verified original tree");
         testDeleteKey(t, 1);
+        */
 
         // test case 3
         t = new Node(2, Color.BLACK);

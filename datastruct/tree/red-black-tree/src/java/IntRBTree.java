@@ -54,6 +54,8 @@ public class IntRBTree {
         Node uncle() { return parent.sibling(); }
 
         Node grandparent() { return parent.parent; }
+
+        public static Node dbNil = new Node(0, Color.DOUBLY_BLACK);
     }
 
     // auxiliary
@@ -193,9 +195,19 @@ public class IntRBTree {
 
     private static Node makeBlack(Node parent, Node x) {
         if (x == null) {
-            if (isLeaf(parent))
+            if (parent == null) return x;
+            if (isLeaf(parent)) {
                 parent.color = Color.DOUBLY_BLACK;
-            return parent;
+                return parent;
+            }
+            else {
+                Node.dbNil = new Node(0, Color.DOUBLY_BLACK);
+                if (parent.left == null)
+                    parent.setLeft(Node.dbNil);
+                else
+                    parent.setRight(Node.dbNil);
+                return Node.dbNil;
+            }
         } else {
             blacken(x);
             return x;
@@ -286,6 +298,12 @@ public class IntRBTree {
             }
         }
         t.color = Color.BLACK;
+        if (Node.dbNil.parent != null) {
+            if (Node.dbNil.parent.left == Node.dbNil)
+                Node.dbNil.parent.left = null;
+            else
+                Node.dbNil.parent.right = null;
+        }
         return t;
     }
 
