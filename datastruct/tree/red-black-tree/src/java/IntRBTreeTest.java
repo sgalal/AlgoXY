@@ -179,22 +179,32 @@ public class IntRBTreeTest extends IntRBTree {
         */
 
         // test case 3
+        /*
         t = new Node(2, Color.BLACK);
         t.setChildren(new Node(1, Color.BLACK), new Node(6, Color.BLACK));
         t.left.setLeft(new Node(0, Color.BLACK));
         t.right.setChildren(new Node(4), new Node(7, Color.BLACK));
         t.right.left.setChildren(new Node(3, Color.BLACK), new Node(5, Color.BLACK));
         System.out.format("test case 3\n%s\n", toStr(t));
+        System.out.println("original key rbt?");
+        assertRBTree(t);  // this will fail
+        System.out.println("verified original tree");
         testDeleteKey(t, 0);
+        */
 
         // test case 4
+        /*
         t = new Node(6, Color.BLACK);
         t.setChildren(new Node(4, Color.BLACK), new Node(7, Color.BLACK));
         t.left.setChildren(new Node(2), new Node(5, Color.BLACK));
         t.right.setRight(new Node(8, Color.BLACK));
         t.left.left.setChildren(new Node(1, Color.BLACK), new Node(3, Color.BLACK));
         System.out.format("test case 4\n%s\n", toStr(t));
+        System.out.println("original key rbt?");
+        assertRBTree(t);  // this will fail
+        System.out.println("verified original tree");
         testDeleteKey(t, 8);
+        */
     }
 
     public void run() {

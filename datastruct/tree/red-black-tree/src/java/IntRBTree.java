@@ -197,6 +197,7 @@ public class IntRBTree {
         if (x == null) {
             if (parent == null) return x;
             if (isLeaf(parent)) {
+                System.out.println("============ NEVER ===========");
                 parent.color = Color.DOUBLY_BLACK;
                 return parent;
             }
