@@ -539,47 +539,10 @@ makeBlack Empty = BBEmpty
 makeBlack t = t
 \end{lstlisting}
 
-删除算法中，唯一还没有定义的函数是$fixBlack^2$。我们需要在这个函数中，通过树的旋转操作和重新染色，最终去掉“双重黑色”。
+删除算法中，唯一还没有定义的函数是$fixBlack^2$。我们需要在这个函数中，通过树的旋转操作和重新染色，最终去掉“双重黑色”。这里有三种情况需要处理。每一种情况中，双重黑色的节点即可以是普通节点，也可以是双重黑色的空节点$\Phi$。我们首先看第一种情况
 
-!!!! Need fix here.
-我们先从双重黑色的空节点开始。对于任何节点，如果它的一个子节点为双重黑色的空节点，而另外的一个子分支不为空，我们可以安全地用一个普通的空节点代替双重黑色的空节点。
-
-如图\ref{fig:db-fix-1-nil}所示，如果删除节点4（图中只显示了树的一部份），我们会用一个双重黑色的空节点代替它。图中带有两个圈的节点，表示双重黑色节点。于是对于节点5，它的左侧子节点是双重黑色的空节点，而右侧子分支不为空（一个key为6的叶子节点）。这种情况下，我们可以安全地用普通空节点替换双重黑色，而不会破坏任何红黑树的性质。
-
-\begin{figure}[htbp]
-   \centering
-   \subfloat[从树中删除4]{\includegraphics[scale=0.4]{img/db-fix.ps}} \\
-   \subfloat[4被“切下”后，变成了一个双重黑色的空节点]{\includegraphics[scale=0.4]{img/db-fix-1-nil-before.ps}}
-   \subfloat[我们可以安全地将其变为普通的NIL]{\includegraphics[scale=0.4]{img/db-fix-1-nil-after.ps}}
-   \caption{一个子节点为双重黑色空节点，另外一个子分支不为空} \label{fig:db-fix-1-nil}
-\end{figure}
-
-但是，如果两个子节点中，有一个是双重黑色的空节点，另外一个也是空节点，就需要把双重黑色的属性推到上一层。如图\ref{fig:db-fix-2-nil}所示，如果删除节点1，我们用一个双重黑色空节点代替它。于是节点2就有了两个空子节点，其中一个是双重黑色的。这种情况下，我们需要把节点2染成双重黑色，它的两个子节点就可以变成普通的空节点了。
-
-\begin{figure}[htbp]
-   \centering
-   \subfloat[从树中删除1]{\includegraphics[scale=0.4]{img/db-fix.ps}} \\
-   \subfloat[节点1被“切下”后，变成了双重黑色的空节点]{\includegraphics[scale=0.4]{img/db-fix-2-nil-before.ps}}
-   \subfloat[把双重黑色的属性推到上一层，节点2被染成双重黑色]{\includegraphics[scale=0.4]{img/db-fix-2-nil-after.ps}}
-   \caption{两个子节点都为空，其中一个是双重黑色} \label{fig:db-fix-2-nil}
-\end{figure}
-
-根据上面的分析，为了修复双重黑色的空节点，我们将函数中这部份逻辑定义如下：
-
-\be
-fixBlack^2(T) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  (\mathcal{B}^2, \phi, k, \phi) & (T_l = \phi \land T_r = \Phi) \lor (T_l = \Phi \land T_r = \phi) \\
-  (\mathcal{C}, \phi, k, T_r) & T_l=\Phi \land T_r \neq \phi \\
-  (\mathcal{C}, T_l, k, \phi) & T_r=\Phi \land T_l \neq \phi \\
-  ... & ...
-  \end{array}
-\right .
-\label{eq:db-nil}
-\ee
-
-我们接下来解决双重黑色节点的兄弟为黑色，并且该兄弟节点有一个红色的子节点的情况。我们可以通过旋转操作来修复。总共有四种不同的细分情况，它们全部可以变换到一种统一的形式。如图\ref{fig:del-case1}所示。
+\subsection{双重黑色节点的兄弟为黑色，并且该兄弟节点有一个红色子节点}
+对于这种情况，我们可以通过旋转操作来修复。总共有四种不同的细分情况，它们全部可以变换到一种统一的形式。如图\ref{fig:del-case1}所示。
 
 \begin{figure}[htbp]
    \centering
@@ -588,16 +551,14 @@ fixBlack^2(T) = \left \{
    \label{fig:del-case1}
 \end{figure}
 
-我们可以在式（\ref{eq:db-nil}）的基础上，增加这四种细分情况的处理：
+我们通过模式匹配来处理这四种细分情况：
 
 \be
 fixBlack^2(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
-  ... & ... \\
   (\mathcal{C}, (\mathcal{B}, mkBlk(A), x, B), y, (\mathcal{B}, C, z, D)) & p 1.1 \\
   (\mathcal{C}, (\mathcal{B}, A, x, B), y, (\mathcal{B}, C, z, mkBlk(D))) & p 1.2 \\
-  ... & ...
   \end{array}
 \right .
 \label{eq:db-case-1}
@@ -618,6 +579,39 @@ p 1.2 : \left \{ \begin{array}{l}
   T = (\mathcal{C}, (\mathcal{B}, A, x, (\mathcal{R}, B, y, C)), z, D) \land color(D) = \mathcal{B}^2 \\
   \lor \\
   T = (\mathcal{C}, (\mathcal{B}, (\mathcal{R}, A, x, B), y, C), z, D) \land color(D) = \mathcal{B}^2
+  \end{array} \right \}
+\]
+
+如果双重黑色的节点是双重黑色空节点$\Phi$，经过这样的旋转操作后，可以将其回复为普通空节点。为此我们为式\ref{eq:db-case-1}增加双重黑色空节点的处理：
+
+\be
+fixBlack^2(T) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  (\mathcal{C}, (\mathcal{B}, mkBlk(A), x, B), y, (\mathcal{B}, C, z, D)) & p 1.1 \\
+  (\mathcal{C}, (\mathcal{B}, \phi, x, B), y, (\mathcal{B}, C, z, D)) & p 1.1a \\
+  (\mathcal{C}, (\mathcal{B}, A, x, B), y, (\mathcal{B}, C, z, mkBlk(D))) & p 1.2 \\
+  (\mathcal{C}, (\mathcal{B}, A, x, B), y, (\mathcal{B}, C, z, \phi)) & p 1.2a \\
+  \end{array}
+\right .
+\label{eq:db-case-1a}
+\ee
+
+其中$p 1.1a$和$p 1.2a$的模式定义如下：
+
+\[
+p 1.1a : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, \Phi, x, (\mathcal{B}, (\mathcal{R}, B, y, C), z, D)) \\
+  \lor \\
+  T = (\mathcal{C}, \Phi, x, (\mathcal{B}, B, y, (\mathcal{R}, C, z, D)))
+  \end{array} \right \}
+\]
+
+\[
+p 1.2a : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, (\mathcal{B}, A, x, (\mathcal{R}, B, y, C)), z, \Phi) \\
+  \lor \\
+  T = (\mathcal{C}, (\mathcal{B}, (\mathcal{R}, A, x, B), y, C), z, \Phi)
   \end{array} \right \}
 \]
 
