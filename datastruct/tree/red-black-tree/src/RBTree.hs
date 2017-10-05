@@ -74,10 +74,6 @@ delete t x = blackenRoot (del t x) where
     blackenRoot (Node _ l k r) = Node B l k r
     blackenRoot _ = Empty
 
-isBlack Empty = True
-isBlack (Node B _ _ _) = True
-isBlack _ = False
-
 makeBlack::RBTree a -> RBTree a
 makeBlack (Node B l k r) = Node BB l k r -- doubly black
 makeBlack (Node _ l k r) = Node B l k r
@@ -102,18 +98,10 @@ fixDB B a@BBEmpty x (Node R b y c) = fixDB B (fixDB R a x b) y c
 fixDB B (Node R a x b) y c@(Node BB _ _ _) = fixDB B a x (fixDB R b y c)
 fixDB B (Node R a x b) y c@BBEmpty = fixDB B a x (fixDB R b y c)
 -- the sibling and its 2 children are all black, propagate the blackness up (CLRS case 2)
-fixDB color a@(Node BB _ _ _) x (Node B b y c)
-  | isBlack b && isBlack c = makeBlack (Node color (makeBlack a) x (Node R b y c))
-  | otherwise = error "right sibling is B, but not all nephews are B"
-fixDB color BBEmpty x (Node B b y c)
-  | isBlack b && isBlack c = makeBlack (Node color Empty x (Node R b y c))
-  | otherwise = error "BBEmpty right sibling is B, but not all newphews are B"
-fixDB color (Node B a x b) y c@(Node BB _ _ _)
-  | isBlack a && isBlack b = makeBlack (Node color (Node R a x b) y (makeBlack c))
-  | otherwise = error "left sibling is B, but not all nephews are B"
-fixDB color (Node B a x b) y BBEmpty
-  | isBlack a && isBlack b = makeBlack (Node color (Node R a x b) y Empty)
-  | otherwise = error "BBEmpty left sibling is B, but not all nephews are B"
+fixDB color a@(Node BB _ _ _) x (Node B b y c) = makeBlack (Node color (makeBlack a) x (Node R b y c))
+fixDB color BBEmpty x (Node B b y c) = makeBlack (Node color Empty x (Node R b y c))
+fixDB color (Node B a x b) y c@(Node BB _ _ _) = makeBlack (Node color (Node R a x b) y (makeBlack c))
+fixDB color (Node B a x b) y BBEmpty = makeBlack (Node color (Node R a x b) y Empty)
 -- otherwise
 fixDB color l k r = Node color l k r
 
