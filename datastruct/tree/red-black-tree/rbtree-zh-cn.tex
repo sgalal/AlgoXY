@@ -245,12 +245,21 @@ rotateR(T) = \left \{
 
 为什么这5条性质能保证红黑树的平衡性呢？因为它们有一个关键的特性：从根节点出发到达叶节点的所有路径中，最长路径不会超过最短路径两倍。
 
-注意到第四条性质，它意味着不存在两个连续的红色节点。因此，最短的路径只含有黑色的节点，任何比最短路径长的路径上都分散有一些红色节点。根据性质五，从根节点出发的所有的路径都含有相同数量的黑色节点，这就最终保证了没有任何路径超过最短路径长度的两倍\cite{wiki-rbt}。图\ref{fig:rbt-example}的例子展示了一棵红黑树。
+注意到第四条性质，它意味着不存在两个连续的红色节点。因此，最短的路径只含有黑色的节点，任何比最短路径长的路径上都分散有一些红色节点。根据性质五，从根节点出发的所有的路径都含有相同数量的黑色节点，这就最终保证了没有任何路径超过最短路径长度的两倍\cite{wiki-rbt}。图\ref{fig:rbt-example-with-nil}的例子展示了一棵红黑树。
+
+\begin{figure}[htbp]
+       \begin{center}
+	\includegraphics[scale=0.5]{img/rbt-example-with-nil.ps}
+        \caption{红黑树} \label{fig:rbt-example-with-nil}
+       \end{center}
+\end{figure}
+
+由于所有的NIL节点都是黑色的，我们通常在图中将NIL节点隐藏不画出，如图\ref{fig:rbt-example-with-nil}所示。
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.5]{img/rbt-example.ps}
-  \caption{红黑树} \label{fig:rbt-example}
+  \caption{隐藏了所有NIL节点的红黑树} \label{fig:rbt-example}
 \end{figure}
 
 红黑树沿用所有二叉搜索树中不改变树结构的操作，包括查找、获取最大、最小值等。只有插入和删除操作是特殊的。
@@ -493,13 +502,13 @@ blackenRoot(T) = \left \{
 
 和红黑树插入算法中的$makeBlack$函数相比，$blackenRoot$仅仅多了对为空树的处理。这一处理仅在删除时才需要考虑，因为插入操作不可能产生一棵空树，而删除操作是有可能的。
 
-函数$mkBlk$用于保持被“切下”节点的黑色属性。如果被“切下”的节点为黑色，它将红色的结果改为黑色，把黑色的结果改为双重黑色。如果结果为空，则将其标记为双重黑色的空，记为$\phi$。
+函数$mkBlk$用于保持被“切下”节点的黑色属性。如果被“切下”的节点为黑色，它将红色的结果改为黑色，把黑色的结果改为双重黑色。如果结果为空，则将其标记为双重黑色的空，记为$\Phi$。
 
 \be
 mkBlk(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
-  \phi & T = \phi \\
+  \Phi & T = \phi \\
   (\mathcal{B}, T_l, k, T_r) & \mathcal{C} = \mathcal{R} \\
   (\mathcal{B}^2, T_l, k, T_r) & \mathcal{C} = \mathcal{B} \\
   T & otherwise
@@ -530,46 +539,10 @@ makeBlack Empty = BBEmpty
 makeBlack t = t
 \end{lstlisting}
 
-删除算法中，唯一还没有定义的函数是$fixBlack^2$。我们需要在这个函数中，通过树的旋转操作和重新染色，最终去掉“双重黑色”。
+删除算法中，唯一还没有定义的函数是$fixBlack^2$。我们需要在这个函数中，通过树的旋转操作和重新染色，最终去掉“双重黑色”。这里有三种情况需要处理。每一种情况中，双重黑色的节点即可以是普通节点，也可以是双重黑色的空节点$\Phi$。我们首先看第一种情况。
 
-我们先从双重黑色的空节点开始。对于任何节点，如果它的一个子节点为双重黑色的空节点，而另外的一个子分支不为空，我们可以安全地用一个普通的空节点代替双重黑色的空节点。
-
-如图\ref{fig:db-fix-1-nil}所示，如果删除节点4（图中只显示了树的一部份），我们会用一个双重黑色的空节点代替它。图中带有两个圈的节点，表示双重黑色节点。于是对于节点5，它的左侧子节点是双重黑色的空节点，而右侧子分支不为空（一个key为6的叶子节点）。这种情况下，我们可以安全地用普通空节点替换双重黑色，而不会破坏任何红黑树的性质。
-
-\begin{figure}[htbp]
-   \centering
-   \subfloat[从树中删除4]{\includegraphics[scale=0.4]{img/db-fix.ps}} \\
-   \subfloat[4被“切下”后，变成了一个双重黑色的空节点]{\includegraphics[scale=0.4]{img/db-fix-1-nil-before.ps}}
-   \subfloat[我们可以安全地将其变为普通的NIL]{\includegraphics[scale=0.4]{img/db-fix-1-nil-after.ps}}
-   \caption{一个子节点为双重黑色空节点，另外一个子分支不为空} \label{fig:db-fix-1-nil}
-\end{figure}
-
-但是，如果两个子节点中，有一个是双重黑色的空节点，另外一个也是空节点，就需要把双重黑色的属性推到上一层。如图\ref{fig:db-fix-2-nil}所示，如果删除节点1，我们用一个双重黑色空节点代替它。于是节点2就有了两个空子节点，其中一个是双重黑色的。这种情况下，我们需要把节点2染成双重黑色，它的两个子节点就可以变成普通的空节点了。
-
-\begin{figure}[htbp]
-   \centering
-   \subfloat[从树中删除1]{\includegraphics[scale=0.4]{img/db-fix.ps}} \\
-   \subfloat[节点1被“切下”后，变成了双重黑色的空节点]{\includegraphics[scale=0.4]{img/db-fix-2-nil-before.ps}}
-   \subfloat[把双重黑色的属性推到上一层，节点2被染成双重黑色]{\includegraphics[scale=0.4]{img/db-fix-2-nil-after.ps}}
-   \caption{两个子节点都为空，其中一个是双重黑色} \label{fig:db-fix-2-nil}
-\end{figure}
-
-根据上面的分析，为了修复双重黑色的空节点，我们将函数中这部份逻辑定义如下：
-
-\be
-fixBlack^2(T) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  (\mathcal{B}^2, \phi, k, \phi) & (T_l = \phi \land T_r = \Phi) \lor (T_l = \Phi \land T_r = \phi) \\
-  (\mathcal{C}, \phi, k, T_r) & T_l=\Phi \land T_r \neq \phi \\
-  (\mathcal{C}, T_l, k, \phi) & T_r=\Phi \land T_l \neq \phi \\
-  ... & ...
-  \end{array}
-\right .
-\label{eq:db-nil}
-\ee
-
-我们接下来解决双重黑色节点的兄弟为黑色，并且该兄弟节点有一个红色的子节点的情况。我们可以通过旋转操作来修复。总共有四种不同的细分情况，它们全部可以变换到一种统一的形式。如图\ref{fig:del-case1}所示。
+\subsection{双重黑色节点的兄弟为黑色，并且该兄弟节点有一个红色子节点}
+对于这种情况，我们可以通过旋转操作来修复。总共有四种不同的细分情况，它们全部可以变换到一种统一的形式。如图\ref{fig:del-case1}所示。
 
 \begin{figure}[htbp]
    \centering
@@ -578,16 +551,14 @@ fixBlack^2(T) = \left \{
    \label{fig:del-case1}
 \end{figure}
 
-我们可以在式（\ref{eq:db-nil}）的基础上，增加这四种细分情况的处理：
+我们通过模式匹配来处理这四种细分情况：
 
 \be
 fixBlack^2(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
-  ... & ... \\
   (\mathcal{C}, (\mathcal{B}, mkBlk(A), x, B), y, (\mathcal{B}, C, z, D)) & p 1.1 \\
   (\mathcal{C}, (\mathcal{B}, A, x, B), y, (\mathcal{B}, C, z, mkBlk(D))) & p 1.2 \\
-  ... & ...
   \end{array}
 \right .
 \label{eq:db-case-1}
@@ -611,7 +582,75 @@ p 1.2 : \left \{ \begin{array}{l}
   \end{array} \right \}
 \]
 
-除此之外，还有一种情况：不仅双重黑色节点的兄弟节点，该兄弟节点的两个子节点全部都是黑色。我们可以将这个兄弟节点染成红色，将双重黑色变回黑色，然后将双重黑色属性向上传递一层到父节点。如图\ref{fig:del-case2}所示，有两种对称的情况。
+如果双重黑色的节点是双重黑色空节点$\Phi$，经过这样的旋转操作后，可以将其恢复为普通空节点。为此我们为式\ref{eq:db-case-1}增加双重黑色空节点的处理：
+
+\be
+fixBlack^2(T) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  (\mathcal{C}, (\mathcal{B}, mkBlk(A), x, B), y, (\mathcal{B}, C, z, D)) & p 1.1 \\
+  (\mathcal{C}, (\mathcal{B}, \phi, x, B), y, (\mathcal{B}, C, z, D)) & p 1.1' \\
+  (\mathcal{C}, (\mathcal{B}, A, x, B), y, (\mathcal{B}, C, z, mkBlk(D))) & p 1.2 \\
+  (\mathcal{C}, (\mathcal{B}, A, x, B), y, (\mathcal{B}, C, z, \phi)) & p 1.2' \\
+  \end{array}
+\right .
+\label{eq:db-case-1a}
+\ee
+
+其中$p 1.1'$和$p 1.2'$的模式定义如下：
+
+\[
+p 1.1' : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, \Phi, x, (\mathcal{B}, (\mathcal{R}, B, y, C), z, D)) \\
+  \lor \\
+  T = (\mathcal{C}, \Phi, x, (\mathcal{B}, B, y, (\mathcal{R}, C, z, D)))
+  \end{array} \right \}
+\]
+
+\[
+p 1.2' : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, (\mathcal{B}, A, x, (\mathcal{R}, B, y, C)), z, \Phi) \\
+  \lor \\
+  T = (\mathcal{C}, (\mathcal{B}, (\mathcal{R}, A, x, B), y, C), z, \Phi)
+  \end{array} \right \}
+\]
+
+\subsection{双重黑色节点的兄弟节点为红色}
+这种情况下，我们可以通过旋转，将其变换为$p 1.1$和$p 1.2$。如图\ref{fig:del-case2}所示。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.4]{img/del-case3.eps}
+  \caption{双重黑色节点的兄弟节点为红色} \label{fig:del-case2}
+\end{figure}
+
+在公式（\ref{eq:db-case-1a}）的基础上增加这一处理可以得到公式（\ref{eq:db-case-2}）。
+
+\be
+fixBlack^2(T) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  ... & ... \\
+  fixBlack^2(\mathcal{B}, fixBlack^2((\mathcal{R}, A, x, B), y, C) & p 2.1 \\
+  fixBlack^2(\mathcal{B}, A, x, fixBlack^2((\mathcal{R}, B, y, C)) & p 2.2 \\
+  T & otherwise
+  \end{array}
+\right .
+\label{eq:db-case-2}
+\ee
+
+其中$p 2.1$和$p 2.2$表示如下：
+
+\[
+p 2.1 : \{ color(T) = \mathcal{B} \land color(T_l) = \mathcal{B}^2 \land color(T_r) = \mathcal{R} \}
+\]
+
+\[
+p 2.2 : \{ color(T) = \mathcal{B} \land color(T_l) = \mathcal{R} \land color(T_r) = \mathcal{B}^2 \}
+\]
+
+\subsection{双重黑色节点的兄弟节点为黑色，该兄弟节点的两个子节点也全是黑色。}
+这种情况下，我们可以将这个兄弟节点染成红色，将双重黑色变回黑色，然后将双重黑色属性向上传递一层到父节点。如图\ref{fig:del-case3}所示，有两种对称的情况。
 
 \begin{figure}[htbp]
   \centering
@@ -629,10 +668,41 @@ p 1.2 : \left \{ \begin{array}{l}
   \end{picture}
   \\
   \begin{picture}(1, 0.5)\end{picture} %pad
-  \caption{将双重黑色向上传递} \label{fig:del-case2}
+  \caption{将双重黑色向上传递} \label{fig:del-case3}
 \end{figure}
 
-我们继续在式（\ref{eq:db-case-1}）的基础上增加修复的定义。
+我们继续在式（\ref{eq:db-case-2}）的基础上增加修复的定义。
+
+\be
+fixBlack^2(T) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  ... & ... \\
+  mkBlk((\mathcal{C}, mkBlk(A), x, (\mathcal{R}, B, y, C))) & p 3.1 \\
+  mkBlk((\mathcal{C}, (\mathcal{R}, A, x, B), y, mkBlk(C))) & p 3.2 \\
+  ... & ...
+  \end{array}
+\right .
+\label{eq:db-case-3}
+\ee
+
+其中$p 3.1$和$p 3.2$定义如下：
+
+\[
+p 3.1 : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, A, x, (\mathcal{B}, B, y, C)) \land \\
+  color(A) = \mathcal{B}^2 \land color(B) = color(C) = \mathcal{B}
+  \end{array} \right \}
+\]
+
+\[
+p 3.2 : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, (\mathcal{B}, A, x, B), y, C) \land \\
+  color(C) = \mathcal{B}^2 \land color(A) = color(B) = \mathcal{B}
+  \end{array} \right \}
+\]
+
+如果双重黑色的节点是双重黑色空节点$\Phi$，经过重新染色后，可以将其恢复为普通空节点。我们在式\ref{eq:db-case-3}的基础上增加双重黑色空节点的处理：
 
 \be
 fixBlack^2(T) = \left \{
@@ -640,89 +710,63 @@ fixBlack^2(T) = \left \{
   {r@{\quad:\quad}l}
   ... & ... \\
   mkBlk((\mathcal{C}, mkBlk(A), x, (\mathcal{R}, B, y, C))) & p 2.1 \\
+  mkBlk((\mathcal{C}, \phi, x, (\mathcal{R}, B, y, C))) & p 2.1' \\
   mkBlk((\mathcal{C}, (\mathcal{R}, A, x, B), y, mkBlk(C))) & p 2.2 \\
+  mkBlk((\mathcal{C}, (\mathcal{R}, A, x, B), y, \phi)) & p 2.2' \\
   ... & ...
   \end{array}
 \right .
-\label{eq:db-case-2}
+\label{eq:db-case-3a}
 \ee
 
-其中$p 2.1$和$p 2.2$定义如下：
+其中$p 3.1'$和$p 3.2'$定义如下：
 
 \[
-p 2.1 : \left \{ \begin{array}{l}
-  T = (\mathcal{C}, A, x, (\mathcal{B}, B, y, C)) \land \\
-  color(A) = \mathcal{B}^2 \land color(B) = color(C) = \mathcal{B}
+p 3.1' : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, \Phi, x, (\mathcal{B}, B, y, C)) \land \\
+  color(B) = color(C) = \mathcal{B}
   \end{array} \right \}
 \]
 
 \[
-p 2.2 : \left \{ \begin{array}{l}
-  T = (\mathcal{C}, (\mathcal{B}, A, x, B), y, C) \land \\
-  color(C) = \mathcal{B}^2 \land color(A) = color(B) = \mathcal{B}
+p 3.2' : \left \{ \begin{array}{l}
+  T = (\mathcal{C}, (\mathcal{B}, A, x, B), y, \Phi) \land \\
+  color(A) = color(B) = \mathcal{B}
   \end{array} \right \}
 \]
-
-最后一个需要处理的情况是双重黑色节点的兄弟节点为红色。我们可以通过旋转，将其变换为$p 1.1$和$p 1.2$。如图\ref{fig:del-case2}所示。
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.4]{img/del-case3.eps}
-  \caption{双重黑色节点的兄弟节点为红色} \label{fig:del-case3}
-\end{figure}
-
-在公式（\ref{eq:db-case-2}）的基础上增加这一处理可以得到公式（\ref{eq:db-case-3}）。
-
-\be
-fixBlack^2(T) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  ... & ... \\
-  fixBlack^2(\mathcal{B}, fixBlack^2((\mathcal{R}, A, x, B), y, C) & p 3.1 \\
-  fixBlack^2(\mathcal{B}, A, x, fixBlack^2((\mathcal{R}, B, y, C)) & p 3.2 \\
-  T & otherwise
-  \end{array}
-\right .
-\label{eq:db-case-3}
-\ee
-
-其中$p 3.1$和$p 3.2$表示如下：
-
-\[
-p 3.1 : \{ color(T) = \mathcal{B} \land color(T_l) = \mathcal{B}^2 \land color(T_r) = \mathcal{R} \}
-\]
-
-\[
-p 3.2 : \{ color(T) = \mathcal{B} \land color(T_l) = \mathcal{R} \land color(T_r) = \mathcal{B}^2 \}
-\]
-
 
 至此，我们对于双重黑色的全部情况都完成了修复。算法被定义为一个递归函数。它有两个终止条件：一个是$p1.1$和$p1.2$，双重黑色节点被直接消除了；另外一个是将双重黑色继续向上传递，直到根节点。由于算法最终会将根节点染成黑色，所以双重黑色也会被消除。
 
-综合公式（\ref{eq:db-nil}）、（\ref{eq:db-case-1}）、（\ref{eq:db-case-2}）和（\ref{eq:db-case-3}），我们可以得到最终的Haskell删除程序。
+综合公式（\ref{eq:db-case-1a}）、（\ref{eq:db-case-2}）和（\ref{eq:db-case-3a}），我们可以得到最终的Haskell删除程序。
 
 \begin{lstlisting}[style=Haskell]
-fixDB color BBEmpty k Empty = Node BB Empty k Empty
-fixDB color BBEmpty k r = Node color Empty k r
-fixDB color Empty k BBEmpty = Node BB Empty k Empty
-fixDB color l k BBEmpty = Node color l k Empty
 -- 兄弟节点为黑色，并且有一个红色子节点
-fixDB color a@(Node BB _ _ _) x (Node B (Node R b y c) z d) =
-      Node color (Node B (makeBlack a) x b) y (Node B c z d)
-fixDB color a@(Node BB _ _ _) x (Node B b y (Node R c z d)) =
-      Node color (Node B (makeBlack a) x b) y (Node B c z d)
-fixDB color (Node B a x (Node R b y c)) z d@(Node BB _ _ _) =
-      Node color (Node B a x b) y (Node B c z (makeBlack d))
-fixDB color (Node B (Node R a x b) y c) z d@(Node BB _ _ _) =
-      Node color (Node B a x b) y (Node B c z (makeBlack d))
--- 兄弟节点和它的两个子节点都是黑色，向上传递黑色
-fixDB color a@(Node BB _ _ _) x (Node B b@(Node B _ _ _) y c@(Node B _ _ _))
-    = makeBlack (Node color (makeBlack a) x (Node R b y c))
-fixDB color (Node B a@(Node B _ _ _) x b@(Node B _ _ _)) y c@(Node BB _ _ _)
-    = makeBlack (Node color (Node R a x b) y (makeBlack c))
+fixDB color a@(Node BB _ _ _) x (Node B (Node R b y c) z d)
+      = Node color (Node B (makeBlack a) x b) y (Node B c z d)
+fixDB color BBEmpty x (Node B (Node R b y c) z d)
+      = Node color (Node B Empty x b) y (Node B c z d)
+fixDB color a@(Node BB _ _ _) x (Node B b y (Node R c z d))
+      = Node color (Node B (makeBlack a) x b) y (Node B c z d)
+fixDB color BBEmpty x (Node B b y (Node R c z d))
+      = Node color (Node B Empty x b) y (Node B c z d)
+fixDB color (Node B a x (Node R b y c)) z d@(Node BB _ _ _)
+      = Node color (Node B a x b) y (Node B c z (makeBlack d))
+fixDB color (Node B a x (Node R b y c)) z BBEmpty
+      = Node color (Node B a x b) y (Node B c z Empty)
+fixDB color (Node B (Node R a x b) y c) z d@(Node BB _ _ _)
+      = Node color (Node B a x b) y (Node B c z (makeBlack d))
+fixDB color (Node B (Node R a x b) y c) z BBEmpty
+      = Node color (Node B a x b) y (Node B c z Empty)
 -- 兄弟节点是红色
 fixDB B a@(Node BB _ _ _) x (Node R b y c) = fixDB B (fixDB R a x b) y c
+fixDB B a@BBEmpty x (Node R b y c) = fixDB B (fixDB R a x b) y c
 fixDB B (Node R a x b) y c@(Node BB _ _ _) = fixDB B a x (fixDB R b y c)
+fixDB B (Node R a x b) y c@BBEmpty = fixDB B a x (fixDB R b y c)
+-- 兄弟节点和它的两个子节点都是黑色，向上传递黑色
+fixDB color a@(Node BB _ _ _) x (Node B b y c) = makeBlack (Node color (makeBlack a) x (Node R b y c))
+fixDB color BBEmpty x (Node B b y c) = makeBlack (Node color Empty x (Node R b y c))
+fixDB color (Node B a x b) y c@(Node BB _ _ _) = makeBlack (Node color (Node R a x b) y (makeBlack c))
+fixDB color (Node B a x b) y BBEmpty = makeBlack (Node color (Node R a x b) y Empty)
 -- 其他情况
 fixDB color l k r = Node color l k r
 \end{lstlisting}
@@ -880,15 +924,7 @@ def rb_insert_fix(t, x):
    \label{fig:imperative-insert}
 \end{figure}
 
-红黑树的命令式删除算法更加复杂，我们不再给出。作为练习，读者可以通过树的旋转和重新着色，尝试实现。
-
-\begin{Exercise}
-
-\begin{itemize}
-\item 使用一种命令式编程语言实现红黑树的删除算法。可以参考\cite{CLRS}中给出的不同情况。
-\end{itemize}
-
-\end{Exercise}
+红黑树的命令式删除算法和插入算法相比更为复杂。我们不在正文给出，读者可以参考本书附录B了解其详细实现。
 
 \section{其它}
 红黑树是最广泛使用的一种平衡二叉搜索树。另外一种自平衡二叉树是AVL树，我们将在下一章介绍。红黑树可以帮助我们了解其它更复杂的数据结构。如果我们将子节点的数目从两个扩展到$k$个，并且保持树的平衡，就可以演化到B树。如果我们在边上，而非在节点中存储数据，我们就得到了Trie。由于常见红黑树算法需要处理很多情况，代码篇幅较长，初学者往往会感觉红黑树很复杂。
