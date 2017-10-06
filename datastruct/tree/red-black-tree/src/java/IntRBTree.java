@@ -194,11 +194,12 @@ public class IntRBTree {
     }
 
     public static boolean isBlack(Node x) {
-        return x != null && x.color == Color.BLACK;
+        return x == null || x.color == Color.BLACK;
     }
 
     private static void blacken(Node x) {
-        x.color = isRed(x) ? Color.BLACK : Color.DOUBLY_BLACK;
+        if (x != null)
+            x.color = isRed(x) ? Color.BLACK : Color.DOUBLY_BLACK;
     }
 
     private static Node makeBlack(Node parent, Node x) {
