@@ -20,11 +20,6 @@ public class IntRBTree {
 
         public Node(int x) { this(x, Color.RED); }
 
-        Node setColor(Color c) {
-            color = c;
-            return this;
-        }
-
         void setLeft(Node x) {
             left = x;
             if (x != null) x.parent = this;
@@ -51,18 +46,6 @@ public class IntRBTree {
         Node uncle() { return parent.sibling(); }
 
         Node grandparent() { return parent.parent; }
-
-        public static Node NIL;
-
-        public static Node getNIL() {
-            if (NIL == null)
-                NIL = new Node(0, Color.BLACK);
-            return NIL;
-        }
-
-        public static Node nilOf(Color c) {
-            return getNIL().setColor(c);
-        }
     }
 
     // change from: parent --> x to parent --> y
@@ -218,7 +201,7 @@ public class IntRBTree {
         if (parent == null && x == null)
             return null;
         if (x == null)
-            return replace(parent, x, Node.nilOf(Color.DOUBLY_BLACK));
+            return replace(parent, x, new Node(0, Color.DOUBLY_BLACK));
         return blacken(x);
     }
 
@@ -243,12 +226,13 @@ public class IntRBTree {
             x = y;
         }
         if (x.color == Color.BLACK)
-            t = deleteFix(t, makeBlack(parent, db));
+            t = deleteFix(t, makeBlack(parent, db), db == null);
         remove(x);
         return t;
     }
 
-    private static Node deleteFix(Node t, Node db) {
+    private static Node deleteFix(Node t, Node db, boolean isDBEmpty) {
+        Node dbEmpty = isDBEmpty ? db : null;
         if (db == null) return null;   // remove the root from a leaf tree;
         while (db != t && db.color == Color.DOUBLY_BLACK) {
             if (db.sibling() != null) {
@@ -306,7 +290,8 @@ public class IntRBTree {
             }
         }
         t.color = Color.BLACK;
-        Node.getNIL().replaceWith(null);
+        if (dbEmpty != null)
+            dbEmpty.replaceWith(null);
         return t;
     }
 
