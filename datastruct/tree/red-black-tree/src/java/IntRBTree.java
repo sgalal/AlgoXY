@@ -20,6 +20,11 @@ public class IntRBTree {
 
         public Node(int x) { this(x, Color.RED); }
 
+        Node setColor(Color c) {
+            color = c;
+            return this;
+        }
+
         void setLeft(Node x) {
             left = x;
             if (x != null) x.parent = this;
@@ -55,15 +60,27 @@ public class IntRBTree {
 
         Node grandparent() { return parent.parent; }
 
-        public static Node NIL = new Node(0, Color.BLACK);
+        public static Node NIL;
+
+        public static Node getNIL() {
+            if (NIL == null)
+                NIL = new Node(0, Color.BLACK);
+            return NIL;
+        }
+
+        public static Node nilOf(Color c) {
+            return getNIL().setColor(c);
+        }
     }
 
-    public static void replace(Node parent, Node x, Node y) {
-        if (parent == null) return;
-        if (parent.left == x)
-            parent.setLeft(y);
-        else
-            parent.setRight(y);
+    public static Node replace(Node parent, Node x, Node y) {
+        if (parent != null) {
+            if (parent.left == x)
+                parent.setLeft(y);
+            else
+                parent.setRight(y);
+        }
+        return y;
     }
 
     // auxiliary
@@ -197,19 +214,17 @@ public class IntRBTree {
         return x == null || x.color == Color.BLACK;
     }
 
-    private static void blacken(Node x) {
-        if (x != null)
-            x.color = isRed(x) ? Color.BLACK : Color.DOUBLY_BLACK;
+    private static Node blacken(Node x) {
+        x.color = isRed(x) ? Color.BLACK : Color.DOUBLY_BLACK;
+        return x;
     }
 
     private static Node makeBlack(Node parent, Node x) {
-        if (x == null) {
-            if (parent == null) return null;
-            x = Node.NIL = new Node(0, Color.BLACK);;
-            replace(parent, x, Node.NIL);
-        }
-        blacken(x);
-        return x;
+        if (parent == null && x == null)
+            return null;
+        if (x == null)
+            return replace(parent, x, Node.nilOf(Color.DOUBLY_BLACK));
+        return blacken(x);
     }
 
     public static Node del(Node t, Node x) {
@@ -296,7 +311,7 @@ public class IntRBTree {
             }
         }
         t.color = Color.BLACK;
-        Node.NIL.replaceWith(null);
+        Node.getNIL().replaceWith(null);
         return t;
     }
 
