@@ -40,16 +40,8 @@ public class IntRBTree {
             setRight(y);
         }
 
-        // change from: parent --> this to: parent --> y
         void replaceWith(Node y) {
-            if (parent == null) {
-                if (y != null) y.parent = null;
-            } else if (parent.left == this) {
-                parent.setLeft(y);
-            } else {
-                parent.setRight(y);
-            }
-            parent = null;
+            replace(parent, this, y);
         }
 
         Node sibling() {
@@ -73,13 +65,16 @@ public class IntRBTree {
         }
     }
 
+    // change from: parent --> x to parent --> y
     public static Node replace(Node parent, Node x, Node y) {
-        if (parent != null) {
-            if (parent.left == x)
-                parent.setLeft(y);
-            else
-                parent.setRight(y);
+        if (parent == null) {
+            if (y != null) y.parent = null;
+        } else if (parent.left == x) {
+            parent.setLeft(y);
+        } else {
+            parent.setRight(y);
         }
+        if (x != null) x.parent = null;
         return y;
     }
 
