@@ -45,11 +45,6 @@ struct Node {
         delete right;
     }
 
-    Node* setColor(Color c) {
-        color = c;
-        return this;
-    }
-
     void setLeft(Node* x) {
         left = x;
         if (x) x->parent = this;
@@ -79,15 +74,6 @@ struct Node {
 
     Node* grandparent() {
         return parent->parent;
-    }
-
-    static Node* getNIL() {
-        static Node NIL(0, Color::BLACK);
-        return &NIL;
-    }
-
-    static Node* nilOf(Color c) {
-        return getNIL()->setColor(c);
     }
 
     // change from: parent --> x to parent --> y
@@ -246,11 +232,11 @@ Node* makeBlack(Node* parent, Node* x) {
     if (!parent && ! x)
         return nullptr;
     if (!x)
-        return Node::replace(parent, x, Node::nilOf(Color::DOUBLY_BLACK));
+        return Node::replace(parent, x, new Node(0, Color::DOUBLY_BLACK));
     return blacken(x);
 }
 
-Node* deleteFix(Node* t, Node* db);
+Node* deleteFix(Node* t, Node* db, bool isDBEmpty);
 
 Node* del(Node* t, Node* x) {
     if (!x) return t;
@@ -273,12 +259,13 @@ Node* del(Node* t, Node* x) {
         x = y;
     }
     if (x->color == Color::BLACK)
-        t = deleteFix(t, makeBlack(parent, db));
+        t = deleteFix(t, makeBlack(parent, db), db == nullptr);
     remove(x);
     return t;
 }
 
-Node* deleteFix(Node* t, Node* db) {
+Node* deleteFix(Node* t, Node* db, bool isDBEmpty) {
+    Node* dbEmpty = isDBEmpty ? db : nullptr;
     if (!db) return nullptr;    // remove the root from a leaf tree;
     while (db != t && db->color == Color::DOUBLY_BLACK) {
         if (db->sibling() != nullptr) {
@@ -336,7 +323,10 @@ Node* deleteFix(Node* t, Node* db) {
         }
     }
     t->color = Color::BLACK;
-    Node::getNIL()->replaceWith(nullptr);
+    if (dbEmpty) {
+        dbEmpty->replaceWith(nullptr);
+        delete dbEmpty;
+    }
     return t;
 }
 
