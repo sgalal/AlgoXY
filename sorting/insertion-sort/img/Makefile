@@ -4,6 +4,7 @@ DOT_SOURCES = $(foreach file, $(DOT_OBJECTS), $(file).dot)
 
 #suffix replacement, replace .dot with .png
 PNG_OBJECTS = $(DOT_SOURCES:.dot=.png)
+PS_OBJS = $(DOT_SOURCES:.dot=.ps)
 
 .SUFFIXES: .eps .jpg .png .dot .ps
 
@@ -29,7 +30,7 @@ $(DOT_OBJECTS): % : %.ps
 
 # Makefile auto variable: $< first prerequisite, $@ target
 %.ps : %.dot
-	dot -Gsize="8,10.5" -Tps -o $@ $<
+	dot -Tps -o $@ $<
 
 png: $(PNG_OBJECTS)
 
@@ -37,5 +38,4 @@ png: $(PNG_OBJECTS)
 	dot -Tpng -o $@ $<
 
 clean:
-	rm -f *.ps *.eps trie-en* *~
-	rm -f $(PNG_OBJECTS)
+	rm -f $(PNG_OBJECTS) $(PS_OBJS)
