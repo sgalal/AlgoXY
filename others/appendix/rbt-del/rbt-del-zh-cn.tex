@@ -115,6 +115,46 @@ enum class Color { RED, BLACK, DOUBLY_BLACK };
 
 下面的算法描述了针对这一情况的处理。
 
+\begin{algorithmic}[1]
+\Function{Delete-Fix}{$T$, $x$, $f$}
+  \State $n \gets$ NIL
+  \If{$f$ = True}  \Comment{$x$是一个双重黑色NIL节点}
+    \State $n \gets x$
+  \EndIf
+  \If{$x$ = NIL} \Comment{将只有一个叶子节点的树删空}
+    \State \Return NIL
+  \EndIf
+  \While{$x \neq T \lor$ \Call{Color}{$x$} $= \mathcal{B}^2$}
+    \Comment{$x$ isn't root or $x$ isn't doubly black}
+    \If{\Call{Sibling}{$x$} $\neq$ NIL} \Comment{双重黑色节点的兄弟节点不为空}
+        \State $s \gets$ \Call{Sibling}{$x$}
+        \State ...
+        \If{$s$ is black $\land$ \Call{Left}{$s$} is black}
+          \Comment{兄弟为黑，且一个侄子为红}
+          \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})}
+            \Comment{双重黑色节点是其父的左孩子}
+            \State set $x$, \Call{Parent}{$x$}, and \Call{Left}{$s$} all black
+            \State $T \gets$ \Call{Rotate-Right}{$T$, $s$}
+            \State $T \gets$ \textproc{Rotate-Left}($T$, \Call{Parent}{$x$})
+          \Else \Comment{双重黑色节点是其父的右孩子}
+            \State set $x$, \Call{Parent}{$x$}, $s$, and \Call{Left}{$s$} all black
+            \State $T \gets$ \textproc{Rotate-Right}($T$, \Call{Parent}{$x$})
+          \EndIf
+        \ElsIf{$s$ is black $\land$ \Call{Right}{$s$} is black}
+          \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})}
+            \State set $x$, \Call{Parent}{$x$}, $s$, and \Call{Right}{$s$} all black
+            \State $T \gets$ \textproc{Rotate-Left}($T$, \Call{Parent}{$x$})
+          \Else
+            \State set $x$, \Call{Parent}{$x$}, and \Call{Right}{$s$} all black
+            \State $T \gets$ \Call{Rotate-Left}{$T$, $s$}
+            \State $T \gets$ \textproc{Rotate-Right}($T$, \Call{Parent}{$x$})
+          \EndIf
+        \State ...
+        \EndIf
+    \EndIf
+  \EndWhile
+\EndFunction
+\end{algorithmic}
 
 \subsection{双重黑色节点的兄弟节点为红色}
 这种情况下，我们可以通过旋转，将其变换为$p 1.1$和$p 1.2$。如图\ref{fig:del-case2}所示。
