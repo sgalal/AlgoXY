@@ -129,8 +129,8 @@ enum class Color { RED, BLACK, DOUBLY_BLACK };
     \If{\Call{Sibling}{$x$} $\neq$ NIL} \Comment{双重黑色节点的兄弟节点不为空}
         \State $s \gets$ \Call{Sibling}{$x$}
         \State ...
-        \If{$s$ is black $\land$ \Call{Left}{$s$} is black}
-          \Comment{兄弟为黑，且一个侄子为红}
+        \If{$s$ is black $\land$ \Call{Left}{$s$} is red}
+          \Comment{兄弟为黑，一个侄子为红}
           \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})}
             \Comment{双重黑色节点是其父的左孩子}
             \State set $x$, \Call{Parent}{$x$}, and \Call{Left}{$s$} all black
@@ -140,7 +140,7 @@ enum class Color { RED, BLACK, DOUBLY_BLACK };
             \State set $x$, \Call{Parent}{$x$}, $s$, and \Call{Left}{$s$} all black
             \State $T \gets$ \textproc{Rotate-Right}($T$, \Call{Parent}{$x$})
           \EndIf
-        \ElsIf{$s$ is black $\land$ \Call{Right}{$s$} is black}
+        \ElsIf{$s$ is black $\land$ \Call{Right}{$s$} is red}
           \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})}
             \State set $x$, \Call{Parent}{$x$}, $s$, and \Call{Right}{$s$} all black
             \State $T \gets$ \textproc{Rotate-Left}($T$, \Call{Parent}{$x$})
@@ -157,7 +157,7 @@ enum class Color { RED, BLACK, DOUBLY_BLACK };
 \end{algorithmic}
 
 \subsection{双重黑色节点的兄弟节点为红色}
-这种情况下，我们可以通过旋转，将其变换为$p 1.1$和$p 1.2$。如图\ref{fig:del-case2}所示。
+这种情况下，我们可以通过旋转，将双重黑色恢复为普通的黑色节点。如图\ref{fig:del-case2}所示，将左侧的树旋转到右侧的结构后，可将双重黑色的节点$a$或$c$恢复为黑色。
 
 \begin{figure}[htbp]
   \centering
@@ -165,30 +165,55 @@ enum class Color { RED, BLACK, DOUBLY_BLACK };
   \caption{双重黑色节点的兄弟节点为红色} \label{fig:del-case2}
 \end{figure}
 
-在公式（\ref{eq:db-case-1a}）的基础上增加这一处理可以得到公式（\ref{eq:db-case-2}）。
+我们在此前给出算法上增加这一处理。
 
-\be
-fixBlack^2(T) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  ... & ... \\
-  fixBlack^2(\mathcal{B}, fixBlack^2((\mathcal{R}, A, x, B), y, C) & p 2.1 \\
-  fixBlack^2(\mathcal{B}, A, x, fixBlack^2((\mathcal{R}, B, y, C)) & p 2.2 \\
-  T & otherwise
-  \end{array}
-\right .
-\label{eq:db-case-2}
-\ee
-
-其中$p 2.1$和$p 2.2$表示如下：
-
-\[
-p 2.1 : \{ color(T) = \mathcal{B} \land color(T_l) = \mathcal{B}^2 \land color(T_r) = \mathcal{R} \}
-\]
-
-\[
-p 2.2 : \{ color(T) = \mathcal{B} \land color(T_l) = \mathcal{R} \land color(T_r) = \mathcal{B}^2 \}
-\]
+\begin{algorithmic}[1]
+\Function{Delete-Fix}{$T$, $x$, $f$}
+  \State $n \gets$ NIL
+  \If{$f$ = True}  \Comment{$x$是一个双重黑色NIL节点}
+    \State $n \gets x$
+  \EndIf
+  \If{$x$ = NIL} \Comment{将只有一个叶子节点的树删空}
+    \State \Return NIL
+  \EndIf
+  \While{$x \neq T \lor$ \Call{Color}{$x$} $= \mathcal{B}^2$}
+    \Comment{$x$ isn't root or $x$ isn't doubly black}
+    \If{\Call{Sibling}{$x$} $\neq$ NIL} \Comment{双重黑色节点的兄弟节点不为空}
+        \State $s \gets$ \Call{Sibling}{$x$}
+        \If{$s$ is red} \Comment{兄弟为红色}
+          \State set \Call{Parent}{$x$} red
+          \State set $s$ black
+          \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})} \Comment{$x$为其父的左孩子}
+            \State $T \gets$ \textproc{Rotate-Left}{$T$, \Call{Parent}{$x$}}
+          \Else \Comment{$x$为其父的右孩子}
+            \State $T \gets$ \textproc{Rotate-Right}{$T$, \Call{Parent}{$x$}}
+          \EndIf
+        \ElsIf{$s$ is black $\land$ \Call{Left}{$s$} is red}
+          \Comment{兄弟为黑，一个侄子为红}
+          \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})}
+            \Comment{双重黑色节点是其父的左孩子}
+            \State set $x$, \Call{Parent}{$x$}, and \Call{Left}{$s$} all black
+            \State $T \gets$ \Call{Rotate-Right}{$T$, $s$}
+            \State $T \gets$ \textproc{Rotate-Left}($T$, \Call{Parent}{$x$})
+          \Else \Comment{双重黑色节点是其父的右孩子}
+            \State set $x$, \Call{Parent}{$x$}, $s$, and \Call{Left}{$s$} all black
+            \State $T \gets$ \textproc{Rotate-Right}($T$, \Call{Parent}{$x$})
+          \EndIf
+        \ElsIf{$s$ is black $\land$ \Call{Right}{$s$} is red}
+          \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})}
+            \State set $x$, \Call{Parent}{$x$}, $s$, and \Call{Right}{$s$} all black
+            \State $T \gets$ \textproc{Rotate-Left}($T$, \Call{Parent}{$x$})
+          \Else
+            \State set $x$, \Call{Parent}{$x$}, and \Call{Right}{$s$} all black
+            \State $T \gets$ \Call{Rotate-Left}{$T$, $s$}
+            \State $T \gets$ \textproc{Rotate-Right}($T$, \Call{Parent}{$x$})
+          \EndIf
+        \State ...
+        \EndIf
+    \EndIf
+  \EndWhile
+\EndFunction
+\end{algorithmic}
 
 \subsection{双重黑色节点的兄弟节点为黑色，该兄弟节点的两个子节点也全是黑色。}
 这种情况下，我们可以将这个兄弟节点染成红色，将双重黑色变回黑色，然后将双重黑色属性向上传递一层到父节点。如图\ref{fig:del-case3}所示，有两种对称的情况。
