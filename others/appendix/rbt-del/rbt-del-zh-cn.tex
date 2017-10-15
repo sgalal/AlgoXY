@@ -246,11 +246,11 @@ enum class Color { RED, BLACK, DOUBLY_BLACK };
         \ElsIf{$s$ is black $\land$ \Call{Left}{$s$} is red}
           \Comment{兄弟为黑，一个侄子为红}
           \If{$x = $ \textproc{Left}(\Call{Parent}{$x$})}
-            \Comment{双重黑色节点是其父的左孩子}
+            \Comment{$x$在左侧}
             \State set $x$, \Call{Parent}{$x$}, and \Call{Left}{$s$} all black
             \State $T \gets$ \Call{Rotate-Right}{$T$, $s$}
             \State $T \gets$ \textproc{Rotate-Left}($T$, \Call{Parent}{$x$})
-          \Else \Comment{双重黑色节点是其父的右孩子}
+          \Else \Comment{$x$在右侧}
             \State set $x$, \Call{Parent}{$x$}, $s$, and \Call{Left}{$s$} all black
             \State $T \gets$ \textproc{Rotate-Right}($T$, \Call{Parent}{$x$})
           \EndIf
