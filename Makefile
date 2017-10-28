@@ -22,7 +22,9 @@ datastruct/elementary/queue/queue-zh-cn \
 datastruct/elementary/sequence/sequence-zh-cn \
 sorting/dc-sort/dcsort-zh-cn \
 search/search-zh-cn \
-others/appendix/list/list-zh-cn
+others/appendix/list/list-zh-cn \
+others/appendix/rbt-del/rbt-del-zh-cn
+
 CHAPTER_OBJS = $(foreach file, $(CHAPTERS), $(file).pdf)
 CHAPTER_SRCS = $(foreach file, $(CHAPTERS), $(file).tex)
 

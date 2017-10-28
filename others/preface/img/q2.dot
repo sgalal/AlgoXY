@@ -1,7 +1,9 @@
 digraph G{
 	margin="0"
-	node[shape=record]
-	n[label="<head> 2|3|<tail> 5"];
+	node[shape=plaintext]
+	n[shape=plaintext,
+      label=<<table BORDER="0" CELLBORDER="1" CELLSPACING="0">
+              <tr><td port="head">2</td><td>3</td><td port="tail">5</td></tr></table>>]
 	x1[label="2*2=4", style=filled, color=white];
 	x2[label="2*3=6", style=filled, color=white];
 	x3[label="2*5=10", style=filled, color=white];
