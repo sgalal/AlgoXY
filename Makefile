@@ -24,7 +24,8 @@ datastruct/elementary/sequence/sequence \
 sorting/dc-sort/dcsort \
 search/search \
 others/appendix/list/list \
-others/appendix/haskell/haskell
+others/appendix/haskell/haskell \
+others/appendix/rbt-del/rbt-del
 
 CHAPTER_SRCS = $(foreach file, $(CHAPTERS), $(file)-en.tex)
 CHAPTER_OBJS = $(foreach file, $(CHAPTERS), $(file)-en.pdf)
