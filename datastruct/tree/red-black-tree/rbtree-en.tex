@@ -529,10 +529,9 @@ definition. Instead of passing the tree, we pass
 the color, the left child, the key and the right child to it.
 This can save a pair of `boxing' and 'un-boxing' operations.
 
-This program doesn't handle the case of inserting a duplicated key.
-However, it is possible to handle it either by overwriting,
-or skipping. Another option is to augment the data with a linked
-list\cite{CLRS}.
+This program doesn't handle the case of duplicated keys. we can
+either overwrite the key or drop the duplicated one.
+Another option is to augment the data with a linked list(\cite{CLRS}, pp269).
 
 Figure \ref{fig:insert-example} shows two red-black trees
 built from feeding list 11, 2, 14, 1, 7, 15, 5, 8, 4 and 1, 2, ..., 8. The tree is well balanced even if we input an ordered list.
@@ -543,12 +542,11 @@ built from feeding list 11, 2, 14, 1, 7, 15, 5, 8, 4 and 1, 2, ..., 8. The tree 
   \caption{insert results generated from two sequences of keys.} \label{fig:insert-example}
 \end{figure}
 
-This algorithm shows great simplicity by summarizing the uniform feature
+This algorithm shows great simplicity by summarizing the uniform pattern
 from the four different unbalanced cases. It is expressive over
 the traditional tree rotation approach, that even in programming languages
 which don't support pattern matching, the algorithm can still be
-implemented by manually check the pattern. A Scheme/Lisp program
-is available along with this book can be referenced as an example.
+implemented by manually check the pattern.
 
 The insertion algorithm takes $O(\lg n)$ time to insert a key to
 a red-black tree which has $n$ nodes.
@@ -556,8 +554,7 @@ a red-black tree which has $n$ nodes.
 \begin{Exercise}
 
 \begin{itemize}
-\item Write a program in an imperative language, such as
-C, C++ or python to realize the same algorithm in this
+\item Write a program in Java to realize the same algorithm in this
 section. Note that, because there is no language supported
 pattern matching, you need to test the 4 different cases
 manually.
@@ -573,55 +570,51 @@ manually.
 \index{red-black tree!deletion}
 
 Remind the deletion section in binary search tree. Deletion is
-`imperative only' for red-black tree as well. In typically
-practice, it often builds the tree just one time, and
-performs looking up frequently after that. Okasaki explained
-why he didn't provide red-black tree deletion in his work
-in \cite{okasaki-blog}. One reason is that deletions are
-much messier than insertions.
+`imperative only' for red-black tree as well. In many cases,
+the tree is often built just one time, and then
+performs looking up frequently\cite{okasaki-blog}.
 
-The purpose of this section is just to show that red-black
+The purpose of this section is to show that red-black
 tree deletion is possible in purely functional settings,
 although it actually rebuilds the tree because trees are
 read only in terms of purely functional data structure\footnote{Actually, the common part of the tree is reused. Most functional programming environments support this persistent feature.}.
-In real world, it's up to the user (or actually the
+In real world, it's up to the user (i.e. the
 programmer) to adopt the proper solution. One option is to mark
-the node be deleted with a flag, and perform a tree rebuilding
+the node be deleted with a flag, and later rebuild the tree
 when the number of deleted nodes exceeds 50\%.
 
-Not only in functional settings, even in imperative settings,
-deletion is more complex than insertion. We face more cases
-to fix. Deletion may also violate the red black tree properties,
+Deletion is more complex than insertion in both functional and
+imperative settings, as there are more cases to fix.
+Deletion may also violate the red black tree properties,
 so we need fix it after the normal deletion as described
 in binary search tree.
 
-The deletion algorithm in this book are based on top of a
-handout in \cite{lyn}. The problem only happens if you try to
+The problem only happens if you try to
 delete a black node, because it will violate the last property
-of red-black tree, which means the number of black
-node in the path may decreased so that it is not uniformed
-black-height any more.
+of red-black tree. The number of black
+node in the path decreases so not all the paths contain the
+same number of black node.
 
 When delete a black node, we can resume the last red-black property
-by introducing a 'doubly-black' concept\cite{CLRS}. It means
+by introducing a 'doubly-black' concept(\cite{CLRS}, pp290). It means
 that the although the node is deleted, the blackness is kept
 by storing it in the parent node. If the parent node is red,
-it turns to black, However, if it has been already black, it
+it turns to black, However, if it's already black, it
 turns to `doubly-black'.
 
 In order to express the 'doubly-black node', The definition
 need some modification accordingly.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-data Color = R | B | BB -- BB: doubly black for deletion
-data RBTree a = Empty | BBEmpty -- doubly black empty
-              | Node Color (RBTree a) a (RBTree a)
+sealed abstract class Color
+case object R extends Color
+case object B extends Color
+case object BB extends Color  //doubly black
 \end{lstlisting}
 
-When deleting a node, we first perform the same deleting
-algorithm in binary search tree mentioned in previous chapter.
-After that, if the node to be sliced out is black, we
+When deleting a node, we first perform the same binary search tree deleting
+algorithm. After that, if the node to be sliced out is black, we
 need fix the tree to keep the red-black properties. The
 delete function is defined as the following.
 
