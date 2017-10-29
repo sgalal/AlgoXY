@@ -365,14 +365,18 @@ public static class Node {
 \end{lstlisting}
 
 In functional settings, we can add the color information
-in constructors, below is the Haskell example of red-black tree
+in constructors, below is the Scala example of red-black tree
 definition.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-data Color = R | B
-data RBTree a = Empty
-              | Node Color (RBTree a) a (RBTree a)
+sealed abstract class Color
+case object R extends Color
+case object B extends Color
+
+sealed trait Tree[+A]
+case object E extends Tree[Nothing]
+case class T[A] (c: Color, left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
 \end{lstlisting}
 
 \begin{Exercise}
@@ -390,24 +394,23 @@ height at most $2 \lg (n+1)$?
 \section{Insertion}
 \index{red-black tree!insertion}
 
-Inserting a new node as what has been mentioned in binary search tree may
-cause the tree unbalanced. The red-black properties has to be maintained,
-so we need do some fixing by transform the tree after insertion.
+The tree may be unblanced if a new node is inserted with the method we
+used for the binary search tree. In order to maintain the red-black properties,
+we need do some fixing after insertion.
 
-When we insert a new key, one good practice is to always insert it as a
+When insert a new key, we can always insert it as a
 red node. As far as the new inserted node isn't the root of the tree,
-we can keep all properties except the 4-th one. that it may bring two
+we can keep all properties except the 4-th one as it may bring two
 adjacent red nodes.
 
-Functional and procedural implementation have different fixing methods.
+There are both functional and procedural fixing methods.
 One is intuitive but has some overhead, the other is a bit complex but has
-higher performance. Most text books about algorithm introduce the later
-one. In this chapter, we focus on the former to show how easily a red-black
-tree insertion algorithm can be realized. The traditional procedural
-method will be given only for comparison purpose.
+higher performance. In this chapter, we focus on the functional approach
+to show how easy a red-black tree insertion algorithm can be realized.
+The traditional procedural method will be given for comparison purpose.
 
 As described by Chris Okasaki, there are total 4 cases which violate property 4.
-All of them has 2 adjacent red nodes. However, they have a uniformed form
+All of them has 2 adjacent red nodes. However, they have a uniformed structure
 after fixing\cite{okasaki} as shown in figure \ref{fig:insert-fix}.
 
 \begin{figure}[htbp]
@@ -432,14 +435,14 @@ after fixing\cite{okasaki} as shown in figure \ref{fig:insert-fix}.
 
 Note that this transformation will move the redness one level up.
 During the bottom-up recursive fixing, the last step will make
-the root node red. According to property 2, root is always black.
-Thus we need final fixing to revert the root color to black.
+the root node red. According to property 2, root is always black,
+thus we need finally fix to revert the root color to black.
 
-Observing that the 4 cases and the fixed result have strong pattern
-features, the fixing function can be defined by using the similar
+Observing that the 4 cases and the fixed result have strong patterns,
+the fixing function can be defined by using the similar
 method we mentioned in tree rotation. Denote the color of a node as
 $\mathcal{C}$, it has two values: black $\mathcal{B}$, and red$\mathcal{R}$.
-Thus a non-empty tree can be represented as $T = (\mathcal{C}, T_l, k, T_r)$.
+A none empty tree can be represented as $T = (\mathcal{C}, T_l, k, T_r)$.
 
 \be
 balance(T) = \left \{
@@ -451,7 +454,7 @@ balance(T) = \left \{
 \right .
 \ee
 
-where function $match()$ tests if a tree is one of the 4 possible patterns as the following.
+where function $match()$ tests if a tree mathes one of the 4 possible patterns as the following.
 
 \[
 match(T) = \left \{ T = \begin{array}{l}
@@ -462,7 +465,7 @@ match(T) = \left \{ T = \begin{array}{l}
          \end{array} \right \}
 \]
 
-With function $balance(T)$ defined, we can modify the previous binary search tree
+With function $balance(T)$ defined, we can modify the binary search tree
 insertion functions to make it work for red-black tree.
 
 \be
@@ -482,34 +485,44 @@ ins(T, k) = \left \{
 \right.
 \ee
 
-If the tree is empty, then a new red node is created, and $k$ is set as the key; otherwise, denote the children and the key as $T_l$, $T_r$, and $k'$, we compare $k$ and $k'$ and recursively insert $k$ to one of the children. Function $balance$ is called after that, and the root is force to be black finally.
+If the tree is empty, then a new red node with $k$ as the key is created; otherwise, denote the children and the key as $T_l$, $T_r$, and $k'$, we compare $k$ and $k'$ and recursively insert $k$ to a child. Function $balance$ is called after that, and the root is re-colored black finally.
 
 \be
 makeBlack(T) = (\mathcal{B}, T_l, k, T_r)
 \ee
 
-Summarize the above functions and use language supported pattern matching
-features, we can come to the following Haskell program.
+Summarize the above functions, we come up with the following Scala program.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-insert t x = makeBlack $ ins t where
-    ins Empty = Node R Empty x Empty
-    ins (Node color l k r)
-        | x < k     = balance color (ins l) k r
-        | otherwise = balance color l k (ins r) --[3]
-    makeBlack(Node _ l k r) = Node B l k r
+def insert[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+  makeBlack(ins(tr, x))
 
-balance B (Node R (Node R a x b) y c) z d =
-                Node R (Node B a x b) y (Node B c z d)
-balance B (Node R a x (Node R b y c)) z d =
-                Node R (Node B a x b) y (Node B c z d)
-balance B a x (Node R b y (Node R c z d)) =
-                Node R (Node B a x b) y (Node B c z d)
-balance B a x (Node R (Node R b y c) z d) =
-                Node R (Node B a x b) y (Node B c z d)
-balance color l k r = Node color l k r
-\end{lstlisting} %$
+def ins[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] = tr match {
+  case E => T(R, E, x, E)
+  case T(c, left, y, right) =>
+    if (x < y) balance(c, ins(left, x), y, right)
+    else balance(c, left, y, ins(right, x))
+}
+
+def balance[A](c: Color, left: Tree[A], key: A, right: Tree[A]) : Tree[A] =
+  (c, left, key, right) match {
+    case (B, T(R, T(R, a, x, b), y, c), z, d) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case (B, T(R, a, x, T(R, b, y, c)), z, d) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case (B, a, x, T(R, b, y, T(R, c, z, d))) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case (B, a, x, T(R, T(R, b, y, c), z, d)) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case _ => T(c, left, key, right)
+  }
+
+def makeBlack[A](tr: Tree[A]): Tree[A] = tr match {
+  case T(_, l, k, r) => T(B, l, k, r)
+  case _ => tr
+}
+\end{lstlisting}
 
 Note that the 'balance' function is changed a bit from the original
 definition. Instead of passing the tree, we pass
