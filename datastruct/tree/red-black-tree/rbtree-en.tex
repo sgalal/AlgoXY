@@ -1078,29 +1078,27 @@ problem by rotation and return the final result.
 
 The only difference from the binary search tree insertion algorithm
 is that we set the color of the new node as red, and perform fixing
-before return. It is easy to translate the pseudo code to real
-imperative programming language, for instance Python \footnote{C,
-and C++ source codes are available along with this book}.
+before return. Below is the example Java program.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def rb_insert(t, key):
-    root = t
-    x = Node(key)
-    parent = None
-    while(t):
-        parent = t
-        if(key < t.key):
-            t = t.left
-        else:
-            t = t.right
-    if parent is None: #tree is empty
-        root = x
-    elif key < parent.key:
-        parent.set_left(x)
-    else:
-        parent.set_right(x)
-    return rb_insert_fix(root, x)
+public Node insert(Node t, int key) {
+    Node root = t;
+    Node x = new Node(key);
+    Node parent = null;
+    while (t != null) {
+        parent = t;
+        t = key < t.key ? t.left : t.right;
+    }
+    if (parent == null) { // insert key to the empty tree
+        root = x;
+    } else if (key < parent.key) {
+        parent.setLeft(x);
+    } else {
+        parent.setRight(x);
+    }
+    return insertFix(root, x);
+}
 \end{lstlisting}
 
 There are 3 base cases for fixing, and if we take the left-right
@@ -1157,36 +1155,44 @@ the two algorithms, they may build different red-black trees. There
 is a bit performance overhead in the pattern matching algorithm.
 Okasaki discussed about the difference in detail in his paper\cite{okasaki}.
 
-Translate the above algorithm to Python yields the below program.
+Below example Java program implements the fixing algorithm after insertion.
 
 \begin{lstlisting}
-# Fix the red->red violation
-def rb_insert_fix(t, x):
-    while(x.parent and x.parent.color==RED):
-        if x.uncle().color == RED:
-            #case 1: ((a:R x:R b) y:B c:R) ==> ((a:R x:B b) y:R c:B)
-            set_color([x.parent, x.grandparent(), x.uncle()],
-                      [BLACK, RED, BLACK])
-            x = x.grandparent()
-        else:
-            if x.parent == x.grandparent().left:
-                if x == x.parent.right:
-                    #case 2: ((a x:R b:R) y:B c) ==> case 3
-                    x = x.parent
-                    t=left_rotate(t, x)
-                # case 3: ((a:R x:R b) y:B c) ==> (a:R x:B (b y:R c))
-                set_color([x.parent, x.grandparent()], [BLACK, RED])
-                t=right_rotate(t, x.grandparent())
-            else:
-                if x == x.parent.left:
-                    #case 2': (a x:B (b:R y:R c)) ==> case 3'
-                    x = x.parent
-                    t = right_rotate(t, x)
-                # case 3': (a x:B (b y:R c:R)) ==> ((a x:R b) y:B c:R)
-                set_color([x.parent, x.grandparent()], [BLACK, RED])
-                t=left_rotate(t, x.grandparent())
-    t.color = BLACK
-    return t
+Node insertFix(Node t, Node x) {
+    while (x.parent != null && x.parent.color == Color.RED) {
+        if (x.uncle().color == Color.RED) {
+            // case 1: ((a:R, x:R, b), y:B, c:R) ==> ((a:R, x:B, b), y:R, c:B)
+            setColors(x.parent, Color.BLACK,
+                      x.grandparent(), Color.RED,
+                      x.uncle(), Color.BLACK);
+            x = x.grandparent();
+        } else {
+            if (x.parent == x.grandparent().left) {
+                if (x == x.parent.right) {
+                    // case 2: ((a, x:R, b:R), y:B, c) ==> case 3
+                    x = x.parent;
+                    t = rotateLeft(t, x);
+                }
+                // case 3: ((a:R, x:R, b), y:B, c) ==> (a:R, x:B, (b, y:R, c))
+                setColors(x.parent, Color.BLACK,
+                          x.grandparent(), Color.RED);
+                t = rotateRight(t, x.grandparent());
+            } else {
+                if (x == x.parent.left) {
+                    // case 2': (a, x:B, (b:R, y:R, c)) ==> case 3'
+                    x = x.parent;
+                    t = rotateRight(t, x);
+                }
+                // case 3': (a, x:B, (b, y:R, c:R)) ==> ((a, x:R, b), y:B, c:R)
+                setColors(x.parent, Color.BLACK,
+                          x.grandparent(), Color.RED);
+                t = rotateLeft(t, x.grandparent());
+            }
+        }
+    }
+    t.color = Color.BLACK;
+    return t;
+}
 \end{lstlisting}
 
 Figure \ref{fig:imperative-insert} shows the results of feeding same
@@ -1201,7 +1207,7 @@ figure \ref{fig:insert-example}, one can tell the difference clearly.
    \label{fig:imperative-insert}
 \end{figure}
 
-We put the red-black tree delete algorithm in imperative settings in Appendix B,
+We put the red-black tree delete algorithm in imperative settings in Appendix C,
 because it is more complex than the insertion.
 
 \section{More words}
@@ -1232,9 +1238,6 @@ Chris Okasaki. ``Ten Years of Purely Functional Data Structures''. http://okasak
 
 \bibitem{wiki}
 Wikipedia. ``Red-black tree''. http://en.wikipedia.org/wiki/Red-black\_tree
-
-\bibitem{lyn}
-Lyn Turbak. ``Red-Black Trees''. cs.wellesley.edu/~cs231/fall01/red-black.pdf Nov. 2, 2001.
 
 \bibitem{rosetta}
 Pattern matching. http://rosettacode.org/wiki/Pattern\_matching
