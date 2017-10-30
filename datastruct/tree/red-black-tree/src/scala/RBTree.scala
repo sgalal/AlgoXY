@@ -166,11 +166,26 @@ object RBTree {
     assert(isRedBlack(tr), println("violate red-black properties"))
   }
 
+  def testDelete(xs: Seq[Int]) = {
+    if (!xs.isEmpty) {
+      xs.foldLeft((xs.sorted, fromList(xs))) {
+        (t, x) => {
+          val ys = t._1
+          val tr = t._2
+          assert(ys == toList(tr), println(s"inconsist delete result: $ys"))
+          assert(isRedBlack(tr), println("violate red-black properties"))
+          (ys diff List(x), delete(tr, x))
+        }
+      }
+    }
+  }
+
   def test() = {
     val r = Random
     for (_ <- 1 to N) {
       val xs = genList(r)
       testBuild(xs)
+      testDelete(xs)
     }
     println(s"$N tests passed");
   }
