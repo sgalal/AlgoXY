@@ -75,9 +75,9 @@ object RBTree {
   }
 
   def min[A] (tr: Tree[A]): A = tr match {
-      case T(_, E, x, _) => x
-      case T(_, left, _, _) => min(left)
-    }
+    case T(_, E, x, _) => x
+    case T(_, left, _, _) => min(left)
+  }
 
   def fixDel[A] (color: Color, left: Tree[A], key: A, right: Tree[A]) : Tree[A] =
     (color, left, key, right) match {

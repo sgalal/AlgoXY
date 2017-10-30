@@ -169,6 +169,7 @@ isort = foldl insert []
 
 \subsection{insertion}
 
+Red-black tree insertion with pattern matching
 \begin{lstlisting}
 data Color = R | B
 data RBTree a = Empty
@@ -193,6 +194,79 @@ balance B a x (Node R (Node R b y c) z d) =
         Node R (Node B a x b) y (Node B c z d)
 balance color l k r = Node color l k r
 
+\end{lstlisting}
+
+\subsection{deletion}
+
+Red-black tree deletion algorithm with the concept of 'doubly black'.
+
+\begin{lstlisting}
+data Color = R | B | BB deriving (Show, Eq) -- BB is doubly black, used for deletion
+data RBTree a = Empty
+              | Node Color (RBTree a) a (RBTree a)
+              | BBEmpty -- doubly black empty
+
+min::RBTree a -> a
+min (Node _ Empty x _) = x
+min (Node _ l _ _) = min l
+
+isEmpty :: (RBTree a) -> Bool
+isEmpty Empty = True
+isEmpty _ = False
+
+delete::(Ord a)=>RBTree a -> a -> RBTree a
+delete t x = blackenRoot (del t x) where
+    del Empty _ = Empty
+    del (Node color l k r) x
+        | x < k = fixDB color (del l x) k r
+        | x > k = fixDB color l k (del r x)
+        -- x == k, delete this node
+        | isEmpty l = if color==B then makeBlack r else r
+        | isEmpty r = if color==B then makeBlack l else l
+        | otherwise = fixDB color l k' (del r k') where k'= min r
+    blackenRoot (Node _ l k r) = Node B l k r
+    blackenRoot _ = Empty
+
+makeBlack::RBTree a -> RBTree a
+makeBlack (Node B l k r) = Node BB l k r -- doubly black
+makeBlack (Node _ l k r) = Node B l k r
+makeBlack Empty = BBEmpty
+makeBlack t = t
+
+fixDB::Color -> RBTree a -> a -> RBTree a -> RBTree a
+-- the sibling is black, and it has one red child
+fixDB color a@(Node BB _ _ _) x (Node B (Node R b y c) z d) =
+      Node color (Node B (makeBlack a) x b) y (Node B c z d)
+fixDB color BBEmpty x (Node B (Node R b y c) z d) =
+      Node color (Node B Empty x b) y (Node B c z d)
+fixDB color a@(Node BB _ _ _) x (Node B b y (Node R c z d)) =
+      Node color (Node B (makeBlack a) x b) y (Node B c z d)
+fixDB color BBEmpty x (Node B b y (Node R c z d)) =
+      Node color (Node B Empty x b) y (Node B c z d)
+fixDB color (Node B a x (Node R b y c)) z d@(Node BB _ _ _) =
+      Node color (Node B a x b) y (Node B c z (makeBlack d))
+fixDB color (Node B a x (Node R b y c)) z BBEmpty =
+      Node color (Node B a x b) y (Node B c z Empty)
+fixDB color (Node B (Node R a x b) y c) z d@(Node BB _ _ _) =
+      Node color (Node B a x b) y (Node B c z (makeBlack d))
+fixDB color (Node B (Node R a x b) y c) z BBEmpty =
+      Node color (Node B a x b) y (Node B c z Empty)
+-- the sibling is red
+fixDB B a@(Node BB _ _ _) x (Node R b y c) = fixDB B (fixDB R a x b) y c
+fixDB B a@BBEmpty x (Node R b y c) = fixDB B (fixDB R a x b) y c
+fixDB B (Node R a x b) y c@(Node BB _ _ _) = fixDB B a x (fixDB R b y c)
+fixDB B (Node R a x b) y c@BBEmpty = fixDB B a x (fixDB R b y c)
+-- the sibling and its 2 children are all black, propagate the blackness up
+fixDB color a@(Node BB _ _ _) x (Node B b y c) =
+      makeBlack (Node color (makeBlack a) x (Node R b y c))
+fixDB color BBEmpty x (Node B b y c) =
+      makeBlack (Node color Empty x (Node R b y c))
+fixDB color (Node B a x b) y c@(Node BB _ _ _) = m
+      akeBlack (Node color (Node R a x b) y (makeBlack c))
+fixDB color (Node B a x b) y BBEmpty =
+      makeBlack (Node color (Node R a x b) y Empty)
+-- otherwise
+fixDB color l k r = Node color l k r
 \end{lstlisting}
 
 \ifx\wholebook\relax \else
