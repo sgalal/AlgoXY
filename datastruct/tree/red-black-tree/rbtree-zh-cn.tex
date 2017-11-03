@@ -48,24 +48,29 @@
 我们可以把之前的例子代码稍做改动来实现这一功能：
 
 \begin{lstlisting}
-int main(int, char** ) {
-    ifstream f("yp.txt");
-    map<string, string> dict;
-    string name, phone;
-    while(f>>name && f>>phone)
-        dict[name]=phone;
-    for(;;) {
-        cout<<"\nname: ";
-        cin>>name;
-        if(dict.find(name) == dict.end())
-            cout<<"not found";
-        else
-            cout<<"phone: "<<dict[name];
+public static void main(String[] args) {
+    Map<String, String> dict = new TreeMap<>();
+    try {
+        Scanner sc = new Scanner(new File("yp.txt"));
+        while (sc.hasNext()) {
+            String name = sc.next();
+            String phone = sc.next();
+            dict.put(name, phone);
+        }
+        sc = new Scanner(System.in);
+        while (true) {
+            System.out.print("name: ");
+            String name = sc.next();
+            String phone = dict.get(name);
+            System.out.println(phone == null ? "not found" : ("phone: " + phone));
+        }
+    } catch (FileNotFoundException e) {
+        System.out.println(e);
     }
 }
 \end{lstlisting}
 
-这段程序运行良好。但是，如果我们把STL库提供的map换成普通的二叉搜索树，程序的性能就变差了。尤其是搜索诸如Zara、Zed、Zulu等姓名时特别明显。
+这段程序运行良好。但是，如果我们把标准库提供的\texttt{TreeMap}换成普通的二叉搜索树，程序的性能就变差了。尤其是搜索诸如Zara、Zed、Zulu等姓名时特别明显。
 
 电话黄页通常是按照字典字母顺序（lexicographic order）印刷的，因此姓名会按照升序排列。如果我们依次把数字1, 2, 3, ..., $n$插入二叉搜索树，就会得如图\ref{fig:unbalanced-tree}中的结果。
 
@@ -125,7 +130,7 @@ int main(int, char** ) {
 旋转操作可以通过一系列的步骤来描述。我们也可以利用模式匹配（pattern matching），非常容易地定义它们。将非空的二叉树记为三元组$T=(T_l, k, T_r)$，下面的函数定义了左右旋转。
 
 \be
-rotateL(T) = \left \{
+rotate_L(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   ((a, X, b), Y, c) & T = (a, X, (b, Y, c)) \\
@@ -135,7 +140,7 @@ rotateL(T) = \left \{
 \ee
 
 \be
-rotateR(T) = \left \{
+rotate_R(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   (a, X, (b, Y, c)) & T = ((a, X, b), Y, c)) \\
@@ -264,22 +269,21 @@ rotateR(T) = \left \{
 
 红黑树沿用所有二叉搜索树中不改变树结构的操作，包括查找、获取最大、最小值等。只有插入和删除操作是特殊的。
 
-如前面单词统计的例子所示，有很多集合（set）和map容器是使用红黑树来实现的。包括C++标准库STL\cite{sgi-stl}。
+如前面单词统计的例子所示，有很多集合（set）和map容器是使用红黑树来实现的。包括Java标准库。
 
-由于只增加了一个颜色信息，我们可以复用二叉搜索树的节点定义。如下面的C++代码所示：
+由于只增加了一个颜色信息，我们可以复用二叉搜索树的节点定义。如下面的Java代码所示：
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-enum Color {Red, Black};
+public static enum Color { RED, BLACK }
 
-template <class T>
-struct node {
-    Color color;
-    T key;
-    node* left;
-    node* right;
-    node* parent;
-};
+public static class Node {
+    public int key;
+    public Color color;
+    public Node left;
+    public Node right;
+    public Node parent;
+}
 \end{lstlisting}
 
 对于函数式环境，我们可以在代数数据类型（algebraic data type）的定义中增加颜色参数，如下面的Haskell例子所示：
@@ -404,7 +408,7 @@ balance color l k r = Node color l k r
 
 程序中的\texttt{balance}函数略微有些不同，它的参数不是一棵树，而是节点的颜色、左侧分支、key和右侧分支。这样可以节省一对boxing和unboxing的操作。
 
-我们没有处理存在重复key的情况。如果发生重复，我们可以选择覆盖，或者跳过不处理，还可以在节点中用一个链表存储重复的数据\cite{CLRS}。
+我们没有处理存在重复key的情况。如果发生重复，我们可以选择覆盖，或者跳过不处理，还可以在节点中用一个链表存储重复的数据(\cite{CLRS}, 第269页)。
 
 图\ref{fig:insert-example}中给出了两个插入的例子。左侧是依次将11, 2, 14, 1, 7, 5, 8, 4插入的结果。右侧的是将序列1, 2, ..., 8插入的结果。可以看到，即使输入已序序列，红黑树仍然保持平衡。
 
