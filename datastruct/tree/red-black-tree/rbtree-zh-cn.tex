@@ -125,7 +125,7 @@ int main(int, char** ) {
 旋转操作可以通过一系列的步骤来描述。我们也可以利用模式匹配（pattern matching），非常容易地定义它们。将非空的二叉树记为三元组$T=(T_l, k, T_r)$，下面的函数定义了左右旋转。
 
 \be
-rotateL(T) = \left \{
+rotate_L(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   ((a, X, b), Y, c) & T = (a, X, (b, Y, c)) \\
@@ -135,7 +135,7 @@ rotateL(T) = \left \{
 \ee
 
 \be
-rotateR(T) = \left \{
+rotate_R(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   (a, X, (b, Y, c)) & T = ((a, X, b), Y, c)) \\
@@ -404,7 +404,7 @@ balance color l k r = Node color l k r
 
 程序中的\texttt{balance}函数略微有些不同，它的参数不是一棵树，而是节点的颜色、左侧分支、key和右侧分支。这样可以节省一对boxing和unboxing的操作。
 
-我们没有处理存在重复key的情况。如果发生重复，我们可以选择覆盖，或者跳过不处理，还可以在节点中用一个链表存储重复的数据\cite{CLRS}。
+我们没有处理存在重复key的情况。如果发生重复，我们可以选择覆盖，或者跳过不处理，还可以在节点中用一个链表存储重复的数据(\cite{CLRS}, 第269页)。
 
 图\ref{fig:insert-example}中给出了两个插入的例子。左侧是依次将11, 2, 14, 1, 7, 5, 8, 4插入的结果。右侧的是将序列1, 2, ..., 8插入的结果。可以看到，即使输入已序序列，红黑树仍然保持平衡。
 
