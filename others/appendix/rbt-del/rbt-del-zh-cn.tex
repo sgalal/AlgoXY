@@ -48,11 +48,11 @@
 \section{双重黑色}
 \index{红黑树!双重黑色}
 
-为了支持“双重黑色”的节点，我们需要增加颜色的定义。如下面的C++例子代码所示。
+为了支持“双重黑色”的节点，我们需要增加颜色的定义。如下面的Java例子代码所示。
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-enum class Color { RED, BLACK, DOUBLY_BLACK };
+enum Color { RED, BLACK, DOUBLY_BLACK }
 \end{lstlisting}
 
 在删除一个节点时，我们复用二叉搜索树的删除算法，并记录被删除节点的父节点。如果被删除节点的颜色是黑色我们需要通过处理保持黑色的属性，然后再进行进一步修复。
@@ -291,32 +291,32 @@ enum class Color { RED, BLACK, DOUBLY_BLACK };
 
 删除修复时，传入了三个参数，一个是树的根节点$T$；一个是待修复的节点$x$，它可能是双重黑色的节点；还有一个标记$f$，如果带修复的节点$x$是双重黑色的空节点NIL，则$f$为真。此时我们用$n$来记录这一双重黑色的空节点NIL，并且在最终修复完毕后，用普通NIL替换掉$n$。
 
-下面的C++例子程序实现了红黑树的删除算法。
+下面的Java例子程序实现了红黑树的删除算法。
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-Node* del(Node* t, Node* x) {
-    if (!x) return t;
-    Node* parent = x->parent;
-    Node* db = nullptr;        //doubly black
-    Node* y;
+public Node del(Node t, Node x) {
+    if (x == null) return t;
+    Node parent = x.parent;
+    Node db = null;  // doubly black
+    Node y;
 
-    if (x->left == nullptr) {
-        db = x->right;
-        x->replaceWith(db);
-    } else if (x->right == nullptr) {
-        db = x->left;
-        x->replaceWith(db);
+    if (x.left == null) {
+        db = x.right;
+        x.replaceWith(db);
+    } else if (x.right == null) {
+        db = x.left;
+        x.replaceWith(db);
     } else {
-        y = min(x->right);
-        parent = y->parent;
-        db = y->right;
-        x->key = y->key;
-        y->replaceWith(db);
+        y = min(x.right);
+        parent = y.parent;
+        db = y.right;
+        x.key = y.key;
+        y.replaceWith(db);
         x = y;
     }
-    if (x->color == Color::BLACK)
-        t = deleteFix(t, makeBlack(parent, db), db == nullptr);
+    if (x.color == Color.BLACK)
+        t = deleteFix(t, makeBlack(parent, db), db == null);
     remove(x);
     return t;
 }
@@ -325,11 +325,11 @@ Node* del(Node* t, Node* x) {
 其中\texttt{makeBlack}函数检查删除后节点是否变为双重黑色，并处理双重黑色空节点NIL的特殊情况。
 
 \begin{lstlisting}
-Node* makeBlack(Node* parent, Node* x) {
-    if (!parent && ! x)
-        return nullptr;
-    if (!x)
-        return Node::replace(parent, x, new Node(0, Color::DOUBLY_BLACK));
+Node makeBlack(Node parent, Node x) {
+    if (parent == null && x == null)
+        return null;
+    if (x == null)
+        return replace(parent, x, new Node(0, Color.DOUBLY_BLACK));
     return blacken(x);
 }
 \end{lstlisting}
@@ -337,15 +337,15 @@ Node* makeBlack(Node* parent, Node* x) {
 其中函数\texttt{replace(parent, x, y)}将\texttt{parent}的子节点\texttt{x}，用\texttt{y}替换。
 
 \begin{lstlisting}
-static Node* replace(Node* parent, Node* x, Node* y) {
-    if (parent == nullptr) {
-        if (y) y->parent = nullptr;
-    } else if (parent->left == x) {
-        parent->setLeft(y);
+public Node replace(Node parent, Node x, Node y) {
+    if (parent == null) {
+        if (y != null) y.parent = null;
+    } else if (parent.left == x) {
+        parent.setLeft(y);
     } else {
-        parent->setRight(y);
+        parent.setRight(y);
     }
-    if (x) x->parent = nullptr;
+    if (x != null) x.parent = null;
     return y;
 }
 \end{lstlisting}
@@ -353,8 +353,8 @@ static Node* replace(Node* parent, Node* x, Node* y) {
 函数\texttt{blacken(node)}将红色节点染为黑色，将黑色节点染为双重黑色。
 
 \begin{lstlisting}
-Node* blacken(Node* x) {
-    x->color = isRed(x) ? Color::BLACK : Color::DOUBLY_BLACK;
+Node blacken(Node x) {
+    x.color = isRed(x) ? Color.BLACK : Color.DOUBLY_BLACK;
     return x;
 }
 \end{lstlisting}
@@ -362,69 +362,67 @@ Node* blacken(Node* x) {
 最终的修复过程的实现如下。
 
 \begin{lstlisting}
-Node* deleteFix(Node* t, Node* db, bool isDBEmpty) {
-    Node* dbEmpty = isDBEmpty ? db : nullptr;
-    if (!db) return nullptr;    // remove the root from a leaf tree;
-    while (db != t && db->color == Color::DOUBLY_BLACK) {
-        if (db->sibling() != nullptr) {
-            if (isRed(db->sibling())) {
-                // the sibling is red, (transform to make the sibling black)
-                setColors(db->parent, Color::RED,
-                          db->sibling(), Color::BLACK);
-                if (db == db->parent->left)
-                    t = leftRotate(t, db->parent);
+Node deleteFix(Node t, Node db, boolean isDBEmpty) {
+    Node dbEmpty = isDBEmpty ? db : null;
+    if (db == null) return null;   // remove the root from a leaf tree;
+    while (db != t && db.color == Color.DOUBLY_BLACK) {
+        if (db.sibling() != null) {
+            if (isRed(db.sibling())) {
+                // case 1: the sibling is red, (transform to make the sibling black)
+                setColors(db.parent, Color.RED,
+                          db.sibling(), Color.BLACK);
+                if (db == db.parent.left)
+                    t = rotateLeft(t, db.parent);
                 else
-                    t = rightRotate(t, db->parent);
-            } else if (isBlack(db->sibling()) && isRed(db->sibling()->left)) {
-                // the sibling is black, and one nephew is red
-                if (db == db->parent->left) {
-                    setColors(db, Color::BLACK,
-                              db->parent, Color::BLACK,
-                              db->sibling()->left, db->parent->color);
-                    t = rightRotate(t, db->sibling());
-                    t = leftRotate(t, db->parent);
+                    t = rotateRight(t, db.parent);
+            } else if (isBlack(db.sibling()) && isRed(db.sibling().left)) {
+                // case 3, 4: the sibling is black, and one nephew is red
+                if (db == db.parent.left) {
+                    setColors(db, Color.BLACK,
+                              db.parent, Color.BLACK,
+                              db.sibling().left, db.parent.color);
+                    t = rotateRight(t, db.sibling());
+                    t = rotateLeft(t, db.parent);
                 } else {
-                    setColors(db, Color::BLACK,
-                              db->parent, Color::BLACK,
-                              db->sibling(), db->parent->color,
-                              db->sibling()->left, Color::BLACK);
-                    t = rightRotate(t, db->parent);
+                    setColors(db, Color.BLACK,
+                              db.parent, Color.BLACK,
+                              db.sibling(), db.parent.color,
+                              db.sibling().left, Color.BLACK);
+                    t = rotateRight(t, db.parent);
                 }
-            } else if (isBlack(db->sibling()) && isRed(db->sibling()->right)) {
-                if (db == db->parent->left) {
-                    setColors(db, Color::BLACK,
-                              db->parent, Color::BLACK,
-                              db->sibling(), db->parent->color,
-                              db->sibling()->right, Color::BLACK);
-                    t = leftRotate(t, db->parent);
+            } else if (isBlack(db.sibling()) && isRed(db.sibling().right)) {
+                if (db == db.parent.left) {
+                    setColors(db, Color.BLACK,
+                              db.parent, Color.BLACK,
+                              db.sibling(), db.parent.color,
+                              db.sibling().right, Color.BLACK);
+                    t = rotateLeft(t, db.parent);
                 } else {
-                    setColors(db, Color::BLACK,
-                              db->parent, Color::BLACK,
-                              db->sibling()->right, db->parent->color);
-                    t = leftRotate(t, db->sibling());
-                    t = rightRotate(t, db->parent);
+                    setColors(db, Color.BLACK,
+                              db.parent, Color.BLACK,
+                              db.sibling().right, db.parent.color);
+                    t = rotateLeft(t, db.sibling());
+                    t = rotateRight(t, db.parent);
                 }
-            } else if (isBlack(db->sibling()) &&
-                       isBlack(db->sibling()->left) &&
-                       isBlack(db->sibling()->right)) {
-                // the sibling and both nephews are black.
-                // move the blackness up
-                setColors(db, Color::BLACK,
-                          db->sibling(), Color::RED);
-                blacken(db->parent);
-                db = db->parent;
+            } else if (isBlack(db.sibling()) &&
+                       isBlack(db.sibling().left) &&
+                       isBlack(db.sibling().right)) {
+                // case 2: the sibling and both nephews are black.
+                //         move the blackness up
+                setColors(db, Color.BLACK,
+                          db.sibling(), Color.RED);
+                blacken(db.parent);
+                db = db.parent;
             }
-        } else { // no sibling, move the blackness up
-            db->color = Color::BLACK;
-            blacken(db->parent);
-            db = db->parent;
+        } else { // no sibling, we can move the blackness up
+            db.color = Color.BLACK;
+            blacken(db.parent);
+            db = db.parent;
         }
     }
-    t->color = Color::BLACK;
-    if (dbEmpty) { // change the doubly black nil to nil
-        dbEmpty->replaceWith(nullptr);
-        delete dbEmpty;
-    }
+    t.color = Color.BLACK;
+    if (dbEmpty != null)
+        dbEmpty.replaceWith(null);
     return t;
 }
 \end{lstlisting}
@@ -432,36 +430,39 @@ Node* deleteFix(Node* t, Node* db, bool isDBEmpty) {
 其中\texttt{isBlack(node)}判断一个节点是否为黑色，根据红黑树的性质，所有的NIL节点的颜色为黑色。
 
 \begin{lstlisting}
-bool isBlack(Node* x) {
-    return x == nullptr || x->color == Color::BLACK;
+boolean isBlack(Node x) {
+    return x == null || x.color == Color.BLACK;
 }
 
-bool isRed(Node* x) {
-    return x != nullptr && x->color == Color::RED;
+boolean isRed(Node x) {
+    return x != null && x.color == Color.RED;
 }
 \end{lstlisting}
 
 函数\texttt{setColors}为一组辅助函数，用于对节点染色。
 
 \begin{lstlisting}
-void setColors(Node* x, Color a, Node* y, Color b) { x->color = a; y->color = b; }
-
-void setColors(Node* x, Color a, Node* y, Color b, Node* z, Color c) {
-    setColors(x, a, y, b);
-    z->color = c;
-}
-
-void setColors(Node* x, Color a, Node* y, Color b,
-               Node* z, Color c, Node* q, Color d) {
+void setColors(Node x, Color a, Node y, Color b,
+                             Node z, Color c, Node q, Color d) {
     setColors(x, a, y, b);
     setColors(z, c, q, d);
+}
+
+void setColors(Node x, Color a, Node y, Color b, Node z, Color c) {
+    setColors(x, a, y, b);
+    z.color = c;
+}
+
+void setColors(Node x, Color a, Node y, Color b) {
+    x.color = a;
+    y.color = b;
 }
 \end{lstlisting}
 
 算法在结束前修复双重黑色空节点NIL时，调用节点的\texttt{replaceWith}方法，它通过调用前面定义的\texttt{replace}函数实现。
 
 \begin{lstlisting}
-void replaceWith(Node* y) {
+void replaceWith(Node y) {
     replace(parent, this, y);
 }
 \end{lstlisting}
@@ -471,8 +472,8 @@ void replaceWith(Node* y) {
 \begin{Exercise}
 
 \begin{itemize}
-\item 选择一种命令式编程语言，实现完整的红黑树删除算法。
-\item 选择一种命令式编程语言，编写程序判断一个给定的红黑树是否满足红黑树的5条性质，并用这一程序测试红黑树的删除算法。
+\item 实现完整的红黑树删除算法。
+\item 编写程序判断一个给定的红黑树是否满足红黑树的5条性质，并用这一程序测试红黑树的删除算法。
 \end{itemize}
 
 \end{Exercise}
