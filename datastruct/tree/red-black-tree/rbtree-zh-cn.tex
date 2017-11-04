@@ -286,13 +286,17 @@ public static class Node {
 }
 \end{lstlisting}
 
-对于函数式环境，我们可以在代数数据类型（algebraic data type）的定义中增加颜色参数，如下面的Haskell例子所示：
+对于函数式环境，我们可以在代数数据类型（algebraic data type）的定义中增加颜色参数，如下面的Scala例子所示：
 
-\lstset{language=Haskell}
-\begin{lstlisting}[style=Haskell]
-data Color = R | B
-data RBTree a = Empty
-              | Node Color (RBTree a) a (RBTree a)
+\lstset{language=Scala}
+\begin{lstlisting}
+sealed abstract class Color
+case object R extends Color
+case object B extends Color
+
+sealed trait Tree[+A]
+case object E extends Tree[Nothing]
+case class T[A] (c: Color, left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
 \end{lstlisting}
 
 \begin{Exercise}
@@ -384,26 +388,37 @@ ins(T, k) = \left \{
 makeBlack(T) = (\mathcal{B}, T_l, k, T_r)
 \ee
 
-在支持模式匹配的语言中，例如Haskell，插入算法可以实现为下面的程序：
+在支持模式匹配的语言中，例如Scala，插入算法可以实现为下面的程序：
 
-\lstset{language=Haskell}
-\begin{lstlisting}[style=Haskell]
-insert t x = makeBlack $ ins t where
-    ins Empty = Node R Empty x Empty
-    ins (Node color l k r)
-        | x < k     = balance color (ins l) k r
-        | otherwise = balance color l k (ins r) --[3]
-    makeBlack(Node _ l k r) = Node B l k r
+\lstset{language=Scala}
+\begin{lstlisting}
+def insert[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] =
+  makeBlack(ins(tr, x))
 
-balance B (Node R (Node R a x b) y c) z d =
-                Node R (Node B a x b) y (Node B c z d)
-balance B (Node R a x (Node R b y c)) z d =
-                Node R (Node B a x b) y (Node B c z d)
-balance B a x (Node R b y (Node R c z d)) =
-                Node R (Node B a x b) y (Node B c z d)
-balance B a x (Node R (Node R b y c) z d) =
-                Node R (Node B a x b) y (Node B c z d)
-balance color l k r = Node color l k r
+def ins[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] = tr match {
+  case E => T(R, E, x, E)
+  case T(c, left, y, right) =>
+    if (x < y) balance(c, ins(left, x), y, right)
+    else balance(c, left, y, ins(right, x))
+}
+
+def balance[A](c: Color, left: Tree[A], key: A, right: Tree[A]) : Tree[A] =
+  (c, left, key, right) match {
+    case (B, T(R, T(R, a, x, b), y, c), z, d) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case (B, T(R, a, x, T(R, b, y, c)), z, d) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case (B, a, x, T(R, b, y, T(R, c, z, d))) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case (B, a, x, T(R, T(R, b, y, c), z, d)) =>
+      T(R, T(B, a, x, b), y, T(B, c, z, d))
+    case _ => T(c, left, key, right)
+  }
+
+def makeBlack[A](tr: Tree[A]): Tree[A] = tr match {
+  case T(_, l, k, r) => T(B, l, k, r)
+  case _ => E
+}
 \end{lstlisting} %$
 
 程序中的\texttt{balance}函数略微有些不同，它的参数不是一棵树，而是节点的颜色、左侧分支、key和右侧分支。这样可以节省一对boxing和unboxing的操作。
@@ -425,7 +440,7 @@ balance color l k r = Node color l k r
 \begin{Exercise}
 
 \begin{itemize}
-\item 使用一种命令式语言，例如C、C++或Python来实现本节介绍的插入算法。注意：如果语言本身不支持模式匹配，需要编程检查四种不同的情况。
+\item 使用Java来实现本节介绍的插入算法。由于没有Java中模式匹配，需要分别检查四种不同的情况。
 \end{itemize}
 
 \end{Exercise}
@@ -447,13 +462,14 @@ balance color l k r = Node color l k r
 
 在删除一个黑色节点时，我们可以通过引入“双重黑色”\cite{CLRS}的概念来恢复第五条性质。也就是说，虽然节点被删除了，我们把它的黑色保存在它的父节点中。如果父节点是红色的，我们将其变为黑色；但如果父节点已经是黑色的，它就会变成一个“双重黑色”的节点。
 
-为了使用双重黑色概念，我们需要修改一下红黑树的定义，如下面的Haskell示例代码：
+为了使用双重黑色概念，我们需要修改一下红黑树的定义，如下面的Scala示例代码：
 
-\lstset{language=Haskell}
-\begin{lstlisting}[style=Haskell]
-data Color = R | B | BB -- BB: 用于删除操作的双重黑色
-data RBTree a = Empty | BBEmpty -- 双重黑色的空节点
-              | Node Color (RBTree a) a (RBTree a)
+\lstset{language=Scala}
+\begin{lstlisting}
+sealed abstract class Color
+case object R extends Color
+case object B extends Color
+case object BB extends Color  //双重黑色
 \end{lstlisting}
 
 删除一个节点时，我们先调用普通二叉搜索树的删除算法。如果被删除节点是黑色的，我们接下来进行修复。删除函数定义如下：
@@ -522,28 +538,62 @@ mkBlk(T) = \left \{
 
 其中，符号$\mathcal{B}^2$表示双重黑色。
 
-将目前的函数定义翻译为Haskell可以得到下面的例子程序。
+将目前的函数定义翻译为Scala可以得到下面的例子程序。
 
-\begin{lstlisting}[style=Haskell]
-delete t x = blackenRoot(del t x) where
-    del Empty _ = Empty
-    del (Node color l k r) x
-        | x < k = fixDB color (del l x) k r
-        | x > k = fixDB color l k (del r x)
-        -- x == k, 删除此节点
-        | isEmpty l = if color==B then makeBlack r else r
-        | isEmpty r = if color==B then makeBlack l else l
-        | otherwise = fixDB color l k' (del r k') where k'= min r
-    blackenRoot (Node _ l k r) = Node B l k r
-    blackenRoot _ = Empty
+\begin{lstlisting}
+def delete[A <% Ordered[A]](tr: Tree[A], x: A): Tree[A] = makeBlack(del(tr, x))
 
-makeBlack (Node B l k r) = Node BB l k r -- 双重黑色
-makeBlack (Node _ l k r) = Node B l k r
-makeBlack Empty = BBEmpty
-makeBlack t = t
+def del[A <% Ordered[A]](tr: Tree[A], x: A): Tree[A] = tr match {
+  case E => E
+  case T(color, l, k, r) =>
+    if (x < k)
+      fixDel(color, del(l, x), k, r)
+    else if (x > k)
+      fixDel(color, l, k, del(r, x))
+    else if (isEmpty(l))
+      color match {
+        case B => addBlack(r)
+        case _ => r
+      }
+    else if (isEmpty(r))
+      color match {
+        case B => addBlack(l)
+        case _ => l
+      }
+    else {
+      val k1 = min(r)
+      fixDel(color, l, k1, del(r, k1))
+    }
+  case _ => tr
+}
+
+def min[A] (tr: Tree[A]): A = tr match {
+  case T(_, E, x, _) => x
+  case T(_, left, _, _) => min(left)
+}
 \end{lstlisting}
 
-删除算法中，唯一还没有定义的函数是$fixBlack^2$。我们需要在这个函数中，通过树的旋转操作和重新染色，最终去掉“双重黑色”。这里有三种情况需要处理。每一种情况中，双重黑色的节点即可以是普通节点，也可以是双重黑色的空节点$\Phi$。我们首先看第一种情况。
+删除算法中，唯一还没有定义的函数是$fixBlack^2$。我们需要在这个函数中，通过树的旋转操作和重新染色，最终去掉“双重黑色”。这里有三种情况需要处理。每一种情况中，双重黑色的节点即可以是普通节点，也可以是双重黑色的空节点$\Phi$。为此，我们需要增加一个双重黑色空节点的定义。
+
+\begin{lstlisting}
+sealed trait Tree[+A]
+case object E extends Tree[Nothing]
+case object BBE extends Tree[Nothing] //doubly black empty
+case class T[A] (c: Color, left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
+\end{lstlisting}
+
+函数\texttt{addBlack}将红色节点染成黑色，将黑色节点染成双重黑色。它同样可以对空节点重新染色。
+
+\end{lstlisting}
+def addBlack[A](tr: Tree[A]): Tree[A] = tr match {
+  case T(B, l, k, r) => T(BB, l, k, r)
+  case T(_, l, k, r) => T(B, l, k, r)
+  case E => BBE
+  case _ => tr
+}
+\end{lstlisting}
+
+我们首先看第一种需要修复的情况。
 
 \subsection{双重黑色节点的兄弟为黑色，并且该兄弟节点有一个红色子节点}
 对于这种情况，我们可以通过旋转操作来修复。总共有四种不同的细分情况，它们全部可以变换到一种统一的形式。如图\ref{fig:del-case1}所示。
@@ -741,38 +791,49 @@ p 3.2' : \left \{ \begin{array}{l}
 
 至此，我们对于双重黑色的全部情况都完成了修复。算法被定义为一个递归函数。它有两个终止条件：一个是$p1.1$和$p1.2$，双重黑色节点被直接消除了；另外一个是将双重黑色继续向上传递，直到根节点。由于算法最终会将根节点染成黑色，所以双重黑色也会被消除。
 
-综合公式（\ref{eq:db-case-1a}）、（\ref{eq:db-case-2}）和（\ref{eq:db-case-3a}），我们可以得到最终的Haskell删除程序。
+综合公式（\ref{eq:db-case-1a}）、（\ref{eq:db-case-2}）和（\ref{eq:db-case-3a}），我们可以得到最终的Scala删除程序。
 
-\begin{lstlisting}[style=Haskell]
--- 兄弟节点为黑色，并且有一个红色子节点
-fixDB color a@(Node BB _ _ _) x (Node B (Node R b y c) z d)
-      = Node color (Node B (makeBlack a) x b) y (Node B c z d)
-fixDB color BBEmpty x (Node B (Node R b y c) z d)
-      = Node color (Node B Empty x b) y (Node B c z d)
-fixDB color a@(Node BB _ _ _) x (Node B b y (Node R c z d))
-      = Node color (Node B (makeBlack a) x b) y (Node B c z d)
-fixDB color BBEmpty x (Node B b y (Node R c z d))
-      = Node color (Node B Empty x b) y (Node B c z d)
-fixDB color (Node B a x (Node R b y c)) z d@(Node BB _ _ _)
-      = Node color (Node B a x b) y (Node B c z (makeBlack d))
-fixDB color (Node B a x (Node R b y c)) z BBEmpty
-      = Node color (Node B a x b) y (Node B c z Empty)
-fixDB color (Node B (Node R a x b) y c) z d@(Node BB _ _ _)
-      = Node color (Node B a x b) y (Node B c z (makeBlack d))
-fixDB color (Node B (Node R a x b) y c) z BBEmpty
-      = Node color (Node B a x b) y (Node B c z Empty)
--- 兄弟节点是红色
-fixDB B a@(Node BB _ _ _) x (Node R b y c) = fixDB B (fixDB R a x b) y c
-fixDB B a@BBEmpty x (Node R b y c) = fixDB B (fixDB R a x b) y c
-fixDB B (Node R a x b) y c@(Node BB _ _ _) = fixDB B a x (fixDB R b y c)
-fixDB B (Node R a x b) y c@BBEmpty = fixDB B a x (fixDB R b y c)
--- 兄弟节点和它的两个子节点都是黑色，向上传递黑色
-fixDB color a@(Node BB _ _ _) x (Node B b y c) = makeBlack (Node color (makeBlack a) x (Node R b y c))
-fixDB color BBEmpty x (Node B b y c) = makeBlack (Node color Empty x (Node R b y c))
-fixDB color (Node B a x b) y c@(Node BB _ _ _) = makeBlack (Node color (Node R a x b) y (makeBlack c))
-fixDB color (Node B a x b) y BBEmpty = makeBlack (Node color (Node R a x b) y Empty)
--- 其他情况
-fixDB color l k r = Node color l k r
+\begin{lstlisting}
+def fixDel[A] (color: Color, left: Tree[A], key: A, right: Tree[A]) : Tree[A] =
+  (color, left, key, right) match {
+    // 兄弟节点为黑色，并且有一个红色侄子节点
+    case (color, T(BB, _, _, _), x, T(B, T(R, b, y, c), z, d))
+      => T(color, T(B, addBlack(left), x, b), y, T(B, c, z, d))
+    case (color, BBE, x, T(B, T(R, b , y, c), z, d))
+      => T(color, T(B, E, x, b), y, T(B, c, z, d))
+    case (color, T(BB, _, _, _), x, T(B, b, y, T(R, c, z, d)))
+      => T(color, T(B, addBlack(left), x, b), y, T(B, c, z, d))
+    case (color, BBE, x, T(B, b, y, T(R, c, z, d)))
+      => T(color, T(B, E, x, b), y, T(B, c, z, d))
+    case (color, T(B, a, x, T(R, b, y, c)), z, T(BB, _, _, _))
+      => T(color, T(B, a, x, b), y, T(B, c, z, addBlack(right)))
+    case (color, T(B, a, x, T(R, b, y, c)), z, BBE)
+      => T(color, T(B, a, x, b), y, T(B, c, z, E))
+    case (color, T(B, T(R, a, x, b), y, c), z, T(BB, _, _, _))
+      => T(color, T(B, a, x, b), y, T(B, c, z, addBlack(right)))
+    case (color, T(B, T(R, a, x, b), y, c), z, BBE)
+      => T(color, T(B, a, x, b), y, T(B, c, z, E))
+    // 兄弟节点是红色
+    case (B, T(BB, _, _, _), x, T(R, b, y, c))
+      => fixDel(B, fixDel(R, left, x, b), y, c)
+    case (B, BBE, x, T(R, b, y, c))
+      => fixDel(B, fixDel(R, BBE, x, b), y, c)
+    case (B, T(R, a, x, b), y, T(BB, _, _, _))
+      => fixDel(B, a, x, fixDel(R, b, y, right))
+    case (B, T(R, a, x, b), y, BBE)
+      => fixDel(B, a, x, fixDel(R, b, y, BBE))
+    // 兄弟节点和它的两个子节点都是黑色，向上传递黑色
+    case (color, T(BB, _, _, _), x, T(B, b, y, c))
+      => addBlack(T(color, addBlack(left), x, T(R, b, y, c)))
+    case (color, BBE, x, T(B, b, y, c))
+      => addBlack(T(color, E, x, T(R, b, y, c)))
+    case (color, T(B, a, x, b), y, T(BB, _, _, _))
+      => addBlack(T(color, T(R, a, x, b), y, addBlack(right)))
+    case (color, T(B, a, x, b), y, BBE)
+      => addBlack(T(color, T(R, a, x, b), y, E))
+    // 其他情况
+    case _ => T(color, left, key, right)
+  }
 \end{lstlisting}
 
 对于含有$n$个节点的红黑树，删除算法的复杂度为$O(\lg n)$。
@@ -780,7 +841,7 @@ fixDB color l k r = Node color l k r
 \begin{Exercise}
 
 \begin{itemize}
-\item 选用一种编程语言，实现本节提到的“标记――重建”删除算法：也就是先将要删除的节点标记，但不进行真正的删除。当被标记的节点数目超过50\%的时候，用全部未标记的节点重建树。
+\item 实现本节提到的“标记――重建”删除算法：也就是先将要删除的节点标记，但不进行真正的删除。当被标记的节点数目超过50\%的时候，用全部未标记的节点重建树。
 \item 为什么不需要在$mkBlk$的调用处，显示地再调用$fixBlack^2$?
 \end{itemize}
 
@@ -819,27 +880,27 @@ fixDB color l k r = Node color l k r
 \EndFunction
 \end{algorithmic}
 
-当插入一个新节点时，我们将其染成红色，然后修复平衡并返回。上述算法可以转换为下面的Python例子程序。
+当插入一个新节点时，我们将其染成红色，然后修复平衡并返回。上述算法可以转换为下面的Java例子程序。
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def rb_insert(t, key):
-    root = t
-    x = Node(key)
-    parent = None
-    while(t):
-        parent = t
-        if(key < t.key):
-            t = t.left
-        else:
-            t = t.right
-    if parent is None: #树为空
-        root = x
-    elif key < parent.key:
-        parent.set_left(x)
-    else:
-        parent.set_right(x)
-    return rb_insert_fix(root, x)
+public Node insert(Node t, int key) {
+    Node root = t;
+    Node x = new Node(key);
+    Node parent = null;
+    while (t != null) {
+        parent = t;
+        t = key < t.key ? t.left : t.right;
+    }
+    if (parent == null) { // insert key to the empty tree
+        root = x;
+    } else if (key < parent.key) {
+        parent.setLeft(x);
+    } else {
+        parent.setRight(x);
+    }
+    return insertFix(root, x);
+}
 \end{lstlisting}
 
 总共有3种基本情况需要修复。如果考虑左右对称，则需要修复6种情况。3种基本情况中的两种可以合并。新插入节点的父节点，以及父节点的兄弟节点均为红色。我们可以把它们变为黑色，然后把新插入节点的祖父节点染为红色。修复算法的实现如下：
@@ -885,37 +946,45 @@ def rb_insert(t, key):
 
 这一算法向红黑树中插入key的复杂度为$O(\lg n)$。和前面定义的$balance$函数相比，我们可以发现它们的差异。两种方法不仅仅在篇幅长短上不同，具体的逻辑也不一样。即使输入同一序列的key，两种方法也会构造出不同的红黑树。并且，和这一命令式算法相比，前面使用模式匹配的函数式算法存在一些性能上的损失。Okasaki在\cite{okasaki}中给出了关于函数式红黑树插入算法性能的详细分析。
 
-上述修复算法可以实现为如下的Python例子程序。
+上述修复算法可以实现为如下的Java例子程序。
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-# 修复连续的红色节点
-def rb_insert_fix(t, x):
-    while(x.parent and x.parent.color==RED):
-        if x.uncle().color == RED:
-            # 情况1: ((a:R x:R b) y:B c:R) ==> ((a:R x:B b) y:R c:B)
-            set_color([x.parent, x.grandparent(), x.uncle()],
-                      [BLACK, RED, BLACK])
-            x = x.grandparent()
-        else:
-            if x.parent == x.grandparent().left:
-                if x == x.parent.right:
-                    # 情况2: ((a x:R b:R) y:B c) ==> 情况3
-                    x = x.parent
-                    t=left_rotate(t, x)
-                # 情况3: ((a:R x:R b) y:B c) ==> (a:R x:B (b y:R c))
-                set_color([x.parent, x.grandparent()], [BLACK, RED])
-                t=right_rotate(t, x.grandparent())
-            else:
-                if x == x.parent.left:
-                    # 情况2': (a x:B (b:R y:R c)) ==> 情况3'
-                    x = x.parent
-                    t = right_rotate(t, x)
-                # 情况3': (a x:B (b y:R c:R)) ==> ((a x:R b) y:B c:R)
-                set_color([x.parent, x.grandparent()], [BLACK, RED])
-                t=left_rotate(t, x.grandparent())
-    t.color = BLACK
-    return t
+Node insertFix(Node t, Node x) {
+    while (x.parent != null && x.parent.color == Color.RED) {
+        if (x.uncle().color == Color.RED) {
+            // 情况1: ((a:R, x:R, b), y:B, c:R) ==> ((a:R, x:B, b), y:R, c:B)
+            setColors(x.parent, Color.BLACK,
+                      x.grandparent(), Color.RED,
+                      x.uncle(), Color.BLACK);
+            x = x.grandparent();
+        } else {
+            if (x.parent == x.grandparent().left) {
+                if (x == x.parent.right) {
+                    // 情况2: ((a, x:R, b:R), y:B, c) ==> case 3
+                    x = x.parent;
+                    t = rotateLeft(t, x);
+                }
+                // 情况3: ((a:R, x:R, b), y:B, c) ==> (a:R, x:B, (b, y:R, c))
+                setColors(x.parent, Color.BLACK,
+                          x.grandparent(), Color.RED);
+                t = rotateRight(t, x.grandparent());
+            } else {
+                if (x == x.parent.left) {
+                    // 情况2': (a, x:B, (b:R, y:R, c)) ==> case 3'
+                    x = x.parent;
+                    t = rotateRight(t, x);
+                }
+                // 情况3': (a, x:B, (b, y:R, c:R)) ==> ((a, x:R, b), y:B, c:R)
+                setColors(x.parent, Color.BLACK,
+                          x.grandparent(), Color.RED);
+                t = rotateLeft(t, x.grandparent());
+            }
+        }
+    }
+    t.color = Color.BLACK;
+    return t;
+}
 \end{lstlisting}
 
 图\ref{fig:imperative-insert}给出了两棵红黑树，它们是使用和图\ref{fig:insert-example}中完全相同的序列构造出的。我们可以发现它们明显不同。
@@ -950,12 +1019,6 @@ Chris Okasaki. ``Ten Years of Purely Functional Data Structures''. http://okasak
 
 \bibitem{wiki-rbt}
 Wikipedia. ``Red-black tree''. http://en.wikipedia.org/wiki/Red-black\_tree
-
-\bibitem{lyn}
-Lyn Turbak. ``Red-Black Trees''. http://cs.wellesley.edu/~cs231/fall01/red-black.pdf Nov. 2, 2001.
-
-\bibitem{sgi-stl}
-SGI STL. http://www.sgi.com/tech/stl/
 
 \bibitem{rosetta}
 Pattern matching. http://rosettacode.org/wiki/Pattern\_matching
