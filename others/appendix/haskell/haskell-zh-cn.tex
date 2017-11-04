@@ -138,6 +138,111 @@ delete (Node l k r) x | x < k = (Node (delete l x) k r)
                           where k' = min r
 \end{lstlisting}
 
+\section{红黑树}
+
+\subsection{插入}
+
+使用模式匹配的红黑树插入算法。
+
+\begin{lstlisting}
+data Color = R | B
+data RBTree a = Empty
+              | Node Color (RBTree a) a (RBTree a)
+
+insert::(Ord a)=>RBTree a -> a -> RBTree a
+insert t x = makeBlack $ ins t where
+    ins Empty = Node R Empty x Empty
+    ins (Node color l k r)
+        | x < k     = balance color (ins l) k r
+        | otherwise = balance color l k (ins r)
+    makeBlack(Node _ l k r) = Node B l k r
+
+balance::Color -> RBTree a -> a -> RBTree a -> RBTree a
+balance B (Node R (Node R a x b) y c) z d =
+        Node R (Node B a x b) y (Node B c z d)
+balance B (Node R a x (Node R b y c)) z d =
+        Node R (Node B a x b) y (Node B c z d)
+balance B a x (Node R b y (Node R c z d)) =
+        Node R (Node B a x b) y (Node B c z d)
+balance B a x (Node R (Node R b y c) z d) =
+        Node R (Node B a x b) y (Node B c z d)
+balance color l k r = Node color l k r
+
+\end{lstlisting}
+
+\subsection{删除}
+
+使用“双重黑色”概念实现的红黑树删除算法。
+
+\begin{lstlisting}
+data Color = R | B | BB deriving (Show, Eq) -- BB为双重黑色
+data RBTree a = Empty
+              | Node Color (RBTree a) a (RBTree a)
+              | BBEmpty -- 双重黑色空节点
+
+min::RBTree a -> a
+min (Node _ Empty x _) = x
+min (Node _ l _ _) = min l
+
+isEmpty :: (RBTree a) -> Bool
+isEmpty Empty = True
+isEmpty _ = False
+
+delete::(Ord a)=>RBTree a -> a -> RBTree a
+delete t x = blackenRoot (del t x) where
+    del Empty _ = Empty
+    del (Node color l k r) x
+        | x < k = fixDB color (del l x) k r
+        | x > k = fixDB color l k (del r x)
+        -- x == k, 删除此节点
+        | isEmpty l = if color==B then makeBlack r else r
+        | isEmpty r = if color==B then makeBlack l else l
+        | otherwise = fixDB color l k' (del r k') where k'= min r
+    blackenRoot (Node _ l k r) = Node B l k r
+    blackenRoot _ = Empty
+
+makeBlack::RBTree a -> RBTree a
+makeBlack (Node B l k r) = Node BB l k r -- 双重黑色
+makeBlack (Node _ l k r) = Node B l k r
+makeBlack Empty = BBEmpty
+makeBlack t = t
+
+fixDB::Color -> RBTree a -> a -> RBTree a -> RBTree a
+-- 兄弟节点为黑色，有一个红色的侄子
+fixDB color a@(Node BB _ _ _) x (Node B (Node R b y c) z d) =
+      Node color (Node B (makeBlack a) x b) y (Node B c z d)
+fixDB color BBEmpty x (Node B (Node R b y c) z d) =
+      Node color (Node B Empty x b) y (Node B c z d)
+fixDB color a@(Node BB _ _ _) x (Node B b y (Node R c z d)) =
+      Node color (Node B (makeBlack a) x b) y (Node B c z d)
+fixDB color BBEmpty x (Node B b y (Node R c z d)) =
+      Node color (Node B Empty x b) y (Node B c z d)
+fixDB color (Node B a x (Node R b y c)) z d@(Node BB _ _ _) =
+      Node color (Node B a x b) y (Node B c z (makeBlack d))
+fixDB color (Node B a x (Node R b y c)) z BBEmpty =
+      Node color (Node B a x b) y (Node B c z Empty)
+fixDB color (Node B (Node R a x b) y c) z d@(Node BB _ _ _) =
+      Node color (Node B a x b) y (Node B c z (makeBlack d))
+fixDB color (Node B (Node R a x b) y c) z BBEmpty =
+      Node color (Node B a x b) y (Node B c z Empty)
+-- 兄弟为红色
+fixDB B a@(Node BB _ _ _) x (Node R b y c) = fixDB B (fixDB R a x b) y c
+fixDB B a@BBEmpty x (Node R b y c) = fixDB B (fixDB R a x b) y c
+fixDB B (Node R a x b) y c@(Node BB _ _ _) = fixDB B a x (fixDB R b y c)
+fixDB B (Node R a x b) y c@BBEmpty = fixDB B a x (fixDB R b y c)
+-- 兄弟和两个侄子都是黑色。
+fixDB color a@(Node BB _ _ _) x (Node B b y c) =
+      makeBlack (Node color (makeBlack a) x (Node R b y c))
+fixDB color BBEmpty x (Node B b y c) =
+      makeBlack (Node color Empty x (Node R b y c))
+fixDB color (Node B a x b) y c@(Node BB _ _ _) = m
+      akeBlack (Node color (Node R a x b) y (makeBlack c))
+fixDB color (Node B a x b) y BBEmpty =
+      makeBlack (Node color (Node R a x b) y Empty)
+-- 其他情况
+fixDB color l k r = Node color l k r
+\end{lstlisting}
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi
