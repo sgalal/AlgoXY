@@ -193,19 +193,19 @@ is to store the balance factor inside each nodes, and update them
 when we modify the tree. The latter one avoid computing the same value
 every time.
 
-Based on this idea, we can add one data field $\delta$ to the original
-binary search tree as the following C++ code example \footnote{Some implementations store the height of a tree instead of $\delta$ as in \cite{py-avl}}.
+Based on this idea, we can add one extra data field $\delta$ to the
+binary search tree definition. The following Java example code reflects
+this change \footnote{Some implementations store the height of a tree instead of $\delta$ as in \cite{py-avl}}.
 
-\lstset{language=C++}
+\lstset{language=Java}
 \begin{lstlisting}
-template <class T>
-struct node{
-  int delta;
-  T key;
-  node* left;
-  node* right;
-  node* parent;
-};
+public class Node {
+    public int key;
+    public int delta;  // balance factor
+    public Node left;
+    public Node right;
+    public Node parent;
+}
 \end{lstlisting}
 
 In purely functional setting, some implementation use different
