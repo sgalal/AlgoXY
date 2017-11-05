@@ -46,24 +46,24 @@
 \label{introduction} \index{AVL tree}
 
 \subsection{How to measure the balance of a tree?}
-Besides red-black tree, are there any other intuitive solutions of self-balancing
-binary search tree? In order to measure how balancing a binary search tree is,
+Besides red-black tree, are there any other intuitive self-balancing
+binary search trees? In order to measure how balancing a binary search tree is,
 one idea is to compare the height of the right sub-tree and left sub-tree.
 If they differs a lot, the tree isn't well balanced. Let's denote the
 difference height between two children as below
 
 \be
-  \delta(T) = |R| - |L|
+  \delta(T) = |T_R| - |T_L|
 \ee
 
-Where $|T|$ means the height of tree $T$, and $L$, $R$ denotes the left
-sub-tree and right sub-tree.
+Where $|T|$ means the height of tree $T$, and $T_L$, $T_R$ are the left
+and right sub-trees.
 
-If $\delta(T) = 0$, The tree is definitely balanced. For example, a
+If $\delta(T) = 0$ for every node, The tree is definitely balanced. For example, a
 complete binary tree has $n=2^h-1$ nodes for height $h$. There is
 no empty branches unless the leafs. Another trivial case is empty
 tree. $\delta(\phi) = 0$. The less absolute value of $\delta(T)$
-the more balancing the tree is.
+the more balanced the tree is.
 
 We define $\delta(T)$ as the {\em balance factor} of a binary search
 tree.
@@ -74,7 +74,7 @@ tree.
 \section{Definition of AVL tree}
 \index{AVL tree!definition}
 
-An AVL tree is a special binary search tree, that all sub-trees
+The AVL tree is a special binary search tree, that all sub-trees
 satisfying the following criteria.
 
 \be
@@ -87,7 +87,7 @@ means there are only three valid values, -1, 0 and 1. Figure \ref{fig:avl-exampl
 \begin{figure}[htbp]
    \centering
    \includegraphics[scale=0.5]{img/avl-example.ps}
-   \caption{An example AVL tree} \label{fig:avl-example}
+   \caption{AVL tree example} \label{fig:avl-example}
 \end{figure}
 
 
@@ -98,25 +98,25 @@ the nodes in the tree? Let's prove this fact.
 For an AVL tree of height $h$, The number of nodes varies. It can have at
 most $2^h-1$ nodes for a complete binary tree. We are interesting about
 how many nodes there are at least. Let's denote the minimum number of nodes
-for height $h$ AVL tree as $N(h)$. It's obvious for the trivial cases
-as below.
+for the AVL tree of height $h$ as $N(h)$. It's obvious we have the below
+result for the trivial cases.
 
 \begin{itemize}
 \item For empty tree, $h=0$, $N(0)=0$;
-\item For a singleton root, $h=1$, $N(1)=1$;
+\item For a singleton leaf tree, $h=1$, $N(1)=1$;
 \end{itemize}
 
-What's the situation for common case $N(h)$? Figure \ref{fig:N-h-relation}
-shows an AVL tree $T$ of height $h$. It contains three part, the root node,
-and two sub trees $L, R$. We have the following fact.
+What's the situation for the common case $N(h)$? Figure \ref{fig:N-h-relation}
+shows an AVL tree $T$ of height $h$. It contains three parts, the root node,
+and two sub trees $T_L$, $T_R$. We have the following fact.
 
 \be
-  h= max(|L|, |R|) + 1
+  h= max(|T_L|, |T_R|) + 1
 \ee
 
 We immediately know that, there must be one child has height $h-1$. According
 to the definition of AVL tree, we have
-$||L|-|B|| \leq 1$. This leads to the fact that the height of
+$||T_L|-|T_r|| \leq 1$. This leads to the fact that the height of
 other tree can't be lower than $h-2$, So the total number of the nodes
 of $T$ is the number of nodes in both children plus 1 (for the root node).
 We exclaim that.
@@ -129,7 +129,7 @@ We exclaim that.
 \begin{figure}[htbp]
    \centering
    \includegraphics[scale=0.5]{img/Nh-lvr.ps}
-   \caption{An AVL tree with height $h$, one of the sub-tree with height $h-1$, the other is no less than $h-2$} \label{fig:N-h-relation}
+   \caption{An AVL tree of height $h$. The height of one sub-tree is $h-1$, the other is no less than $h-2$} \label{fig:N-h-relation}
 \end{figure}
 
 This recursion reminds us the famous Fibonacci series. Actually we can
@@ -142,7 +142,7 @@ transform it to Fibonacci series by defining $N'(h) = N(h)+1$. So equation
 
 \begin{lemma}
 \label{lemma:N-phi}
-Let $N(h)$ be the minimum number of nodes for an AVL tree with
+Let $N(h)$ be the minimum number of nodes for an AVL tree of
 height $h$. and $N'(h) = N(h) + 1$, then
 \be
   N'(h) \geq \phi^h
@@ -179,12 +179,12 @@ From Lemma \ref{lemma:N-phi}, we immediately get
 It tells that the height of AVL tree is proportion to $O(\lg n)$, which
 means that AVL tree is balanced.
 
-During the basic mutable tree operations such as insertion and deletion,
-if the balance factor changes to any invalid value, some fixing has
+For the mutate operations such as tree insertion and deletion,
+if the balance factor changes to any invalid values, some fixing has
 to be performed to resume $|\delta|$ within 1. Most implementations utilize
 tree rotations. In this chapter, we'll show the pattern matching solution
 which is inspired by Okasaki's red-black tree solution\cite{okasaki}.
-Because of this modify-fixing approach, AVL tree is also a kind of
+Because of this `modify-fix' approach, AVL tree is also a kind of
 self-balancing binary search tree. For comparison purpose, we'll also
 show the procedural algorithms.
 
