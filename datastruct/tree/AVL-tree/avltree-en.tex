@@ -217,10 +217,11 @@ constructors to store the $\delta$ information. for example in
 In this chapter, we'll explicitly store the balance factor inside
 the node.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-data AVLTree a = Empty
-               | Br (AVLTree a) a (AVLTree a) Int
+sealed trait Tree[+A]
+case object Empty extends Tree[Nothing]
+case class Br[A](left: Tree[A], key: A, right: Tree[A], delta: Int) extends Tree[A]
 \end{lstlisting}
 
 The immutable operations, including looking up, finding the maximum

@@ -1,17 +1,17 @@
 import scala.util.Random   //for verification
 import scala.language.postfixOps
 
-sealed abstract class Color
-case object R extends Color
-case object B extends Color
-case object BB extends Color  //doubly black
-
-sealed trait Tree[+A]
-case object E extends Tree[Nothing]
-case object BBE extends Tree[Nothing] //doubly black empty
-case class T[A] (c: Color, left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
-
 object RBTree {
+  sealed abstract class Color
+  case object R extends Color
+  case object B extends Color
+  case object BB extends Color  //doubly black
+
+  sealed trait Tree[+A]
+  case object E extends Tree[Nothing]
+  case object BBE extends Tree[Nothing] //doubly black empty
+  case class T[A] (c: Color, left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
+
   def insert[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] = makeBlack(ins(tr, x))
 
   def ins[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] = tr match {

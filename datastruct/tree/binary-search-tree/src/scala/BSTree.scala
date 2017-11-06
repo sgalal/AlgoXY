@@ -1,14 +1,12 @@
 import scala.util.Random                //for verification purpose
 import scala.language.postfixOps
 
-// BST definition
-sealed trait Tree[+A]
-
-case object Empty extends Tree[Nothing]
-
-case class Node[A] (left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
-
 object BSTree {
+
+  sealed trait Tree[+A]
+  case object Empty extends Tree[Nothing]
+  case class Node[A] (left: Tree[A], key: A, right: Tree[A]) extends Tree[A]
+
   // helpers
   def leaf[A] (x: A) : Tree[A] = Node(Empty, x, Empty)
 
