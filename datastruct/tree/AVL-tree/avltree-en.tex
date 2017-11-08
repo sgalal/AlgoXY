@@ -533,61 +533,61 @@ def balance[A] (tr: Tree[A], delta: Int): (Tree[A], Int) =
 \end{lstlisting}
 
 The insertion algorithm takes time proportion to the height of the
-tree, and according to the result we proved above, its performance
+tree. As AVL is balanced according to (\ref{eq:AVL-height}), its performance
 is $O(\lg n)$ where $n$ is the number of elements stored in the AVL
 tree.
 
 \subsubsection{Verification}
 \index{AVL tree!verification}
-One can easily create a function to verify a tree is AVL tree.
-Actually we need verify two things, first, it's a binary search tree;
-second, it satisfies AVL tree property.
-
-We left the first verification problem as an exercise to the reader.
+When verify if a tree is AVL tree, we need verify two things,
+first, it's a binary search tree; second, it satisfies AVL tree property.
 
 In order to test if a binary tree satisfies AVL tree property, we can
-test the difference in height between its two children, and recursively
-test that both children conform to AVL property until we arrive at
-an empty leaf.
+examine the height difference between the two sub trees recursively
+till the leaves.
 
 \be
   avl?(T) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   True & T = \phi \\
-  avl?(L) \land avl?(R) \land ||R|-|L|| \leq 1 & otherwise
+  avl?(T_l) \land avl?(T_r) \land ||T_r|-|T_l|| \leq 1 & otherwise
   \end{array}
   \right .
 \ee
 
-And the height of a AVL tree can also be calculate from the definition.
+Where the height can also be calculated recursively.
 
 \be
   |T| = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   0 & T = \phi \\
-  1 + max(|R|, |L|) & otherwise
+  1 + max(|T_r|, |T_l|) & otherwise
   \end{array}
   \right .
 \ee
 
-The corresponding Haskell program is given as the following.
+The corresponding Scala example program is given as the following.
 
 \begin{lstlisting}
-isAVL :: (AVLTree a) -> Bool
-isAVL Empty = True
-isAVL (Br l _ r d) = and [isAVL l, isAVL r, abs (height r - height l) <= 1]
+def isAVL[A] (tr: Tree[A]): Boolean = tr match {
+  case Empty => true
+  case Br(left, _, right, d) => {
+    val d = math.abs(height(right) - height(left))
+    isAVL(left) && isAVL(right) && d <= 1
+  }
+}
 
-height :: (AVLTree a) -> Int
-height Empty = 0
-height (Br l _ r _) = 1 + max (height l) (height r)
+def height[A] (tr: Tree[A]): Int = tr match {
+  case Empty => 0
+  case Br(left, _, right, _) => 1 + math.max(height(left), height(right))
+}
 \end{lstlisting}
 
 \begin{Exercise}
-Write a program to verify a binary tree is a binary search tree in your
-favorite programming language. If you choose to use an imperative language,
-please consider realize this program without recursion.
+Write a program to verify a binary tree is a binary search tree.
+Please consider both functional and imperative approaches.
 \end{Exercise}
 
 
@@ -599,35 +599,23 @@ please consider realize this program without recursion.
 \section{Deletion}
 \index{AVL tree!deletion}
 
-As we mentioned before, deletion doesn't make significant sense in
-purely functional settings. As the tree is read only, it's typically
-performs frequently looking up after build.
+As we mentioned before, deletion will not be a major problem in
+purely functional settings. As the tree is read only, the use case
+is typically performing looking up after build.
 
-Even if we implement deletion, it's actually re-building the tree
-as we presented in chapter of red-black tree. We left the deletion
-of AVL tree as an exercise to the reader.
-
-\begin{Exercise}
-
-\begin{itemize}
-
-\item Take red-black tree deletion algorithm as an example, write the
-AVL tree deletion program in purely functional approach in your
-favorite programming language.
-\end{itemize}
-
-\end{Exercise}
+For purely functional deletion, it actually re-builds the tree
+as we show in the chatper of red-black tree. We put the AVL
+tree deletion algorithm in Appendix D.
 
 \section{Imperative AVL tree algorithm $\star$}
 \index{AVL tree!imperative insertion}
 
-We almost finished all the content in this chapter about AVL tree.
-However, it necessary to show the traditional insert-and-rotate
-approach as the comparator to pattern matching algorithm.
+This section shows the traditional insert-and-rotate
+approach to realize AVL tree insertion algorithm.
 
-Similar as the imperative red-black tree algorithm, the strategy
-is first to do the insertion as same as for binary search tree,
-then fix the balance problem by rotation and return the final result.
+Similar to the red-black tree algorithm, the strategy
+is to first do the binary search tree insertion,
+then fix the balance by rotation and return the final result.
 
 \begin{algorithmic}[1]
 \Function{Insert}{$T, k$}
@@ -655,14 +643,14 @@ then fix the balance problem by rotation and return the final result.
 \EndFunction
 \end{algorithmic}
 
-Note that after insertion, the height of the tree may increase, so that
-the balancing factor $\delta$ may also change, insert on right side will
-increase $\delta$ by 1, while insert on left side will decrease it. By
+Note that after insertion, the balance factor $\delta$ may change because
+the height of the tree can grow. Inserting on right side can
+increase $\delta$ by 1, while insert on left side can decrease it. By
 the end of this algorithm, we need perform bottom-up fixing from node $x$
-towards root.
+up to the root.
 
-We can translate the pseudo code to real programming language, such as
-Python \footnote{C and C++ source code are available along with this book}.
+We can translate the pseudo code to Java example program.
+
 \lstset{language=Python}
 \begin{lstlisting}
 def avl_insert(t, key):
