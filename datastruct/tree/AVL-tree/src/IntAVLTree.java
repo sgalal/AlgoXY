@@ -137,4 +137,27 @@ public class IntAVLTree {
         }
         return t;
     }
+
+    // Auxiliary
+
+    public static List<Integer> toList(Node t) {
+        if (t == null) return new ArrayList<Integer>();
+        List<Integer> xs = toList(t.left);
+        xs.add(t.key);
+        xs.addAll(toList(t.right));
+        return xs;
+    }
+
+    public static Node fromList(Collection<Integer> xs) {
+        Node t = null;
+        for (Integer x : xs)
+            t = insert(t, x);
+        return t;
+    }
+
+    public static String toStr(Node t) {
+        if (t == null) return ".";
+        return String.format("(%s %d:%d %s)", toStr(t.left), t.key, t.delta,
+                             toStr(t.right));
+    }
 }
