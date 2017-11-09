@@ -11,7 +11,7 @@ public class IntAVLTree {
         public Node right;
         public Node parent;
 
-        public Node(int k) { Key = k; }
+        public Node(int k) { key = k; }
 
         void setLeft(Node x) {
             left = x;
@@ -127,7 +127,31 @@ public class IntAVLTree {
                 x = x.parent;
             } else if (abs(d1) == 1 && abs(d2) == 2) {
                 if (d2 == 2) {
+                    if (r.delta == 1) { // right-right case
+                        p.delta = 0;
+                        r.delta = 0;
+                        t = rotateLeft(t, p);
+                    } else if (r.delta == -1) { // right-left case
+                        int dy = r.left.delta;
+                        p.delta = dy == 1 ? -1 : 0;
+                        r.left.delta = 0;
+                        r.delta = dy == -1 ? 1 : 0;
+                        t = rotateRight(t, r);
+                        t = rotateLeft(t, p);
+                    }
                 } else if (d2 == -2) {
+                    if (l.delta == -1) { // left-left case
+                        p.delta = 0;
+                        l.delta = 0;
+                        t = rotateRight(t, p);
+                    } else if (l.delta == 1) { // left-right case
+                        int dy = l.right.delta;
+                        l.delta = dy == 1 ? -1 : 0;
+                        l.right.delta = 0;
+                        p.delta = dy == -1 ? 1 : 0;
+                        t = rotateLeft(t, l);
+                        t = rotateRight(t, p);
+                    }
                 }
                 break;
             } else {
@@ -139,6 +163,10 @@ public class IntAVLTree {
     }
 
     // Auxiliary
+
+    public static int height(Node t) {
+        return t == null ? 0 : (1 + max(height(t.left), height(t.right)));
+    }
 
     public static List<Integer> toList(Node t) {
         if (t == null) return new ArrayList<Integer>();
