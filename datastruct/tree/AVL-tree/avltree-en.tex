@@ -651,39 +651,38 @@ up to the root.
 
 We can translate the pseudo code to Java example program.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def avl_insert(t, key):
-    root = t
-    x = Node(key)
-    parent = None
-    while(t):
-        parent = t
-        if(key < t.key):
-            t = t.left
-        else:
-            t = t.right
-    if parent is None: #tree is empty
-        root = x
-    elif key < parent.key:
-        parent.set_left(x)
-    else:
-        parent.set_right(x)
-    return avl_insert_fix(root, x)
+Node insert(Node t, int key) {
+    Node root = t;
+    Node x = new Node(key);
+    Node parent = null;
+    while (t != null) {
+        parent = t;
+        t = key < t.key ? t.left : t.right;
+    }
+    if (parent == null) { // insert key to the empty tree
+        root = x;
+    } else if (key < parent.key) {
+        parent.setLeft(x);
+    } else {
+        parent.setRight(x);
+    }
+    return insertFix(root, x);
+}
 \end{lstlisting}
 
 This is a top-down algorithm. It searches the tree from root down to the proper
-position and inserts the new key as a leaf. By the end of this algorithm, it calls fixing procedure, by passing the root and the new node inserted.
+position and inserts the new key as a leaf. By the end of this algorithm, it calls the fixing function with the root and the new inserted node.
 
-Note that we reuse the same methods of \texttt{set\_left()} and \texttt{set\_right()} as
-we defined in chapter of red-black tree.
+We reuse the same \texttt{setLeft()} and \texttt{setRight()} methods defined for the red-black tree.
 
-In order to resume the AVL tree balance property by fixing, we first determine if the new node is inserted on left hand or right hand. If it is on left, the balancing factor $\delta$ decreases, otherwise it increases. If we denote the new value as $\delta'$, there are 3 cases of the relationship between $\delta$ and $\delta'$.
+In order to resume the AVL tree property, we first check if the new node is inserted on left or right. If it is on left, the balance factor $\delta$ decreases, otherwise it increases. If we denote the new value as $\delta'$, there are 3 cases between $\delta$ and $\delta'$.
 
 \begin{itemize}
-\item If $|\delta| = 1$ and $|\delta'| = 0$, this means adding the new node makes the tree perfectly balanced, the height of the parent node doesn't change, the algorithm can be terminated.
+\item If $|\delta| = 1$ and $|\delta'| = 0$, it means the new node makes the tree perfectly balanced, the height of the parent node doesn't change, the algorithm can be terminated.
 
-\item If $|\delta| = 0$ and $|\delta'| = 1$, it means that either the height of left sub tree or right sub tree increases, we need go on check the upper level of the tree.
+\item If $|\delta| = 0$ and $|\delta'| = 1$, it means either the left or the right sub tree increases its height. We need go on checking the upper level of the tree.
 
 \item If $|\delta| = 1$ and $|\delta'| = 2$, it means the AVL tree property is violated due to the new insertion. We need perform rotation to fix it.
 \end{itemize}
@@ -758,75 +757,65 @@ In order to resume the AVL tree balance property by fixing, we first determine i
 \EndFunction
 \end{algorithmic}
 
-Here we reuse the rotation algorithms mentioned in red-black tree chapter.
-Rotation operation doesn't update balancing factor $\delta$ at all,
-However, since rotation changes (actually improves) the balance situation
-we should update these factors. Here we refer the results from above section. Among the four cases, right-right case and left-left case only need one rotation, while right-left case and left-right case need two rotations.
+As rotation operation doesn't update the balance factor $\delta$,
+we need update it for impacted nodes. Among the four cases, the right-right case and the left-left case need only one rotation, while the right-left case and the left-right case need two rotations.
 
-The relative python program is shown as the following.
+The relative example Java program is as the following.
 
 \begin{lstlisting}
-def avl_insert_fix(t, x):
-    while x.parent is not None:
-        d2 = d1 = x.parent.delta
-        if x == x.parent.left:
-            d2 = d2 - 1
-        else:
-            d2 = d2 + 1
-        x.parent.delta = d2
-        (p, l, r) = (x.parent, x.parent.left, x.parent.right)
-        if abs(d1) == 1 and abs(d2) == 0:
-            return t
-        elif abs(d1) == 0 and abs(d2) == 1:
-            x = x.parent
-        elif abs(d1)==1 and abs(d2) == 2:
-            if d2 == 2:
-                if r.delta == 1:  # Right-right case
-                    p.delta = 0
-                    r.delta = 0
-                    t = left_rotate(t, p)
-                if r.delta == -1: # Right-Left case
-                    dy = r.left.delta
-                    if dy == 1:
-                        p.delta = -1
-                    else:
-                        p.delta = 0
-                    r.left.delta = 0
-                    if dy == -1:
-                        r.delta = 1
-                    else:
-                        r.delta = 0
-                    t = right_rotate(t, r)
-                    t = left_rotate(t, p)
-            if d2 == -2:
-                if l.delta == -1: # Left-left case
-                    p.delta = 0
-                    l.delta = 0
-                    t = right_rotate(t, p)
-                if l.delta == 1: # Left-right case
-                    dy = l.right.delta
-                    if dy == 1:
-                        l.delta = -1
-                    else:
-                        l.delta = 0
-                    l.right.delta = 0
-                    if dy == -1:
-                        p.delta = 1
-                    else:
-                        p.delta = 0
-                    t = left_rotate(t, l)
-                    t = right_rotate(t, p)
-            break
-    return t
+Node insertFix(Node t, Node x) {
+    while (x.parent != null) {
+        int d1 = x.parent.delta;
+        int d2 = d1 + (x == x.parent.left ? -1 : 1);
+        x.parent.delta = d2;
+        Node p = x.parent;
+        Node l = x.parent.left;
+        Node r = x.parent.right;
+        if (abs(d1) == 1 && abs(d2) == 0) {
+            return t;
+        } else if (abs(d1) == 0 && abs(d2) == 1) {
+            x = x.parent;
+        } else if (abs(d1) == 1 && abs(d2) == 2) {
+            if (d2 == 2) {
+                if (r.delta == 1) { // right-right case
+                    p.delta = 0;
+                    r.delta = 0;
+                    t = rotateLeft(t, p);
+                } else if (r.delta == -1) { // right-left case
+                    int dy = r.left.delta;
+                    p.delta = dy == 1 ? -1 : 0;
+                    r.left.delta = 0;
+                    r.delta = dy == -1 ? 1 : 0;
+                    t = rotateRight(t, r);
+                    t = rotateLeft(t, p);
+                }
+            } else if (d2 == -2) {
+                if (l.delta == -1) { // left-left case
+                    p.delta = 0;
+                    l.delta = 0;
+                    t = rotateRight(t, p);
+                } else if (l.delta == 1) { // left-right case
+                    int dy = l.right.delta;
+                    l.delta = dy == 1 ? -1 : 0;
+                    l.right.delta = 0;
+                    p.delta = dy == -1 ? 1 : 0;
+                    t = rotateLeft(t, l);
+                    t = rotateRight(t, p);
+                }
+            }
+            break;
+        }
+    }
+    return t;
+}
 \end{lstlisting}
 
-We skip the AVL tree deletion algorithm and left this as an exercise to the reader.
+We put the AVL tree deletion algorithm in appendix D for reference.
 
 \begin{Exercise}
 
 \begin{itemize}
-\item Write the deletion algorithm in imperative approach in your favorite
-programming language.
+\item For illustration purpose, we limit the key type to integer. Write a AVL tree program with Java generic, and limit it to all the comparable types.
 
 \end{itemize}
 
@@ -839,9 +828,9 @@ AVL tree was invented in 1962 by Adelson-Velskii and Landis\cite{wiki},
 
 It's very common to compare AVL tree and red-black tree, both are self-balancing binary search trees, and for all the major operations, they both consume $O(\lg n)$ time. From the result of (\ref{eq:AVL-height}), AVL tree is more rigidly balanced hence they are faster than red-black tree in looking up intensive applications \cite{wiki}. However, red-black trees could perform better in frequently insertion and removal cases.
 
-Many popular self-balancing binary search tree libraries are implemented on top of red-black tree such as STL etc. However, AVL tree provides an intuitive and effective solution to the balance problem as well.
+Many popular self-balancing binary search tree libraries are implemented on top of red-black tree. However, AVL tree provides an intuitive and effective solution to the balance problem as well.
 
-After this chapter, we'll extend the tree data structure from storing data in node to storing information on edges, which leads to Trie and Patrica, etc. If we extend the number of children from two to more, we can get B-tree. These data structures will be introduced next.
+After this chapter, we'll extend the tree data structure from storing data in node to storing information on edges. It leads to Radix trees. If we extend the number of children from two to more, we can get B-tree. These data structures will be introduced in the next chapters.
 
 \begin{thebibliography}{99}
 
