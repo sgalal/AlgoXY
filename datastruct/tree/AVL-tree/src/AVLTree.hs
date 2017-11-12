@@ -70,7 +70,6 @@ balance (t, d) = (t, d)
 delete::(Ord a) => AVLTree a -> a -> AVLTree a
 delete t x = fst $ del t x where
   -- result is a pair (t, d), t: tree, d: decrement in height
-  del :: (Ord a) => AVLTree a -> a -> (AVLTree a, Int)
   del Empty _ = (Empty, 0)
   del (Br l k r d) x
     | x < k = node (del l x) k (r, 0) d
