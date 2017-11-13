@@ -515,18 +515,18 @@ and intuitive program.
 def balance[A] (tr: Tree[A], delta: Int): (Tree[A], Int) =
   (tr, delta) match {
     case (Br(Br(Br(a, x, b, dx), y, c, -1), z, d, -2), _) =>
-      (Br(Br(a, x, b, dx), y, Br(c, z, d,  0), 0), 0)
+      (Br(Br(a, x, b, dx), y, Br(c, z, d,  0), 0), delta - 1)
     case (Br(a, x, Br(b, y, Br(c, z, d, dz),  1),  2), _) =>
-      (Br(Br(a, x, b,  0), y, Br(c, z, d, dz), 0), 0)
+      (Br(Br(a, x, b,  0), y, Br(c, z, d, dz), 0), delta - 1)
     case (Br(Br(a, x, Br(b, y, c, dy),  1), z, d, -2), _) => {
       val dx1 = if (dy == 1) -1 else 0
       val dz1 = if (dy == -1) 1 else 0
-      (Br(Br(a, x, b, dx1), y, Br(c, z, d, dz1), 0), 0)
+      (Br(Br(a, x, b, dx1), y, Br(c, z, d, dz1), 0), delta - 1)
     }
     case (Br(a, x, Br(Br(b, y, c, dy), z, d, -1),  2), _) => {
       val dx1 = if (dy == 1) -1 else 0
       val dz1 = if (dy == -1) 1 else 0
-      (Br(Br(a, x, b, dx1), y, Br(c, z, d, dz1), 0), 0)
+      (Br(Br(a, x, b, dx1), y, Br(c, z, d, dz1), 0), delta - 1)
     }
     case _ => (tr, delta)
   }
