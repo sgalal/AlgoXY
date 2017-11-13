@@ -111,6 +111,11 @@ prop_delta = checkDelta . fromList. L.nub
 prop_avl :: (Ord a, Num a) => [a] -> Bool
 prop_avl = isAVL . fromList . L.nub
 
+prop_insert :: (Ord a, Num a) => [a] -> Bool
+prop_insert = snd . (foldl verifyInsert (Empty, True)) . L.nub where
+  verifyInsert (_, False) _ = (Empty, False)
+  verifyInsert (t, _) x = let t' = insert t x in (t', isAVL t')
+
 prop_del :: (Ord a, Num a) => [a] -> Bool
 prop_del = verifyDel . L.nub where
   verifyDel [] = True
