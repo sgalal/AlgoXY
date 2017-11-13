@@ -63,8 +63,8 @@ balance (Br (Br a x (Br b y c dy)    1) z d (-2), dH) = (Br (Br a x b dx') y (Br
 balance (Br a x (Br (Br b y c dy) z d (-1))    2, dH) = (Br (Br a x b dx') y (Br c z d dz') 0, dH-1) where
     dx' = if dy ==  1 then -1 else 0
     dz' = if dy == -1 then  1 else 0
-balance (Br (Br a x b dx) y Empty (-2), dH) = (Br a x (Br b y Empty (-1)) (dx+1), dH)
-balance (Br Empty x (Br a y b dy)    2, dH) = (Br (Br Empty x a  1) y b (dy-1), dH)
+balance (Br (Br a x b dx) y c (-2), dH) = (Br a x (Br b y c (-1)) (dx+1), dH)
+balance (Br a x (Br b y c dy)    2, dH) = (Br (Br a x b    1) y c (dy-1), dH)
 balance (t, d) = (t, d)
 
 delete::(Ord a) => AVLTree a -> a -> AVLTree a
@@ -79,7 +79,7 @@ delete t x = fst $ del t x where
     | isEmpty r = (l, -1)
     | otherwise = node (l, 0) k' (del r k') d where k' = min r
 
--- check if a AVLTree is valid
+-- vaidate a tree is AVL tree
 isAVL :: (AVLTree a) -> Bool
 isAVL Empty = True
 isAVL (Br l _ r d) = and [isAVL l, isAVL r, d == (height r - height l), abs d <= 1]
@@ -125,6 +125,13 @@ prop_del_avl :: (Ord a, Num a) => [a] -> Bool
 prop_del_avl = verifyDelAVL . L.nub where
   verifyDelAVL [] = True
   verifyDelAVL xs@(x:_) = isAVL $ delete (fromList xs) x
+
+prop_delete :: (Ord a, Num a) => [a] -> Bool
+prop_delete xs = snd $ foldl verifyDel (tr, isAVL tr) xs' where
+  xs' = L.nub xs
+  tr = fromList xs'
+  verifyDel (_, False) _ = (Empty, False)
+  verifyDel (t, _) x = let t' = delete t x in (t', isAVL t')
 
 -- Helper function for pretty printing
 instance Show a => Show (AVLTree a) where
