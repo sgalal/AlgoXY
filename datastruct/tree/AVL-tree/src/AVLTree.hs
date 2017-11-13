@@ -39,6 +39,18 @@ insert t x = fst $ ins t where
         | x == k    = (Br l k r d, 0)
         | otherwise = node (l, 0) k (ins r) d
 
+delete::(Ord a) => AVLTree a -> a -> AVLTree a
+delete t x = fst $ del t x where
+  -- result is a pair (t, d), t: tree, d: decrement in height
+  del Empty _ = (Empty, 0)
+  del (Br l k r d) x
+    | x < k = node (del l x) k (r, 0) d
+    | x > k = node (l, 0) k (del r x) d
+    -- x == k, delete this node
+    | isEmpty l = (r, -1)
+    | isEmpty r = (l, -1)
+    | otherwise = node (l, 0) k' (del r k') d where k' = min r
+
 -- params: (left, increment on left) key (right, increment on right)
 node::(AVLTree a, Int) -> a -> (AVLTree a, Int) -> Int -> (AVLTree a, Int)
 node (l, dl) k (r, dr) d = balance (Br l k r d', delta) where
@@ -63,21 +75,10 @@ balance (Br (Br a x (Br b y c dy)    1) z d (-2), dH) = (Br (Br a x b dx') y (Br
 balance (Br a x (Br (Br b y c dy) z d (-1))    2, dH) = (Br (Br a x b dx') y (Br c z d dz') 0, dH-1) where
     dx' = if dy ==  1 then -1 else 0
     dz' = if dy == -1 then  1 else 0
+-- Delete specific fixing
 balance (Br (Br a x b dx) y c (-2), dH) = (Br a x (Br b y c (-1)) (dx+1), dH)
 balance (Br a x (Br b y c dy)    2, dH) = (Br (Br a x b    1) y c (dy-1), dH)
 balance (t, d) = (t, d)
-
-delete::(Ord a) => AVLTree a -> a -> AVLTree a
-delete t x = fst $ del t x where
-  -- result is a pair (t, d), t: tree, d: decrement in height
-  del Empty _ = (Empty, 0)
-  del (Br l k r d) x
-    | x < k = node (del l x) k (r, 0) d
-    | x > k = node (l, 0) k (del r x) d
-    -- x == k, delete this node
-    | isEmpty l = (r, -1)
-    | isEmpty r = (l, -1)
-    | otherwise = node (l, 0) k' (del r k') d where k' = min r
 
 -- vaidate a tree is AVL tree
 isAVL :: (AVLTree a) -> Bool
