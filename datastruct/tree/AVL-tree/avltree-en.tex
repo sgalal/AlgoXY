@@ -489,9 +489,9 @@ The pattern matching fixing function can be given as the following.
 balance(T, \Delta H) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
-  (((A, x, B, \delta(x)), y, (C, z, D, 0), 0), 0) & P_{ll}(T) \\
-  (((A, x, B, 0), y, (C, z, D, \delta(z)), 0), 0) & P_{rr}(T) \\
-  (((A, x, B, \delta'(x)), y, (C, z, D, \delta'(z)), 0), 0) & P_{rl}(T) \lor P_{lr}(T) \\
+  (((A, x, B, \delta(x)), y, (C, z, D, 0), 0), \Delta H - 1) & P_{ll}(T) \\
+  (((A, x, B, 0), y, (C, z, D, \delta(z)), 0), \Delta H - 1) & P_{rr}(T) \\
+  (((A, x, B, \delta'(x)), y, (C, z, D, \delta'(z)), 0), \Delta H - 1) & P_{rl}(T) \lor P_{lr}(T) \\
   (T, \Delta H) & otherwise
   \end{array}
 \right.
