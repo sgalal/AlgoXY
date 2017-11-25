@@ -428,8 +428,6 @@ We can reuse the $tree()$ function, as well as the result for $\Delta H$.
 But different from insertion, there are extra two cases can violate AVL
 properties, thus need fixing.
 
-TODO: draw the two figures.
-
 \begin{figure}[htbp]
   \centering
   \subfloat[Fix AVL violation after deletion. case A]{
@@ -503,7 +501,23 @@ TODO: draw the two figures.
 
       \draw (2.5, -1) node{$\Longrightarrow$};
   \end{tikzpicture}}
+  \caption{AVL tree fixing for delete} \label{fig:avl-del-fixing}
 \end{figure}
+
+As shown in figure \ref{fig:avl-del-fixing}, both cases can be fixed by a tree rotation. It can be essentailly catpured by pattern matching to the tree structure.
+
+\be
+balance(T, \Delta H) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  ... \\
+  (A, x, (B, y, C, -1), \delta(x) + 1, \Delta H) & T = ((A, x, B \delta(x)), y, C, -2, \Delta H) \\
+  ((A, x, B 1), y, C, \delta(y) - 1, \Delta H) & T = (A, x, (B, y, C \delta(y)), 2, \Delta H) \\
+  ...
+  \end{array}
+\right.
+\ee
+
 
 Here is the example program in Scala
 
