@@ -21,7 +21,7 @@
 %                 COVER PAGE
 % ================================================================
 
-\title{Proof of AVL tree pattern matching algorithm}
+\title{AVL tree - proofs and deletion algorithm}
 
 \author{Larry~LIU~Xinyu
 \thanks{{\bfseries Larry LIU} \newline
@@ -31,10 +31,10 @@
 \maketitle
 \fi
 
-\markboth{Proof of AVL tree}{Elementary Algorithms}
+\markboth{AVL tree - proofs and deletion algorithm}{Elementary Algorithms}
 
 \ifx\wholebook\relax
-\chapter{Proof of AVL tree pattern matching algorithm}
+\chapter{AVL tree - proofs and deletion algorithm}
 \numberwithin{Exercise}{chapter}
 \fi
 
@@ -382,6 +382,101 @@ Collect all the above results, we get the new balancing factors after fixing as 
 Left-right lean case is symmetric to the Right-left lean case. By using
 the similar deduction, we can find the new balancing factors are identical
 to the result in (\ref{eq:rl-result}).
+
+\section{Deletion algorithm}
+
+Deletion can reduce the height of the sub tree where the node is removed.
+If the balance factor exceeds the range of $[-1, 1]$, then we need fix
+to resume the AVL properties.
+
+\subsection{Functional deletion}
+
+We can reuse most of the deletion algorithm for BST, then check the balance factor
+and perform fixing. Similiar to the insertion algorithm, the result after deletion
+is a pair $(T', \Delta H)$, where $T'$ is the new tree and $\Delta H$ is the decrement
+of the height. Let function $first(pair)$ return the first component in a pair.
+We define the deletion algorithm as below.
+
+\be
+delete(T, k) = first(del(T, k))
+\ee
+
+where
+
+\be
+del(T, k) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  (\phi, 0) & T = \phi \\
+  tree(del(T_l, k), k', (T_r, 0), \Delta) & k < k' \\
+  tree((T_l, 0), k', del(T_r, k), \Delta) & k > k' \\
+  (T_r, -1) & k = k', T_l = \phi \\
+  (T_l, -1) & k = k', T_r = \phi \\
+  tree((T_l, 0), k'', del(T_r, k''), \Delta) & otherwise, k'' = min(T_r)
+  \end{array}
+\right.
+\label{eq:avl-del}
+\ee
+
+If the tree is empty, the result is empty as well; Otherwise, we compare the
+key with the value to be delete and recursively lookup and perform delete
+along the sub trees. If the node to be delete has only one child, we cut
+that node off. Otherwise, we use the minimum value in the right sub tree
+to replace the key, and cut the minimum node off.
+
+We can reuse the $tree()$ function, as well as the result for$Delta H$.
+But different from insertion, there are extra two cases can violate AVL
+properties, thus need fixing.
+
+TODO: draw the two figures.
+
+\begin{figure}[htbp]
+  \centering
+  \subfloat[Fix AVL violation after deletion. case A]{
+    \begin{tikzpicture}[scale=1,
+        trnode/.style={circle, draw, inner sep= 0pt, minimum size = .6cm}
+      ]
+      % left side
+      \node[trnode] at (0, 0) (y) {$y$};
+      \node[trnode] at (-1, -1) (x) {$x$};
+      \draw (1, -1) node (c) {$c$};
+      \draw (-2, -2) node (a) {$a$};
+      \draw (0, -2) node (b) {$b$};
+      % edges
+      \draw (y) -- (x) -- (a);
+      \draw (y) -- (c);
+      \draw (x) -- (b);
+      % labels
+      \draw (0.5, 0.5) node{$\delta(y) = -2$};
+      \draw (-1.5, -0.5) node{$\delta(x) = 0$};
+
+      % right side
+      \node[trnode] at (4, 0) (x1) {$x$};
+      \draw (3, -1) node (a1) {$a$};
+      \node[trnode] at (5, -1) (y1) {$y$};
+      \draw (4, -2) node (b1) {$b$};
+      \draw (6, -2) node (c1) {$c$};
+      % edges
+      \draw (x1) -- (y1) -- (c1);
+      \draw (x1) -- (a1);
+      \draw (y1) -- (b1);
+      \draw (y1) -- (c1);
+      % labels
+      \draw (4.5, 0.5) node{$\delta(x)' = \delta(x) + 1$};
+      \draw (5.5, -0.5) node{$\delta(y)' = -1$};
+
+      \draw (2, -1) node{$\Longrightarrow$};
+  \end{tikzpicture}}
+\end{figure}
+
+Here is the example program in Scala
+
+\lstset{language=Scala}
+\begin{lstlisting}
+  //...
+\end{lstlisting}
+
+\subsection{Imperative deletion}
 
 \ifx\wholebook\relax \else
 %% \begin{thebibliography}{99}
