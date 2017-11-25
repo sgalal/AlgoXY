@@ -17,6 +17,31 @@ object AVLTree {
       else tree((l, 0), k, ins(r, x), d)
   }
 
+  def delete[A <% Ordered[A]] (tr: Tree[A], x: A): Tree[A] = del(tr, x)._1
+
+  // returns (t, d), where t: tree, d: decrement in height
+  def del[A <% Ordered[A]] (tr: Tree[A], x: A): (Tree[A], Int) = tr match {
+    case Empty => (Empty, 0)
+    case Br(l, k, r, d) => if (x < k) tree(del(l, x), k, (r, 0), d)
+      else if (x > k) tree((l, 0), k, del(r, x), d)
+      else if (isEmpty(l)) (r, -1)
+      else if (isEmpty(r)) (l, -1)
+      else {
+        val k1 = min(r)
+        tree((l, 0), k1, del(r, k1), d)
+      }
+  }
+
+  def isEmpty[A](tr: Tree[A]): Boolean = tr match {
+    case Empty => true
+    case _ => false
+  }
+
+  def min[A](tr: Tree[A]): A = tr match {
+    case Br(Empty, x, _, _) => x
+    case Br(left, x, _, _) => min(left)
+  }
+
   def tree[A] (left: (Tree[A], Int), key: A, right: (Tree[A], Int), d: Int): (Tree[A], Int) = {
     val d1 = d + right._2 - left._2
     val delta = deltaH(d, d1, left._2, right._2)
@@ -48,6 +73,11 @@ object AVLTree {
       val dz1 = if (dy == -1) 1 else 0
       (Br(Br(a, x, b, dx1), y, Br(c, z, d, dz1), 0), delta - 1)
     }
+    // delete specific fixing
+    case (Br(Br(a, x, b, dx), y, c, -2), _) =>
+      (Br(a, x, Br(b, y, c, -1), dx + 1), delta)
+    case (Br(a, x, Br(b, y, c, dy), 2), _) =>
+      (Br(Br(a, x, b, 1), y, c, dy - 1), delta)
     case _ => (tr, delta)
   }
 
@@ -85,8 +115,23 @@ object AVLTree {
   def testBuild(xs: Seq[Int]) = {
     val tr = fromList(xs)
     assert(toList(tr) == xs.sortWith(_ < _), println("violate build invariant"))
-    assert(isAVL(tr), println("violate red-black properties"))
-    assert(checkDelta(tr), println("violate delta"))
+    assert(isAVL(tr), println("insert: violate red-black properties"))
+    assert(checkDelta(tr), println("insert: violate delta"))
+  }
+
+  def testDelete(xs: Seq[Int]) = {
+    if (!xs.isEmpty) {
+      xs.foldLeft((xs.sorted, fromList(xs))) {
+        (t, x) => {
+          val ys = t._1
+          val tr = t._2
+          assert(ys == toList(tr), println(s"inconsist delete result: $ys"))
+          assert(isAVL(tr), println("delete: violate AVL properties"))
+          assert(checkDelta(tr), println("delete: violate delata"))
+          (ys diff List(x), delete(tr, x))
+        }
+      }
+    }
   }
 
   def test() = {
@@ -94,6 +139,7 @@ object AVLTree {
     for (_ <- 1 to N) {
       val xs = genList(r)
       testBuild(xs)
+      testDelete(xs)
     }
     println(s"$N tests passed");
   }
