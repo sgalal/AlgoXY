@@ -424,7 +424,7 @@ along the sub trees. If the node to be delete has only one child, we cut
 that node off. Otherwise, we use the minimum value in the right sub tree
 to replace the key, and cut the minimum node off.
 
-We can reuse the $tree()$ function, as well as the result for$Delta H$.
+We can reuse the $tree()$ function, as well as the result for $\Delta H$.
 But different from insertion, there are extra two cases can violate AVL
 properties, thus need fixing.
 
@@ -466,6 +466,42 @@ TODO: draw the two figures.
       \draw (5.5, -0.5) node{$\delta(y)' = -1$};
 
       \draw (2, -1) node{$\Longrightarrow$};
+  \end{tikzpicture}} \\
+  \subfloat[Fix AVL violation after deletion. case B]{
+    \begin{tikzpicture}[scale=1,
+        trnode/.style={circle, draw, inner sep= 0pt, minimum size = .6cm}
+      ]
+      % left side
+      \node[trnode] at (0, 0) (x) {$x$};
+      \draw (-1, -1) node (a) {$a$};
+      \node[trnode] at (1, -1) (y) {$y$};
+      \draw (0, -2) node (b) {$b$};
+      \draw (2, -2) node (c) {$c$};
+      % edges
+      \draw (x) -- (y) -- (c);
+      \draw (x) -- (a);
+      \draw (y) -- (b);
+      \draw (y) -- (c);
+      % labels
+      \draw (0.5, 0.5) node{$\delta(x) = 2$};
+      \draw (1.5, -0.5) node{$\delta(y) = 0$};
+
+      % right side
+      \node[trnode] at (5, 0) (y1) {$y$};
+      \node[trnode] at (4, -1) (x1) {$x$};
+      \draw (6, -1) node (c1) {$c$};
+      \draw (3, -2) node (a1) {$a$};
+      \draw (5, -2) node (b1) {$b$};
+      % edges
+      \draw (y1) -- (x1) -- (a1);
+      \draw (y1) -- (c1);
+      \draw (x1) -- (b1);
+      % labels
+      \draw (5.5, 0.5) node{$\delta(y)' = \delta(y) - 1$};
+      \draw (3.5, -0.5) node{$\delta(x)' = 1$};
+
+
+      \draw (2.5, -1) node{$\Longrightarrow$};
   \end{tikzpicture}}
 \end{figure}
 
