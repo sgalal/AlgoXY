@@ -7,7 +7,7 @@ public class IntAVLTreeTest extends IntAVLTree {
     static boolean isAVL(Node t) {
         if (t == null) return true;
         int delta = height(t.right) - height(t.left);
-        return isAVL(t.left) && isAVL(t.right) && abs(delta) <= 1;
+        return delta == t.delta && isAVL(t.left) && isAVL(t.right) && abs(delta) <= 1;
     }
 
     static void verifyBST(Node t, List<Integer> xs) {
@@ -31,9 +31,9 @@ public class IntAVLTreeTest extends IntAVLTree {
     }
 
     public static Node testDeleteKey(Node t, int k) {
-        System.out.format("del %d from %s\n", k, toStr(t));
+        //System.out.format("del %d from %s\n", k, toStr(t));
         t = del(t, search(t, k));
-        System.out.format("\t==>%s\n", toStr(t));
+        //System.out.format("\t==>%s\n", toStr(t));
         if (search(t, k) != null)
             throw new RuntimeException(String.format("Found %d after del.", k));
         if (!isAVL(t))
@@ -47,7 +47,7 @@ public class IntAVLTreeTest extends IntAVLTree {
             t = testDeleteKey(t, x);
     }
 
-    final static int N = 20;
+    final static int N = 100; // can reduce to 20 for debugging.
 
     public static void main(String[] args) {
         Random gen = new Random();

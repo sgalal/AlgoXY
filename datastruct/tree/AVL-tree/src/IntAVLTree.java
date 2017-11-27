@@ -33,6 +33,10 @@ public class IntAVLTree {
         }
     }
 
+    public static boolean isLeaf(Node x) {
+        return x != null && x.left == null && x.right == null;
+    }
+
     // change from: parent --> x to parent --> y
     public static Node replace(Node parent, Node x, Node y) {
         if (parent == null) {
@@ -199,6 +203,8 @@ public class IntAVLTree {
         while (parent != null) {
             int d1 = parent.delta;
             int d2 = d1 + (x == parent.left ? 1 : -1);
+            if (isLeaf(parent))
+                d2 = 0;
             parent.delta = d2;
             Node p = parent;
             Node l = parent.left;
@@ -210,44 +216,47 @@ public class IntAVLTree {
                 return t;
             } else if (abs(d1) == 1 && abs(d2) == 2) {
                 if (d2 == 2) {
-                    if (r == null) {
-                        throw new RuntimeException(String.format("p.key=%d, r = null!\n", p.key));
-                    }
                     if (r.delta == 1) { // right-right case
                         p.delta = 0;
                         r.delta = 0;
+                        parent = r;
                         t = rotateLeft(t, p);
                     } else if (r.delta == -1) { // right-left case
                         int dy = r.left.delta;
                         p.delta = dy == 1 ? -1 : 0;
                         r.left.delta = 0;
                         r.delta = dy == -1 ? 1 : 0;
+                        parent = r.left;
                         t = rotateRight(t, r);
                         t = rotateLeft(t, p);
                     } else { // del specific right-right case
                         p.delta = 1;
                         r.delta--;
                         t = rotateLeft(t, p);
+                        break; // no furthur height change
                     }
                 } else if (d2 == -2) {
                     if (l.delta == -1) { // left-left case
                         p.delta = 0;
                         l.delta = 0;
+                        parent = l;
                         t = rotateRight(t, p);
                     } else if (l.delta == 1) { // left-right case
                         int dy = l.right.delta;
                         l.delta = dy == 1 ? -1 : 0;
                         l.right.delta = 0;
                         p.delta = dy == -1 ? 1 : 0;
+                        parent = l.right;
                         t = rotateLeft(t, l);
                         t = rotateRight(t, p);
                     } else { // del specific left-left case
                         p.delta = -1;
                         l.delta++;
                         t = rotateRight(t, p);
+                        break; // no further height change
                     }
                 }
-                //break or continue, any condition?
+                // the 4 rebalance cases cause height decrease, need bottom-up update
                 x = parent;
                 parent = x.parent;
             } else {
