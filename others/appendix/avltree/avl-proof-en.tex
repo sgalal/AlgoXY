@@ -582,6 +582,50 @@ def balance[A] (tr: Tree[A], delta: Int): (Tree[A], Int) = (tr, delta) match {
 
 \subsection{Imperative deletion}
 
+Imperative deletion algorithm uses tree rotation to resume the balance of the tree.
+There are more cases need to handle. We firstly apply the binary search tree deletion
+process, then fix the balance if it violates the AVL properties due to the sub tree
+height shrink. The main deletion algorithm is given as the following.
+
+\begin{algorithmic}[1]
+\Function{Delete}{$T, x$}
+  \If{$x = $ NIL}
+    \State \Return $T$
+  \EndIf
+  \State $p \gets$ \Call{Parent}{$x$}
+  \If{\Call{Left}{$x$} = NIL}
+    \State $y \gets $ \Call{Right}{$x$}
+    \State replace $x$ with $y$
+  \ElsIf{\Call{Right}{$x$} = NIL}
+    \State $y \gets $ \Call{Left}{$x$}
+    \State replace $x$ with $y$
+  \Else
+    \State $z \gets$ \textproc{Min}(\Call{Right}{$x$})
+    \State copy key and satellite date from $z$ to $x$
+    \State $p \gets$ \Call{Parent}{$z$}
+    \State $y \gets$ \Call{Right}{$z$}
+    \State replace $z$ with $y$
+  \EndIf
+  \State \Return \Call{AVL-Delete-Fix}{$T, p, y$}
+\EndFunction
+\end{algorithmic}
+
+If the node subject to delete is empty, the tree doesn't change. In normal case,
+we record the parent of that node as $p$. If either of sub tree is empty, we
+cut off the node, and replace it with the other sub tree. Otherwise, we locate
+the node contains the minimum key from the right sub tree as $z$, copy the key and the
+satellite data to $x$, then cut $z$ off. Finally, we call the fixing function
+and pass the root, the parent, and the node replaces the removed one as parameters.
+
+Denote the balance factor of the parent node as $\Delta$, by checking the new value
+$\Delta'$, there are three different cases.
+
+\begin{itemize}
+\item Case 1, $|\Delta| = 0$, $|\Delta'| = 1$. It means, after deletion, although
+the sub tree height shrinks, the parent node still satisfies the AVL property. The
+algorithm terminates as the tree is still balanced;
+\end{itemize}
+
 \ifx\wholebook\relax \else
 %% \begin{thebibliography}{99}
 
