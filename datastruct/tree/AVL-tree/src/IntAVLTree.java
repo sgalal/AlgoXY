@@ -28,8 +28,8 @@ public class IntAVLTree {
             setRight(y);
         }
 
-        void replaceWith(Node y) {
-            replace(parent, this, y);
+        Node replaceWith(Node y) {
+            return replace(parent, this, y);
         }
     }
 
@@ -92,39 +92,39 @@ public class IntAVLTree {
         } else {
             parent.setRight(x);
         }
-        return insertFix(root, x);
+        return insertFix(root, parent, x);
     }
 
     /*
-     * bottom-up update delta and fix
+     * Bottom-up update delta and fix
      *   t: tree root;
-     *   x: the sub-tree that the height increases.
+     *   x: the sub-tree that the height changes.
+     *
+     * Denote d = delta(x), d' = delta(x'),
+     *   where x' is the new sub tree after insertion.
+     *
+     * case 1: |d| == 0, |d'| == 1,
+     *    It means height increase, go on bottom-up updating.
+     *
+     * case 2: |d| == 1, |d'| == 0,
+     *    program terminate as height doesn't change.
+     *
+     * case 3: |d| == 1, |d'| == 2, AVL violation,
+     *    we need fixing by rotation.
      */
-    private static Node insertFix(Node t, Node x) {
-        /*
-         * denote d = delta(t), d' = delta(t'),
-         *   where t' is the new tree after insertion.
-         *
-         * case 1: |d| == 0, |d'| == 1, height increase,
-         *    we need go on bottom-up updating.
-         *
-         * case 2: |d| == 1, |d'| == 0, height doesn't change,
-         *    program terminate
-         *
-         * case 3: |d| == 1, |d'| == 2, AVL violation,
-         *    we need fixing by rotation.
-         */
-        while (x.parent != null) {
-            int d1 = x.parent.delta;
-            int d2 = d1 + (x == x.parent.left ? -1 : 1);
-            x.parent.delta = d2;
-            Node p = x.parent;
-            Node l = x.parent.left;
-            Node r = x.parent.right;
+    private static Node insertFix(Node t, Node parent, Node x) {
+        while (parent != null) {
+            int d1 = parent.delta;
+            int d2 = d1 + (x == parent.left ? -1 : 1);
+            parent.delta = d2;
+            Node p = parent;
+            Node l = parent.left;
+            Node r = parent.right;
             if (abs(d1) == 1 && abs(d2) == 0) {
                 return t;
             } else if (abs(d1) == 0 && abs(d2) == 1) {
-                x = x.parent;
+                x = parent;
+                parent = x.parent;
             } else if (abs(d1) == 1 && abs(d2) == 2) {
                 if (d2 == 2) {
                     if (r.delta == 1) { // right-right case
@@ -159,6 +159,115 @@ public class IntAVLTree {
                     "shouldn't be here, d1 = %d, d2 = %d", d1, d2));
             }
         }
+        return t;
+    }
+
+    public static Node del(Node t, Node x) {
+        if (x == null) return t;
+        Node y, parent = x.parent;
+        if (x.left == null) {
+            y = x.replaceWith(x.right);
+        } else if (x.right == null) {
+            y = x.replaceWith(x.left);
+        } else {
+            y = min(x.right);
+            x.key = y.key;
+            parent = y.parent;
+            y = y.replaceWith(y.right);
+        }
+        return deleteFix(t, parent, y);
+    }
+
+    /*
+     * Bottom-up update delta and fix
+     *   t: tree root;
+     *   x: the sub-tree that the height changes.
+     *
+     * Denote d = delta(x), d' = delta(x'),
+     *   where x' is the new sub tree after deletion.
+     *
+     * case 1: |d| == 0, |d'| == 1,
+     *    Program terminate as height doesn't change.
+     *
+     * case 2: |d| == 1, |d'| == 0,
+     *    For delete, it means height decrease, go on bottom-up updating.
+     *
+     * case 3: |d| == 1, |d'| == 2, AVL violation,
+     *    we need fixing by rotation.
+     */
+    private static Node deleteFix(Node t, Node parent, Node x) {
+        while (parent != null) {
+            int d1 = parent.delta;
+            int d2 = d1 + (x == parent.left ? 1 : -1);
+            parent.delta = d2;
+            Node p = parent;
+            Node l = parent.left;
+            Node r = parent.right;
+            if (abs(d1) == 1 && abs(d2) == 0) {
+                x = parent;
+                parent = x.parent;
+            } else if (abs(d1) == 0 && abs(d2) == 1) {
+                return t;
+            } else if (abs(d1) == 1 && abs(d2) == 2) {
+                if (d2 == 2) {
+                    if (r == null) {
+                        throw new RuntimeException(String.format("p.key=%d, r = null!\n", p.key));
+                    }
+                    if (r.delta == 1) { // right-right case
+                        p.delta = 0;
+                        r.delta = 0;
+                        t = rotateLeft(t, p);
+                    } else if (r.delta == -1) { // right-left case
+                        int dy = r.left.delta;
+                        p.delta = dy == 1 ? -1 : 0;
+                        r.left.delta = 0;
+                        r.delta = dy == -1 ? 1 : 0;
+                        t = rotateRight(t, r);
+                        t = rotateLeft(t, p);
+                    } else { // del specific right-right case
+                        p.delta = 1;
+                        r.delta--;
+                        t = rotateLeft(t, p);
+                    }
+                } else if (d2 == -2) {
+                    if (l.delta == -1) { // left-left case
+                        p.delta = 0;
+                        l.delta = 0;
+                        t = rotateRight(t, p);
+                    } else if (l.delta == 1) { // left-right case
+                        int dy = l.right.delta;
+                        l.delta = dy == 1 ? -1 : 0;
+                        l.right.delta = 0;
+                        p.delta = dy == -1 ? 1 : 0;
+                        t = rotateLeft(t, l);
+                        t = rotateRight(t, p);
+                    } else { // del specific left-left case
+                        p.delta = -1;
+                        l.delta++;
+                        t = rotateRight(t, p);
+                    }
+                }
+                //break or continue, any condition?
+                x = parent;
+                parent = x.parent;
+            } else {
+                throw new RuntimeException(String.format(
+                    "shouldn't be here, d1 = %d, d2 = %d", d1, d2));
+            }
+        }
+        if (parent == null) // delete the root
+            return x;
+        return t;
+    }
+
+    public static Node min(Node t) {
+        while (t != null && t.left != null) t = t.left;
+        return t;
+    }
+
+    public static Node search(Node t, int x) {
+        while (t != null && t.key != x)
+            t = x < t.key ? t.left : t.right;
         return t;
     }
 

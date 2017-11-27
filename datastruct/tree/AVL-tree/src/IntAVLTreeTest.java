@@ -27,16 +27,34 @@ public class IntAVLTreeTest extends IntAVLTree {
         Node t = fromList(xs);
         verifyBST(t, xs);
         if (!isAVL(t))
-            throw new RuntimeException(String.format("violate AVL properties: %s", toStr(t)));
+            throw new RuntimeException(String.format("build: violate AVL properties: %s", toStr(t)));
     }
 
-    final static int N = 100;
+    public static Node testDeleteKey(Node t, int k) {
+        System.out.format("del %d from %s\n", k, toStr(t));
+        t = del(t, search(t, k));
+        System.out.format("\t==>%s\n", toStr(t));
+        if (search(t, k) != null)
+            throw new RuntimeException(String.format("Found %d after del.", k));
+        if (!isAVL(t))
+            throw new RuntimeException(String.format("del: violate AVL properties: %s", toStr(t)));
+        return t;
+    }
+
+    public static void testDelete(List<Integer> xs) {
+        Node t = fromList(xs);
+        for (Integer x : xs)
+            t = testDeleteKey(t, x);
+    }
+
+    final static int N = 20;
 
     public static void main(String[] args) {
         Random gen = new Random();
         for (int i = 0; i < N; ++i) {
             List<Integer> xs = genList(gen, N);
             testInsert(xs);
+            testDelete(xs);
         }
         System.out.format("%d test passed.\n", N);
     }
