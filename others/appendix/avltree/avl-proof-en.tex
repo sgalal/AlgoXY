@@ -740,6 +740,43 @@ Node del(Node t, Node x) {
 }
 \end{lstlisting}
 
+Where method \texttt{replaceWith(tree)} replaces the current node with the parameter
+passed in, and returns the new node as the result.
+
+\begin{lstlisting}
+Node replaceWith(Node y) {
+    return replace(parent, this, y);
+}
+\end{lstlisting}
+
+And the function \texttt{replace(parent, x, y)} replaces child \texttt{x} with \texttt{y} to its parent.
+
+\begin{lstlisting}
+// change from: parent --> x to parent --> y
+Node replace(Node parent, Node x, Node y) {
+    if (parent == null) {
+        if (y != null) y.parent = null;
+    } else if (parent.left == x) {
+        parent.setLeft(y);
+    } else {
+        parent.setRight(y);
+    }
+    if (x != null) x.parent = null;
+    return y;
+}
+\end{lstlisting}
+
+Function \texttt{min(t)} recursively find the minimum node for a given tree.
+
+\begin{lstlisting}
+Node min(Node t) {
+    while (t != null && t.left != null) t = t.left;
+    return t;
+}
+\end{lstlisting}
+
+The fixing method is implemented as below.
+
 \begin{lstlisting}
 Node deleteFix(Node t, Node parent, Node x) {
     while (parent != null) {
