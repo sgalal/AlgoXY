@@ -233,7 +233,7 @@ public class IntAVLTree {
                         p.delta = 1;
                         r.delta--;
                         t = rotateLeft(t, p);
-                        break; // no furthur height change
+                        break; // no further height change
                     }
                 } else if (d2 == -2) {
                     if (l.delta == -1) { // left-left case
