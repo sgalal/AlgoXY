@@ -617,14 +617,76 @@ the node contains the minimum key from the right sub tree as $z$, copy the key a
 satellite data to $x$, then cut $z$ off. Finally, we call the fixing function
 and pass the root, the parent, and the node replaces the removed one as parameters.
 
-Denote the balance factor of the parent node as $\Delta$, by checking the new value
-$\Delta'$, there are three different cases.
+Denote the balance factor of the parent node as $\delta(p)$, by checking the new value
+$\delta(p)'$, there are three different cases.
 
 \begin{itemize}
-\item Case 1, $|\Delta| = 0$, $|\Delta'| = 1$. It means, after deletion, although
-the sub tree height shrinks, the parent node still satisfies the AVL property. The
-algorithm terminates as the tree is still balanced;
+\item Case 1, $|\delta(p)| = 0$, $|\delta(p)'| = 1$. It means, after deletion,
+although one sub tree height shrinks, the parent node still satisfies the AVL
+property. The algorithm terminates as the tree is still balanced;
+\item Case 2, $|\delta(p)| = 1$, $|\delta(p)'| = 0$. It means before the deletion,
+the height difference between the two sub trees are 1; while after deletion, the
+sub tree with greater height shrinks by 1, thus the heights are same now. As the
+result, the height of the parent tree also decrease by 1. We need go on the
+botoom-up updating along the parent link towards the root;
+\item Case 3, $|\delta(p)| = 1$, $|\delta(p)'| = 2$. It means the tree after deletion
+violates the AVL property, we need fix it by tree rotation.
 \end{itemize}
+
+For case 3, most of fixing operations are similar to to insertion fixing. However,
+we need add two extra sub cases to cover the situations illustrated in figure
+\ref{fig:avl-del-fixing}. The fixing algorithm is given as the following.
+
+\begin{algorithmic}[1]
+\Function{AVL-Delete-Fix}{$T, p, x$}
+  \While{$p \neq $ NIL}
+    \State $l \gets$ \Call{Left}{$p$}, $r \gets$ \Call{Right}{$p$}
+    \State $\delta \gets \delta(p)$, $\delta' \gets \delta$
+    \If{$x = l$}
+      \State $\delta' \gets \delta' + 1$
+    \Else
+      \State $\delta' \gets \delta' - 1$
+    \EndIf
+    \If{$p$ is leaf} \Comment{$l = r =$ NIL}
+      \State $\delta' \gets 0$
+    \EndIf
+    \If{$|\delta| = 1 \land |\delta'| = 0$}
+      \State $x \gets p$
+      \State $p \gets$ \Call{Parent}{$x$}
+    \ElsIf{$|\delta| = 0 \land |\delta'| = 1$}
+      \State \Return $T$
+    \ElsIf{$|\delta| = 1 \land |\delta'| = 2$}
+      \If{$\delta' = 2$}
+        \If{$\delta(r) = 1$} \Comment{Right-right case}
+          \State $\delta(p) \gets 0$
+          \State $\delta(r) \gets 0$
+          \State $p \gets r$
+          \State $T \gets $ \Call{Left-Rotate}{$T, p$}
+        \ElsIf {$\delta(r) = -1$} \Comment{Right-left case}
+          \State $\delta_y \gets \delta($ \Call{Left}{$r$} $)$
+          \If{$\delta_y = 1$}
+            \State $\delta(p) \gets -1$
+          \Else
+            \State $\delta(p) \gets 0$
+          \EndIf
+          \State $\delta($ \Call{Left}{$r$} $) \gets 0$
+          \If{$\delta_y = -1$}
+            \State $\delta(r) \gets 1$
+          \Else
+            \State $\delta(r) \gets 0$
+          \EndIf
+        \Else \Comment{Delete specific right-right case}
+          \State $\delta(p) \gets 1$
+          \State $\delta(r) \gets \delta(r) - 1$
+          \State $T \gets$ \Call{Left-Rotate}{$T, p$}
+          \State break \Comment{No furthur height change}
+        \EndIf
+      \ElsIf{$\delta' = -2$}
+      \EndIf
+    \EndIf
+  \EndWhile
+\EndFunction
+\end{algorithmic}
 
 \ifx\wholebook\relax \else
 %% \begin{thebibliography}{99}
