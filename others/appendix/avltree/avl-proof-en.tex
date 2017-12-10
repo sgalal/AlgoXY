@@ -682,9 +682,40 @@ we need add two extra sub cases to cover the situations illustrated in figure
           \State break \Comment{No furthur height change}
         \EndIf
       \ElsIf{$\delta' = -2$}
+        \If{$\delta(l) = -1$} \Comment{Left-left case}
+          \State $\delta(p) \gets 0$
+          \State $\delta(l) \gets 0$
+          \State $p \gets l$
+          \State $T \gets $ \Call{Right-Rotate}{$T, p$}
+        \ElsIf {$\delta(l) = 1$} \Comment{Left-right case}
+          \State $\delta_y \gets \delta($ \Call{Right}{$l$} $)$
+          \If{$\delta_y = -1$}
+            \State $\delta(p) \gets 1$
+          \Else
+            \State $\delta(p) \gets 0$
+          \EndIf
+          \State $\delta($ \Call{Right}{$l$} $) \gets 0$
+          \If{$\delta_y = 1$}
+            \State $\delta(l) \gets -1$
+          \Else
+            \State $\delta(l) \gets 0$
+          \EndIf
+        \Else \Comment{Delete specific left-left case}
+          \State $\delta(p) \gets -1$
+          \State $\delta(l) \gets \delta(l) + 1$
+          \State $T \gets$ \Call{Right-Rotate}{$T, p$}
+          \State break \Comment{No furthur height change}
+        \EndIf
       \EndIf
+      \Comment{Height decrease, go on bottom-up updating}
+      \State $x \gets p$
+      \State $p \gets$ \Call{Parent}{$x$}
     \EndIf
   \EndWhile
+  \If{$p = $ NIL} \Comment{Delete the root}
+    \State \Return $x$
+  \EndIf
+  \State \Return $T$
 \EndFunction
 \end{algorithmic}
 
