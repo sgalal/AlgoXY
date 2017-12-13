@@ -9,7 +9,7 @@
 %\documentstyle[9pt,twocolumn,technote,twoside]{IEEEtran}
 %
 %-----------------------------------------------------------------------------
-\input{../../../common-en.tex}
+\input{../../../common-zh-cn.tex}
 
 \setcounter{page}{1}
 
@@ -21,20 +21,20 @@
 %                 COVER PAGE
 % ================================================================
 
-\title{AVL tree - proofs and deletion algorithm}
+\title{AVL树——证明和删除算法}
 
-\author{Larry~LIU~Xinyu
-\thanks{{\bfseries Larry LIU} \newline
+\author{刘新宇
+\thanks{{\bfseries 刘新宇} \newline
   Email: liuxinyu95@gmail.com \newline}
   }
 
 \maketitle
 \fi
 
-\markboth{AVL tree - proofs and deletion algorithm}{Elementary Algorithms}
+\markboth{AVL树——证明和删除算法}{初等算法}
 
 \ifx\wholebook\relax
-\chapter{AVL tree - proofs and deletion algorithm}
+\chapter{AVL树——证明和删除算法}
 \numberwithin{Exercise}{chapter}
 \fi
 
@@ -42,13 +42,11 @@
 %                 Introduction
 % ================================================================
 
-This appendix provides proofs to result we uses in the AVL tree pattern
-matching insert algorithm.
+本附录首先给出AVL树模式匹配插入算法的证明。
 
-\section{Height increment after insertion}
+\section{插入后树高度的变化}
 
-When insert a key to the AVL tree, the increment to the height can be deduced
-into four cases given as below.
+向AVL树插入一个key后，高度的增加存在4种情况。
 
 \[
 \begin{array}{rl}
@@ -63,55 +61,12 @@ into four cases given as below.
 \end{array}
 \]
 
-To prove this equation, note the fact that the height can't increase
-both in left and right with only one insertion.
-
-These 4 cases can be explained from the balance factor
-definition that it equals to the difference of the right and left sub trees.
-
-由于一次插入操作不可能同时增加左右分支的高度，因此我们可以做上述分解。根据定义，平衡因子等于右子树的高度减去左子树的高度。这4种情况可以分别解释如下：
+为了证明这一结论，首先注意到一次插入操作不可能同时增加左右分支的高度，因此我们可以做上述分解。根据定义，平衡因子等于右子树的高度减去左子树的高度。这4种情况可以分别解释如下：
 
 \begin{itemize}
 \item 如果$\Delta \geq 0$并且$\Delta' \geq 0$。这说明在插入前后，右子树的高度都不小于左子树的高度。因子整个树高度的增加，全部“贡献”自右子树高度的变化$\Delta H_r$；
 
-\item 如果$\Delta \leq 0$，说明在插入前，左子树的高度不小于右子树。但是插入后$\Delta' \geq 0$，说明右子树的高度由于插入操作增加了，而左子树的高度保持不变（$|L'|=|L|$）。所以高度的增加为：
-\[
-\begin{array}{rll}
-\Delta H & = max(|R'|, |L'|) - max (|R|, |L|) & \{\Delta \leq 0 \land \Delta' \geq 0 \}\\
-         & = |R'|-|L| & \{|L|=|L'| \}\\
-         & = |R|+\Delta H_r - |L| & \\
-         & = \Delta + \Delta H_r &
-\end{array}
-\]
-
-\item 如果$\Delta \geq 0$且$\Delta' \leq 0$，和第二种情况类似，我们有：
-
-\[
-\begin{array}{rll}
-\Delta H & = max(|R'|, |L'|) - max (|R|, |L|) & \{\Delta \geq 0 \land \Delta' \leq 0 \}\\
-         & = |L'|-|R| & \\
-         & = |L|+\Delta H_l - |R| & \\
-         & = \Delta H_l - \Delta&
-\end{array}
-\]
-
-\item 最后一种情况，$\Delta$和$\Delta'$都不大于0，说明插入前后左子树的高度都不小于右子树。所以高度的增加全部“贡献”自左子树的变化$\Delta H_l$。
-\end{itemize}
-
-
-\begin{itemize}
-\item If $\Delta \geq 0$ and $\Delta' \geq 0$, it means that the height
-of right sub tree isn't less than the left sub tree
-before and after insertion. In this case, the increment in
-height of the tree only is `contributed' from the right sub tree, which
-is $\Delta H_r$.
-
-\item If $\Delta \leq 0$, it means the height of left sub tree isn't
-less than the right before. Since $\Delta' \geq 0$ after insertion,
-we know the height of right sub tree increases,
-and the left side keeps same ($|T_l'|=|T_l|$). The increment in height is
-as the following.
-
+\item 如果$\Delta \leq 0$，说明在插入前，左子树的高度不小于右子树。但是插入后$\Delta' \geq 0$，说明右子树的高度由于插入操作增加了，而左子树的高度保持不变（$|T_l'|=|T_l|$）。所以高度的增加为：
 \[
 \begin{array}{rll}
 \Delta H & = max(|T_r'|, |T_l'|) - max (|T_r|, |T_l|) & \{\Delta \leq 0 \land \Delta' \geq 0 \}\\
@@ -121,8 +76,7 @@ as the following.
 \end{array}
 \]
 
-\item For the case $\Delta \geq 0$ and $\Delta' \leq 0$, similar as the
-above one, we can get the below result.
+\item 如果$\Delta \geq 0$且$\Delta' \leq 0$，和第二种情况类似，我们有：
 
 \[
 \begin{array}{rll}
@@ -133,17 +87,12 @@ above one, we can get the below result.
 \end{array}
 \]
 
-\item For the last case, both $\Delta$ and $\Delta'$ are no bigger than
-zero. It means the height of left sub tree is always greater than or equal
- to the right. The increment in height is only `contributed'
-from the left sub tree, which is $\Delta H_l$.
+\item 最后一种情况，$\Delta$和$\Delta'$都不大于0，说明插入前后左子树的高度都不小于右子树。所以高度的增加全部“贡献”自左子树的变化$\Delta H_l$。
 \end{itemize}
 
+\section{插入后平衡调整算法的证明}
 
-\section{Proof to the balance adjustment after insertion}
-
-Given the 4 cases need fix as shown in figure \ref{fig:avl-insert-fix}, The balance factors are either -2, or +2. After adjustment, the factor resumes
-to 0. The left and right sub trees have the same height.
+如图\ref{fig:avl-insert-fix}所示，所有需要修复平衡的4种情况中，平衡因子都是－2或2。调整后，平衡因子恢复为0。左右子树具有相同的高度。
 
 \begin{figure}[htbp]
    \begin{center}
@@ -171,22 +120,15 @@ to 0. The left and right sub trees have the same height.
         \put(8.5, 0){\includegraphics[scale=0.5]{../../../datastruct/tree/AVL-tree/img/avl-insert-rl.ps}}
         \put(2, 5){\includegraphics[scale=0.5]{../../../datastruct/tree/AVL-tree/img/avl-insert-fixed.ps}}
       \end{picture}
-     \caption{4 cases for balancing a AVL tree after insertion} \label{fig:avl-insert-fix-appendix}
+     \caption{插入后需要恢复平衡的4种情况} \label{fig:avl-insert-fix-appendix}
   \end{center}
 \end{figure}
 
-These four cases are left-left lean, right-right lean, right-left lean,
-and left-right lean cases. We denote
-the balancing factor before fixing as $\delta(x), \delta(y)$, and $\delta(z)$, while after fixing, they changes to $\delta'(x), \delta'(y)$, and
-$\delta'(z)$ respectively.
-
-We'll next prove that, after fixing, we have $\delta(y)=0$ for all
-four cases, and we'll provide the result values of $\delta'(x)$ and
-$\delta'(z)$.
+这4种情况分别是：左－左偏、右－右偏、右－左偏、左－右偏。记修复前的平衡因子分别为$\delta(x)$、$\delta(y)$、$\delta(z)$，修复后的平衡因子分别为$\delta'(x)$、$\delta'(y)$、$\delta'(z)$。
 
 我们接下来将证明，经过调整后，所有4种情况的平衡因子都变成$\delta(y)=0$。并且将给出调整后$\delta'(x)$和$\delta'(z)$的结果。
 
-\subsubsection{左－左偏（Left-left lean）的情况}
+\subsubsection＊{左－左偏（Left-left lean）的情况}
 
 由于$x$子分支在调整前后的结构维持不变，因此可以立即得到等式：$\delta'(x) = \delta(x)$。
 
