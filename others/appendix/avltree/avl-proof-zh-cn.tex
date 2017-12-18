@@ -526,10 +526,8 @@ balance (t, d) = (t, d)
 
 \subsection{命令式删除算法}
 
-Imperative deletion algorithm uses tree rotation to resume the balance of the tree.
-There are more cases need to handle. We firstly apply the binary search tree deletion
-process, then fix the balance if it violates the AVL properties due to the sub tree
-height shrink. The main deletion algorithm is given as the following.
+命令式删除算法使用树的旋转操作来恢复平衡。和插入算法相比，删除需要处理更多的情况。我们首先使用二叉搜索树
+删除算法，然后再修复由于子树高度变化引起的平衡问题。删除算法的基本部分描述如下：
 
 \begin{algorithmic}[1]
 \Function{Delete}{$T, x$}
@@ -554,32 +552,25 @@ height shrink. The main deletion algorithm is given as the following.
 \EndFunction
 \end{algorithmic}
 
-If the node subject to delete is empty, the tree doesn't change. In normal case,
-we record the parent of that node as $p$. If either of sub tree is empty, we
-cut off the node, and replace it with the other sub tree. Otherwise, we locate
-the node contains the minimum key from the right sub tree as $z$, copy the key and the
-satellite data to $x$, then cut $z$ off. Finally, we call the fixing function
-and pass the root, the parent, and the node replaces the removed one as parameters.
+首先时特殊情况。如果待删除节点为空，树没有变化。一般情况下，我们记待删除节点的父节点为$p$，如果任一子树
+为空，我们将待删除节点切下，取代为另一非空子树。否则，我们在右子树中找到最小值节点$z$，将其中的key和
+数据复制到待删除节点$x$，然后将$z$切下。最后，我们调用修复函数，并传入根节点、父节点、和替换掉待删除节点的
+新节点。
 
-Denote the balance factor of the parent node as $\delta(p)$, by checking the new value
-$\delta(p)'$, there are three different cases.
+记父节点的平衡因子为$\delta(p)$，和删除后的新平衡因子$\delta(p)'$比较，我们会发现三种不同的情况。
 
 \begin{itemize}
-\item Case 1, $|\delta(p)| = 0$, $|\delta(p)'| = 1$. It means, after deletion,
-although one sub tree height shrinks, the parent node still satisfies the AVL
-property. The algorithm terminates as the tree is still balanced;
-\item Case 2, $|\delta(p)| = 1$, $|\delta(p)'| = 0$. It means before the deletion,
-the height difference between the two sub trees are 1; while after deletion, the
-sub tree with greater height shrinks by 1, thus the heights are same now. As the
-result, the height of the parent tree also decrease by 1. We need go on the
-botoom-up updating along the parent link towards the root;
-\item Case 3, $|\delta(p)| = 1$, $|\delta(p)'| = 2$. It means the tree after deletion
-violates the AVL property, we need fix it by tree rotation.
+\item 情况1：$|\delta(p)| = 0$、$|\delta(p)'| = 1$。这说明，虽然删除后子树的高度降低了，但是父节点
+仍然满足AVL树的性质，保持平衡。算法退出；
+\item 情况2：$|\delta(p)| = 1$、$|\delta(p)'| = 0$。这说明，删除前左右子树的高度差为1，删除后原来
+较高的树高度减小了1。左右子树现在高度相等。结果是父节点的高度也减小了1。我们需要继续自底向上沿着父节点
+更新树的高度；
+\item 情况3：$|\delta(p)| = 1$、$|\delta(p)'| = 2$。这说明删除后子树的高度差违反了AVL树的性质，
+我们需要通过树的旋转操作来修复平衡。
 \end{itemize}
 
-For case 3, most of fixing operations are similar to to insertion fixing. However,
-we need add two extra sub cases to cover the situations illustrated in figure
-\ref{fig:avl-del-fixing}. The fixing algorithm is given as the following.
+对于情况3，大部分的修复操作和插入算法相同。但是我们需要针对图\ref{fig:avl-del-fixing}中所示
+的两种特殊情况，进行额外的处理。完整的修复算法如下。
 
 \begin{algorithmic}[1]
 \Function{AVL-Delete-Fix}{$T, p, x$}
@@ -601,12 +592,12 @@ we need add two extra sub cases to cover the situations illustrated in figure
       \State \Return $T$
     \ElsIf{$|\delta| = 1 \land |\delta'| = 2$}
       \If{$\delta' = 2$}
-        \If{$\delta(r) = 1$} \Comment{Right-right case}
+        \If{$\delta(r) = 1$} \Comment{右－右情况}
           \State $\delta(p) \gets 0$
           \State $\delta(r) \gets 0$
           \State $p \gets r$
           \State $T \gets $ \Call{Left-Rotate}{$T, p$}
-        \ElsIf {$\delta(r) = -1$} \Comment{Right-left case}
+        \ElsIf {$\delta(r) = -1$} \Comment{右－左情况}
           \State $\delta_y \gets \delta($ \Call{Left}{$r$} $)$
           \If{$\delta_y = 1$}
             \State $\delta(p) \gets -1$
@@ -619,19 +610,19 @@ we need add two extra sub cases to cover the situations illustrated in figure
           \Else
             \State $\delta(r) \gets 0$
           \EndIf
-        \Else \Comment{Delete specific right-right case}
+        \Else \Comment{删除特有的右－右情况}
           \State $\delta(p) \gets 1$
           \State $\delta(r) \gets \delta(r) - 1$
           \State $T \gets$ \Call{Left-Rotate}{$T, p$}
-          \State break \Comment{No furthur height change}
+          \State break \Comment{高度不再变化}
         \EndIf
       \ElsIf{$\delta' = -2$}
-        \If{$\delta(l) = -1$} \Comment{Left-left case}
+        \If{$\delta(l) = -1$} \Comment{左－左情况}
           \State $\delta(p) \gets 0$
           \State $\delta(l) \gets 0$
           \State $p \gets l$
           \State $T \gets $ \Call{Right-Rotate}{$T, p$}
-        \ElsIf {$\delta(l) = 1$} \Comment{Left-right case}
+        \ElsIf {$\delta(l) = 1$} \Comment{左－右情况}
           \State $\delta_y \gets \delta($ \Call{Right}{$l$} $)$
           \If{$\delta_y = -1$}
             \State $\delta(p) \gets 1$
@@ -644,26 +635,26 @@ we need add two extra sub cases to cover the situations illustrated in figure
           \Else
             \State $\delta(l) \gets 0$
           \EndIf
-        \Else \Comment{Delete specific left-left case}
+        \Else \Comment{删除特有的左－左情况}
           \State $\delta(p) \gets -1$
           \State $\delta(l) \gets \delta(l) + 1$
           \State $T \gets$ \Call{Right-Rotate}{$T, p$}
-          \State break \Comment{No furthur height change}
+          \State break \Comment{高度不再继续变化}
         \EndIf
       \EndIf
-      \Comment{Height decrease, go on bottom-up updating}
+      \Comment{高度减小，继续自底向上更新}
       \State $x \gets p$
       \State $p \gets$ \Call{Parent}{$x$}
     \EndIf
   \EndWhile
-  \If{$p = $ NIL} \Comment{Delete the root}
+  \If{$p = $ NIL} \Comment{删除根节点}
     \State \Return $x$
   \EndIf
   \State \Return $T$
 \EndFunction
 \end{algorithmic}
 
-The follow C++ example program implements this AVL tree delete algorithm.
+下面的C++例子程序实现了AVL树的删除算法。
 
 \lstset{language=C++}
 \begin{lstlisting}
@@ -687,8 +678,7 @@ Node* del(Node* t, Node* x) {
 }
 \end{lstlisting}
 
-Where method \texttt{replaceWith(tree)} replaces the current node with the parameter
-passed in, and returns the new node as the result.
+其中方法\texttt{replaceWith(tree)}用传入的子树替换掉当前节点，它返回新节点作为结果。
 
 \begin{lstlisting}
 Node* replaceWith(Node* y) {
@@ -696,7 +686,7 @@ Node* replaceWith(Node* y) {
 }
 \end{lstlisting}
 
-And the function \texttt{replace(parent, x, y)} replaces child \texttt{x} with \texttt{y} to its parent.
+函数\texttt{replace(parent, x, y)}用子树\texttt{y}替换掉父节点的子树\texttt{x}。
 
 \begin{lstlisting}
 // change from: parent --> x to parent --> y
@@ -713,7 +703,7 @@ Node* replace(Node* parent, Node* x, Node* y) {
 }
 \end{lstlisting}
 
-Function \texttt{min(t)} recursively find the minimum node for a given tree. Function \texttt{remove(tree)} helps to release the memory for a given node.
+函数\texttt{min(t)}递归地查找子树的最小值节点。函数\texttt{remove(tree)}用于将节点释放。
 
 \begin{lstlisting}
 Node* min(Node* t) {
@@ -729,7 +719,7 @@ void remove(Node* x) {
 }
 \end{lstlisting}
 
-The fixing method is implemented as below.
+修复函数的实现如下。
 
 \begin{lstlisting}
 Node* deleteFix(Node* t, Node* parent, Node* x) {
@@ -802,7 +792,7 @@ Node* deleteFix(Node* t, Node* parent, Node* x) {
 \end{lstlisting}
 
 \begin{Exercise}
-Compare the imperative AVL tree fixing algorithms for insertion and deletion, there are similarities. Develop a common AVL tree fixing algorith can serve for both insertion and deletion.
+比较AVL树的命令式删除和插入算法，将共同的部分抽出，实现一个通用的AVL树修复算法。
 \end{Exercise}
 
 \ifx\wholebook\relax \else
