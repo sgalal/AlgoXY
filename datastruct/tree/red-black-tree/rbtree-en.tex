@@ -757,7 +757,7 @@ case class T[A] (c: Color, left: Tree[A], key: A, right: Tree[A]) extends Tree[A
 The \texttt{addBlack} function turns a red nod to black, and turns a black node
 to doubly black. It also applies to the empty node.
 
-\end{lstlisting}
+\begin{lstlisting}
 def addBlack[A](tr: Tree[A]): Tree[A] = tr match {
   case T(B, l, k, r) => T(BB, l, k, r)
   case T(_, l, k, r) => T(B, l, k, r)
