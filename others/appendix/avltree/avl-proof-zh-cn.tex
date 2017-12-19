@@ -740,11 +740,11 @@ Node* deleteFix(Node* t, Node* parent, Node* x) {
             return t;
         } else if (abs(d1) == 1 && abs(d2) == 2) {
             if (d2 == 2) {
-                if (r->delta == 1) {  // right-right case
+                if (r->delta == 1) {  // 右－右情况
                     p->delta = r->delta = 0;
                     parent = r;
                     t = leftRotate(t, p);
-                } else if (r->delta == -1) { // right-left case
+                } else if (r->delta == -1) { // 右－左情况
                     dy = r->left->delta;
                     p->delta = dy == 1 ? -1 : 0;
                     r->left->delta = 0;
@@ -752,18 +752,18 @@ Node* deleteFix(Node* t, Node* parent, Node* x) {
                     parent = r->left;
                     t = rightRotate(t, r);
                     t = leftRotate(t, p);
-                } else { // delete specific right-right case
+                } else { // 删除特有的右－右情况
                     p->delta = 1;
                     r->delta--;
                     t = leftRotate(t, p);
-                    break; // no further height change
+                    break; // 高度不再继续变化
                 }
             } else if (d2 == -2) {
-                if (l->delta == -1) { // left-left case
+                if (l->delta == -1) { // 左－左情况
                     p->delta = l->delta = 0;
                     parent = l;
                     t = rightRotate(t, p);
-                } else if (l->delta == 1) { // left-right case
+                } else if (l->delta == 1) { // 左－右情况
                     dy = l->right->delta;
                     l->delta = dy == 1 ? -1 : 0;
                     l->right->delta = 0;
@@ -771,14 +771,14 @@ Node* deleteFix(Node* t, Node* parent, Node* x) {
                     parent = l->right;
                     t = leftRotate(t, l);
                     t = rightRotate(t, p);
-                } else { // delete specific left-left case
+                } else { // 删除特有的左－左情况
                     p->delta = -1;
                     l->delta++;
                     t = rightRotate(t, p);
-                    break; // no further height change
+                    break; // 高度不再继续变化
                 }
             }
-            // the 4 rebalance cases cause height decrease, go on bottom-up update
+            // 以上修复会造成高度减小，需要继续自底向上更新
             x = parent;
             parent = x->parent;
         } else {
@@ -786,7 +786,7 @@ Node* deleteFix(Node* t, Node* parent, Node* x) {
             assert(false);
         }
     }
-    if (!parent) return x; // delete the root
+    if (!parent) return x; // 删除根节点
     return t;
 }
 \end{lstlisting}
