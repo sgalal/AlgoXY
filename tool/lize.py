@@ -40,7 +40,7 @@ GPL = "This program is free software: you can redistribute it and/or modify\n"\
     "You should have received a copy of the GNU General Public License\n"\
     "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
 
-EXT = {"C/C++":".c.cpp.h.hpp.cxx.hxx.cc",
+EXT = {"C/C++":".c.cpp.h.hpp.cxx.hxx.cc.java.scala",
        "Script":".py.pl.pm.sh",
        "Haskell":".hs",
        "Lisp":".scm"}
@@ -67,13 +67,13 @@ def init_languages():
 
 def GPL_comments(filename, lan):
     year = strftime("%Y", localtime())
-    return "\n".join([HEAD[lan], 
+    return "\n".join([HEAD[lan],
                       LEAD[lan]+filename,
                       LEAD[lan]+"Copyright (C) "+year+" "+AUTHOR,
-                      LEAD[lan], 
+                      LEAD[lan],
                       LEAD[lan]+("\n"+LEAD[lan]).join(GPL.split("\n")),
                       TAIL[lan]])+"\n"
-                                           
+
 def lize(filename):
     (_, name) = os.path.split(filename)
     (_, ext) = os.path.splitext(filename)
