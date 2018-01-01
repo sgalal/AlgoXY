@@ -49,11 +49,11 @@
 \label{introduction}
 \index{Radix tree}
 
-The binary trees introduced so far store information in nodes. It's
-possible to store the information in edges.
-Radix trees like Trie and Patricia are important data structures in
+The binary trees introduced so far store information in nodes. Edge
+can also be used to store information.
+Radix trees including Trie and Patricia are important data structures in
 information retrieving and manipulating.
-They were invented in 1960s. And are widely used in
+They were found in 1960s. And are widely used in
 compiler design\cite{okasaki-int-map}, and bio-information area, such as
 DNA pattern matching \cite{wiki-suffix-tree}.
 
@@ -63,21 +63,21 @@ DNA pattern matching \cite{wiki-suffix-tree}.
   \caption{Radix tree.} \label{fig:radix-tree}
 \end{figure}
 
-Figure \ref{fig:radix-tree} shows a radix tree\cite{CLRS}. It contains the
-strings of bit 1011, 10, 011, 100 and 0. When searching a key $k=(b_0b_1...b_n)_2$, we
+Figure \ref{fig:radix-tree} shows a radix tree(\cite{CLRS} pp. 269).
+It contains strings of bit 1011, 10, 011, 100 and 0.
+When searching a key $k=(b_0b_1...b_n)_2$, we
 take the first bit $b_0$ (MSB from left), check if it is 0 or 1, if it
-is 0, we turn left; and turn right for 1. Then we take the second bit and
-repeat this search till either meet a leaf or finish all n bits.
+is 0, we turn left, else turn right for 1. Then we take the second bit and
+repeat this search till either meet a leaf node or finish all the $n$ bits.
 
 The radix tree needn't store keys in node at all. The
 information is represented by edges. The nodes marked with keys
 in the above figure are only for illustration purpose.
 
-It is very natural to come to the idea `is it possible to represent
-key in integer instead of string?' Because integer can be written in
-binary format, such approach can save spaces. Another advantage is
-that the speed is fast because we can use bit-wise manipulation in
-most programming environment.
+Another idea is to represent the key in integer instead of string.
+Because integer can be in binary format to save space. The speed
+is also fast as we can use bit-wise manipulation in
+most programming environments.
 
 % ================================================================
 %                 Int Trie
@@ -93,20 +93,20 @@ as /'tri:/ by the inventor, while it is pronounced /'trai/ ``try''
 by other authors \cite{wiki-trie}. Trie is also called prefix tree.
 A binary
 trie is a special binary tree in which the placement of each key is controlled by
-its bits, each 0 means ``go left'' and each 1 means ``go
-right''\cite{okasaki-int-map}.
+its bits, each 0 means `go left' and each 1 means `go
+right'\cite{okasaki-int-map}.
 
-Because integers can be represented in binary format, it is
-possible to store integer keys rather than 0, 1 strings. When insert an
-integer as the new key to the trie, we change it to binary form, then examine
+Because integer can be represented in binary format, we can use it
+instead of 0, 1 string. When insert a new integer to the trie, we
+change it to binary form, then examine
 the first bit, if it is 0, we recursively
-insert the rest bits to the left sub tree; otherwise if it is 1, we insert
-into the right sub tree.
+insert the rest bits to the left sub-tree; otherwise if it is 1, we insert
+into the right sub-tree.
 
 There is a problem when treat the key as integer. Consider a binary
 trie shown in figure \ref{fig:big-endian-trie}. If represented in
-0, 1 strings, all the three keys are different. But they are identical when
-turn into integers. Where should we insert decimal 3, for example, to the trie?
+0, 1 strings, all the three keys are different although they are equal integers.
+Where should we insert decimal 3 to this trie?
 
 \begin{figure}[htbp]
   \centering
@@ -117,12 +117,12 @@ turn into integers. Where should we insert decimal 3, for example, to the trie?
 One approach is to treat all the prefix zero as effective bits.
 Suppose the integer is represented with 32-bits, If we want to insert key 1,
 it ends up with a tree of 32 levels.
-There are 31 nodes, each only has the left sub tree. the last node only has
-the right sub tree. It is very inefficient in terms of space.
+There are 31 nodes, each only has the left sub-tree. the last node only has
+the right sub-tree. It is very inefficient in terms of space.
 
 Okasaki shows a method to solve this problem in \cite{okasaki-int-map}. Instead of
 using big-endian integer, we can use the little-endian integer to represent key.
-Thus decimal integer 1 is represented as binary 1. Insert it to the empty binary
+Thus decimal integer 1 is represented as binary 1. When insert it to the empty binary
 trie, the result is a trie with a root and a right leaf.
 There is only 1 level. decimal 2 is represented as 01, and decimal 3 is $(11)_2$
 in little-endian binary format. There is no need to add
@@ -132,15 +132,14 @@ any prefix 0, the position in the trie is uniquely determined.
 %       Definition of integer trie
 %=========================================================================
 \subsection{Definition of integer Trie}
-In order to define the little-endian binary trie, we can reuse the structure
-of binary tree.
-A binary trie node is either empty, or a branch node. The branch
-node contains a left child, a right node, and optional value as
+We can use the binary tree structure to define the littel-endian binary trie.
+A binary trie node is either empty, or a branch. The branch
+node contains a left child, a right node, and optional value as the
 satellite data.
-The left sub tree is encoded as 0 and the right sub tree
+The left sub-tree is encoded as 0 and the right sub-tree
 is encoded as 1.
 
-The following example Haskell code defines the trie algebraic data type.
+The following example Haskell code defines the trie as algebraic data type.
 
 \lstset{language=Haskell}
 \begin{lstlisting}
@@ -523,7 +522,7 @@ out. Figure \ref{fig:int-patricia-insert-c} shows these two different cases.
 
 \begin{figure}[htbp]
   \centering
-  \subfloat[Insert key 14. It matches the longest common prefix $(1100)_2$; 14 is then recursively inserted to the right sub tree.]{\includegraphics[scale=0.5]{img/int-patricia-insert-c.ps}}\\
+  \subfloat[Insert key 14. It matches the longest common prefix $(1100)_2$; 14 is then recursively inserted to the right sub-tree.]{\includegraphics[scale=0.5]{img/int-patricia-insert-c.ps}}\\
   \subfloat[Insert key 5. It doesn't match the longest common prefix $(1100)_2$, a new leaf is branched out.]{\includegraphics[scale=0.5]{img/int-patricia-insert-d.ps}}
   \caption{Insert key to branch node.}
   \label{fig:int-patricia-insert-c}
@@ -922,8 +921,8 @@ as Hash table or map.
 A alphabetic trie is either empty or a node. There are two types of node.
 
 \begin{itemize}
-\item A leaf node don't has any sub trees;
-\item A branch node contains multiple sub trees. Each sub tree is bound to a character.
+\item A leaf node don't has any sub-trees;
+\item A branch node contains multiple sub-trees. Each sub-tree is bound to a character.
 \end{itemize}
 
 Both leaf and branch may contain optional satellite data. The following Haskell
@@ -1038,7 +1037,7 @@ insert(T, K, v') = \left \{
 If the key is empty, the previous value $v$ is overwritten with
 $v'$. Otherwise, we need check the children and perform
 recursive insertion. This is realized in function $ins(C, k_1, K', v')$.
-It examines key-sub tree pairs in $C$ one by one. Let $C'$ be
+It examines the (key, sub-tree) pairs in $C$ one by one. Let $C'$ be
 the rest of pairs except for the first one. This function
 can be defined as below.
 
@@ -1135,7 +1134,7 @@ lookup(T, K) = \left \{
 Where function $find(C, k)$ examine the pairs of key-child one by one to check
 if any child is bound to character $k$. If the list of pairs $C$ is empty,
 the result is empty to indicate non-existence of such a child. Otherwise,
-let $C = \{(k_1, T_1), (k_2, T_2), ..., (k_m, T_m)\}$, the first sub tree $T_1$
+let $C = \{(k_1, T_1), (k_2, T_2), ..., (k_m, T_m)\}$, the first sub-tree $T_1$
 is bound to $k_1$; the rest of pairs are represented as $C'$. Below
 equation defines the $find$ function.
 
@@ -1163,7 +1162,7 @@ find t (k:ks) = case lookup k (children t) of
 
 \begin{Exercise}
 \begin{itemize}
-\item Develop imperative trie by using collection data structure to manage multiple sub trees in
+\item Develop imperative trie by using collection data structure to manage multiple sub-trees in
 alphabetic trie.
 \end{itemize}
 \end{Exercise}
@@ -1205,7 +1204,7 @@ We can modify the definition of alphabetic trie a bit to adapt it
 to Patricia. The Patricia is either empty, or a node in form $T = (v, C)$.
 Where $v$ is the optional satellite data; $C = \{(s_1, T_1), (s_2, T_2), ..., (s_n, T_n)\}$
 is a list of pairs. Each pair contains a string $s_i$, which is bound
-to a sub tree $T_i$.
+to a sub-tree $T_i$.
 
 The following Haskell example code defines Patricia accordingly.
 
@@ -1238,7 +1237,7 @@ class Patricia:
 When insert a key, $s$, if the Patricia is empty, we
 create a leaf node as shown in figure \ref{fig:patricia-insert} (a).
 Otherwise, we need check the children.
-If there is some sub tree $T_i$ bound to the string $s_i$,
+If there is some sub-tree $T_i$ bound to the string $s_i$,
 and there exists common prefix between $s_i$ and $s$, we
 need branch out a new leaf $T_j$. The method is to
 create a new internal branch node, bind it with the common
@@ -1408,7 +1407,7 @@ insert(T, k, v') = (v, ins(C, k, v'))
 This function calls another internal function $ins(C, k, v')$.
 If the children $C$ is empty, a new leaf is created; Otherwise
 the children are examined one by one. Denote $C = \{(k_1, T_1), (k_2, T_2), ..., (k_n, T_n)\}$,
-$C'$ holds all the prefix-sub tree pairs except for the first one.
+$C'$ holds all the (prefix, sub-tree) pairs except for the first one.
 
 \be
 ins(C, k, v') = \left \{
@@ -1427,7 +1426,7 @@ leaf node containing $v'$ which is bound to $k$ will be
 returned as the only child. The second clause overwrites
 the previous value with $v'$ if there is some child bound
 to the same key. Note the $C_{T_1}$ means the children of
-sub tree $T_1$. The third clause branches out a new leaf
+sub-tree $T_1$. The third clause branches out a new leaf
 if the first child matches the key $k$. The last clause
 goes on checking the rest children.
 
@@ -1725,7 +1724,7 @@ it expands all its children until getting $n$ candidates.
 \EndFunction
 \end{algorithmic}
 
-Where function \textproc{Expand}($T, prefix, n$) picks $n$ sub trees, which
+Where function \textproc{Expand}($T, prefix, n$) picks $n$ sub-trees, which
 share the same prefix in $T$. It is realized as BFS (Bread-First-Search) traverse. Chapter search
 explains BFS in detail.
 
@@ -2011,7 +2010,7 @@ def trie_lookup_t9(t, key):
 
 Because trie is not space effective, we can modify the above algorithm with
 Patricia solution. As far as the queue isn't empty, the algorithm pops the
-tuple. This time, we examine all the prefix-sub tree pairs. For every pair
+tuple. This time, we examine all the (prefix, sub-tree) pairs. For every pair
 $(k_i, T_i)$, we convert the alphabetic prefix $k_i$ back to digits sequence $D'$
 by looking up the T9 map. If $D'$ exactly matches the digits of what user input,
 we find a candidate word; otherwise if the digit sequence is prefix of what user inputs,
@@ -2096,7 +2095,7 @@ findT9(T, D) = \left \{
 
 Where folding is defined in Appendix A. Function $f$ takes two arguments,
 an intermediate list of candidates which is initialized empty, and
-a pair $(c, T')$, where $c$ is candidate character, to which sub tree $T'$
+a pair $(c, T')$, where $c$ is candidate character, to which sub-tree $T'$
 is bound. It append character $c$ to all the candidate words, and concatenate
 this to the result list.
 
@@ -2234,23 +2233,23 @@ Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein.
 
 \bibitem{okasaki-int-map}
 Chris Okasaki and Andrew Gill. ``Fast Mergeable Integer
-Maps''. Workshop on ML, September 1998, pages 77-86, http://www.cse.ogi.edu/~andy/pub/finite.htm
+Maps''. Workshop on ML, September 1998, pages 77-86, \url{http://www.cse.ogi.edu/~andy/pub/finite.htm}
 
 \bibitem{patricia-morrison}
 D.R. Morrison, ``PATRICIA -- Practical Algorithm To Retrieve  Information Coded In Alphanumeric", Journal of the ACM, 15(4), October 1968, pages 514-534.
 
 \bibitem{wiki-suffix-tree}
-Suffix Tree, Wikipedia. http://en.wikipedia.org/wiki/Suffix\_tree
+Suffix Tree, Wikipedia. \url{http://en.wikipedia.org/wiki/Suffix_tree}
 
 \bibitem{wiki-trie}
-Trie, Wikipedia. http://en.wikipedia.org/wiki/Trie
+Trie, Wikipedia. \url{http://en.wikipedia.org/wiki/Trie}
 
 \bibitem{wiki-t9}
-T9 (predictive text), Wikipedia. http://en.wikipedia.org/wiki/T9\_(predictive\_text)
+T9 (predictive text), Wikipedia. \url{http://en.wikipedia.org/wiki/T9_(predictive_text)}
 
 \bibitem{wiki-predictive-text}
 Predictive text,
-Wikipedia. http://en.wikipedia.org/wiki/Predictive\_text
+Wikipedia. \url{http://en.wikipedia.org/wiki/Predictive_text}
 
 \end{thebibliography}
 
