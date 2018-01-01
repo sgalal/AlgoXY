@@ -51,14 +51,16 @@ object IntTrie {
     ((Empty: IntTrie[A]) /: xs) { (t, kv) => insert(t, kv._1, kv._2) }
 
   // k = ... a2, a2, a0 ==> k' = ai * m + k, where m = 2^i
-  def toList[A] (t: IntTrie[A]): List[(Int, Option[A])] = toListFrom(t, 0, 1)
+  def toList[A] (t: IntTrie[A]): List[(Int, Option[A])] = {
+    def toListFrom[A] (t: IntTrie[A], k: Int, m: Int): List[(Int, Option[A])] =
+      t match {
+        case Empty => List()
+        case Br(l, v, r) => toListFrom(l, k, 2 * m) :::
+          ((k, v) :: toListFrom(r, m + k, 2 * m))
+      }
+    toListFrom(t, 0, 1)
+  }
 
-  def toListFrom[A] (t: IntTrie[A], k: Int, m: Int): List[(Int, Option[A])] =
-    t match {
-      case Empty => List()
-      case Br(l, v, r) => (toListFrom(l, k, 2 * m) :::
-                           ((k, v) :: toListFrom(r, m + k, 2 * m)))
-    }
 
   val N = 100
   def genList(r: Random) = r.shuffle(0 to N - 1).take(r.nextInt(N))
@@ -73,7 +75,7 @@ object IntTrie {
           case None => true
         }
       })
-      assert(xs.isEmpty, println(err))
+      assert(err.isEmpty, println(err))
     }
   }
 
