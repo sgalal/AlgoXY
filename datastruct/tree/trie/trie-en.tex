@@ -139,12 +139,15 @@ satellite data.
 The left sub-tree is encoded as 0 and the right sub-tree
 is encoded as 1.
 
-The following example Haskell code defines the trie as algebraic data type.
+The following example Scala code defines the integer trie as algebraic data type.
 
-\lstset{language=Haskell}
+\lstset{langauge=Scala}
 \begin{lstlisting}
-data IntTrie a = Empty
-               | Branch (IntTrie a) (Maybe a) (IntTrie a)
+sealed trait IntTrie[+A]
+case object Empty extends IntTrie[Nothing]
+case class Br[A] (left: IntTrie[A],
+                  value: Option[A],
+                  right: IntTrie[A]) extends IntTrie[A]
 \end{lstlisting}
 
 Below is another example definition in Python.

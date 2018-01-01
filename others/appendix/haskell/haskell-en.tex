@@ -374,6 +374,19 @@ balance (Br a x (Br b y c dy)    2, dH) =
 balance (t, d) = (t, d)
 \end{lstlisting}
 
+\section{Radix Tree}
+
+\subsection{Integer Trie}
+
+\subsubsection{Definition}
+
+\lstset{language=Haskell}
+\begin{lstlisting}
+data IntTrie a = Empty
+               | Branch (IntTrie a) (Maybe a) (IntTrie a)
+\end{lstlisting}
+
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi
