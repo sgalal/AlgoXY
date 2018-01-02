@@ -41,11 +41,10 @@ IntTrie<T>* insert(IntTrie<T>* t, int key, T value=T()){
 
   IntTrie<T>* p = t;
   while(key){
-    if( (key&0x1) == 0){
+    if ((key&0x1) == 0) {
       if(!p->left) p->left = new IntTrie<T>();
       p = p->left;
-    }
-    else{
+    } else {
       if(!p->right) p->right = new IntTrie<T>();
       p = p->right;
     }
@@ -119,10 +118,10 @@ private:
     std::list<int> l(lst, lst+sizeof(lst)/sizeof(int));
 
     ti = list_to_trie<int, std::list<int>::iterator>(l.begin(), l.end());
-    std::copy(l.begin(), l.end(), 
+    std::copy(l.begin(), l.end(),
               std::ostream_iterator<int>(std::cout, ", "));
     std::cout<<"==>"<<trie_to_str(ti)<<"\n";
-    
+
     typedef std::list<std::pair<int, char> > Dict;
     const int  keys[] = {4, 1, 5, 9};
     const char vals[] = "bacd";
