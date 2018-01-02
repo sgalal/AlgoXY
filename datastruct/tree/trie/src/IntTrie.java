@@ -23,7 +23,9 @@
  */
 
 import java.util.*;
-import java.util.Optional;
+import java.util.stream.*;
+import java.lang.Exception;
+import java.lang.Math;
 
 public class IntTrie {
 
@@ -74,5 +76,42 @@ public class IntTrie {
             t = insert(t, key, m.get(key));
         }
         return t;
+    }
+
+    public static class Test {
+        final static int N = 100;
+
+        static Map<Integer, Integer> genMap(Random gen, int size) {
+            Map<Integer, Integer> m = new HashMap<>(size);
+            List<Integer> ks =  IntStream.range(0, N).boxed().collect(Collectors.toList());
+            Collections.shuffle(ks);
+            for (Integer k : ks.subList(0, size)) {
+                m.put(k, gen.nextInt(N));
+            }
+            return m;
+        }
+
+        static <T> void testBuild(Map<Integer, T> m) {
+            Node<T> t = fromMap(m);
+            for (Integer k : m.keySet()) {
+                T v = lookup(t, k).get();
+                if (!v.equals(m.get(k)))
+                    throw new RuntimeException(String.format("lookup key=%d, expect: %s, get: %s\n",
+                                                             k, k.toString(), v.toString()));
+            }
+            for (int i = 0; i < N; ++i) {
+                if (!m.containsKey(i) && lookup(t, i).isPresent())
+                    throw new RuntimeException(String.format("lookup key=%d, expect: None, get: %s\n",
+                                                             i, lookup(t, i).get().toString()));
+            }
+        }
+
+        public static void test() {
+            Random gen = new Random();
+            for (int i = 0; i < N; ++i) {
+                testBuild(genMap(gen, Math.max(gen.nextInt(N), 0)));
+            }
+            System.out.format("%d test passed.\n", N);
+        }
     }
 }
