@@ -377,8 +377,10 @@ balance (t, d) = (t, d)
 \section{Radix Tree}
 
 \subsection{Integer Trie}
+Little endian integer trie.
 
 \subsubsection{Definition}
+Algebraic definition of integer trie
 
 \lstset{language=Haskell}
 \begin{lstlisting}
@@ -402,6 +404,16 @@ right Empty = Empty
 
 value (Branch _ v _) = v
 value Empty = Nothing
+\end{lstlisting}
+
+\subsubsection{lookup}
+
+\lstset{language=Haskell}
+\begin{lstlisting}
+search Empty k = Nothing
+search t 0 = value t
+search t k = if even k then search (left t) (k `div` 2)
+             else search (right t) (k `div` 2)
 \end{lstlisting}
 
 

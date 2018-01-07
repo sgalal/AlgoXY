@@ -305,14 +305,14 @@ For a given integer $k$ with $m$ bits in binary, the insertion algorithm
 goest into $m$ levels. The performance is bound to $O(m)$ time.
 
 % ================================================================
-%               Look up in integer binary trie
+%               Look up the integer binary trie
 % ================================================================
 \subsection{Look up}
 \index{Integer trie!look up}
 
-To look up key $k$ in the little-endian integer binary trie. We take each
-bit of $k$ from right, then go left if this bit is 0, otherwise,
-we go right. The looking up completes when all bits are consumed.
+To look up key $k$ in the little-endian integer binary trie, we examine each
+bit of $k$ from the lowest one. We go left if the bit is 0, otherwise,
+go right. The looking up completes when all bits are consumed.
 
 \begin{algorithmic}[1]
 \Function{Lookup}{$T, k$}
@@ -331,28 +331,23 @@ we go right. The looking up completes when all bits are consumed.
 \EndFunction
 \end{algorithmic}
 
-Below Python example code uses bit-wise operation to implements the
-looking up algorithm.
+Below example Java program implements the looking up algorithm.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def lookup(t, key):
-    while key != 0 and (t is not None):
-        if key & 1 == 0:
-            t = t.left
-        else:
-            t = t.right
-        key = key>>1
-    if t is not None:
-        return t.value
-    else:
-        return None
+public <T> Optional<T> lookup(Node<T> t, int key) {
+    while (t != null && key != 0) {
+        t = (0 == (key & 0x1)) ? t.left : t.right;
+        key >>= 1;
+    }
+    return Optional.ofNullable(t == null ? null : t.value);
+}
 \end{lstlisting}
 
 Looking up can also be define in recursive manner. If the tree is
-empty, the looking up fails; If $k=0$, the satellite data is the result
-to be found; If the last bit is 0, we recursively look up the
-left child; otherwise, we look up the right child.
+empty, the looking up fails; If $k=0$, then we return the satellite data stored
+in the current node; If the last bit is 0, we recursively look up the
+left sub-tree; otherwise we look up the right sub-tree.
 
 \be
 lookup(T, k) =  \left \{
@@ -366,19 +361,25 @@ lookup(T, k) =  \left \{
 \right.
 \ee
 
-The following Haskell example program implements the recursive
+The following Scala example program implements the recursive
 look up algorithm.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-search Empty k = Nothing
-search t 0 = value t
-search t k = if even k then search (left t) (k `div` 2)
-             else search (right t) (k `div` 2)
+def search[A] (t: IntTrie[A], key: Int) : Option[A] = t match {
+  case Empty => None
+  case Br(l, v, r) => if (key == 0) {
+    v
+  } else if (key % 2 == 0) {  //even
+    search(l, key / 2)
+  } else {
+    search(r, key / 2)
+  }
+}
 \end{lstlisting}
 
 The looking up algorithm is bound to $O(m)$ time, where $m$ is the
-number of bits for a given key.
+number of bits of the key.
 
 % ================================================================
 %               Int Patricia
