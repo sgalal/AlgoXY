@@ -22,7 +22,7 @@
 %                 COVER PAGE
 % ================================================================
 
-\title{Radix tree, Trie and Patricia}
+\title{Radix tree, Trie and Prefix Tree}
 
 \author{Larry~LIU~Xinyu
 \thanks{{\bfseries Larry LIU Xinyu } \newline
@@ -32,10 +32,10 @@
 \maketitle
 \fi
 
-\markboth{Radix tree, Trie and Patricia}{Elementary algorithms}
+\markboth{Radix tree, Trie and Prefix Tree}{Elementary algorithms}
 
 \ifx\wholebook\relax
-\chapter{Radix tree, Trie and Patricia}
+\chapter{Radix tree, Trie and Prefix Tree}
 \numberwithin{Exercise}{chapter}
 \fi
 
@@ -51,7 +51,7 @@
 
 The binary trees introduced so far store information in nodes. Edge
 can also be used to store information.
-Radix trees including Trie and Patricia are important data structures in
+Radix trees including Trie and prefix tree are important data structures in
 information retrieving and manipulating.
 They were found in 1960s. And are widely used in
 compiler design\cite{okasaki-int-map}, and bio-information area, such as
@@ -382,9 +382,9 @@ The looking up algorithm is bound to $O(m)$ time, where $m$ is the
 number of bits of the key.
 
 % ================================================================
-%               Int Patricia
+%               Int Tree (Patricia, int prefix tree)
 % ================================================================
-\section{Integer Patricia}
+\section{Integer prefix tree}
 \label{int-patricia}
 \index{Integer Patricia}
 \index{Integer prefix tree}
@@ -393,36 +393,36 @@ Trie has some drawbacks. It wastes a lot of
 spaces. Note in figure \ref{int-trie}, the real data is mostly stored in leafs.
 It's very common that an integer binary trie contains many nodes only have one child.
 One idea is to compress the chained nodes to one.
-Patricia is such a data structure invented by
-Donald R. Morrison in 1968. Patricia means \textbf{P}ractical \textbf{A}lgorithm \textbf{T}o \textbf{R}etrieve \textbf{I}nformation \textbf{C}oded \textbf{I}n \textbf{A}lphanumeric\cite{patricia-morrison}. It is another kind of prefix tree.
+Integer prefix tree is such a data structure invented by
+Donald R. Morrison in 1968, who named it as 'Patricia'. It stands for \textbf{P}ractical \textbf{A}lgorithm \textbf{T}o \textbf{R}etrieve \textbf{I}nformation \textbf{C}oded \textbf{I}n \textbf{A}lphanumeric\cite{patricia-morrison}. It is another kind of prefix tree. We call it integer tree in this book.
 
-Okasaki provided the implementation of integer Patricia in \cite{okasaki-int-map}.
-If merge the chained nodes which have only one child together in figure \ref{fig:int-trie}, we can get a Patricia as shown in figure \ref{fig:little-endian-patricia}.
+Okasaki provided the implementation of integer tree in \cite{okasaki-int-map}.
+If merge the chained nodes which have only one child together in figure \ref{fig:int-trie}, we can get a integer tree as shown in figure \ref{fig:little-endian-patricia}.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.5]{img/little-endian-patricia.ps}
-  \caption{Little endian Patricia for the map
+  \caption{Little endian integer tree for the map
      \{$ 1 \rightarrow a, 4 \rightarrow b, 5 \rightarrow c, 9 \rightarrow d$\}.}
   \label{fig:little-endian-patricia}
 \end{figure}
 
 From this figure, we can find the key of the branch node is the
 longest common prefix for its descendant trees.
-They branches out at certain bit. Patricia saves a lot of space compare
+They branches out at certain bit. Integer tree saves a lot of space compare
 to trie.
 
 Different from integer trie, padding bits of zero don't cause issue
-with the big endian integer Patricia. All zero bits before MSB are omitted to
+with the big endian integer tree. All zero bits before MSB are omitted to
 save the space. Okasaki list some significant advantages of big endian
-Patricia in \cite{okasaki-int-map}.
+integer tree in \cite{okasaki-int-map}.
 
 % ================================================================
-%                 Definition of int patricia tree
+%                 Definition of int tree
 % ================================================================
 \subsection{Definition}
 
-Integer Patricia is a special binary tree. It is either
+Integer prefix tree is a special binary tree. It is either
 empty or a node. There are two different types of node:
 
 \begin{itemize}
@@ -433,7 +433,7 @@ For the left child, the next bit in the key is zero, while it's one
 for the right child.
 \end{itemize}
 
-The following Haskell example code defines Patricia accordingly.
+The following Haskell example code defines integer tree accordingly.
 
 \lstset{language=Haskell}
 \begin{lstlisting}
@@ -451,7 +451,7 @@ mask is recorded in the branch node. Typically, a mask is power of 2,
 like $2^n$ for some non-negative integer $n$, all
 bits being lower than $n$ don't belong to the common prefix.
 
-The following Python example code defines Patricia as well as
+The following Python example code defines integer tree as well as
 some auxiliary functions.
 
 \lstset{language=Python}
@@ -485,10 +485,10 @@ class IntTree:
 
 
 % ================================================================
-%                 Insertion of int patricia tree
+%                 Insertion of int tree
 % ================================================================
 \subsection{Insertion}
-\index{Integer Patricia!insert}
+\index{Integer tree!insert}
 When insert a key, if the tree is empty,
 we can just create a leaf node with the given key and satellite data,
 as shown in figure \ref{fig:int-patricia-insert-a}.
@@ -790,13 +790,13 @@ def branch(t1, t2):
     return t
 \end{lstlisting}
 
-Figure \ref{fig:int-patricia-haskell-insert} shows the example Patricia created
+Figure \ref{fig:int-patricia-haskell-insert} shows the example integer tree created
 with the insertion algorithm.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{img/int-patricia-haskell-insert.ps}
-  \caption{Insert map $1 \rightarrow x, 4 \rightarrow y, 5 \rightarrow z$ into the big-endian integer Patricia tree.}
+  \caption{Insert map $1 \rightarrow x, 4 \rightarrow y, 5 \rightarrow z$ into the big-endian integer prefix tree.}
   \label{fig:int-patricia-haskell-insert}
 \end{figure}
 
@@ -805,8 +805,8 @@ with the insertion algorithm.
 %                 Lookup in int patricia tree
 % ================================================================
 \subsection{Look up}
-\index{Integer Patricia!look up}
-Consider the property of integer Patricia tree. When look up a
+\index{Integer tree!look up}
+Consider the property of integer prefix tree. When look up a
 key, if it has common prefix with the root,
 then we check the next bit. If
 this bit is zero, we recursively look up the left child;
@@ -855,7 +855,7 @@ def lookup(t, key):
 \end{lstlisting}
 
 The looking up algorithm can also be realized in recursive approach.
-If the Patricia tree $T$ is empty, or it's a singleton leaf with
+If the integer tree $T$ is empty, or it's a singleton leaf with
 different key from what we are looking up, the result is empty to
 indicate not found error; If the tree is a singleton leaf, and the
 key of this leaf is equal to what we are looking up, we are done.
@@ -899,14 +899,14 @@ search t k
 % ================================================================
 \section{Alphabetic Trie}
 \index{Trie}
-Integer based Trie and Patricia Tree can be a good start point. Such
+Integer based trie and tree can be a good start point. Such
 technical plays important role in Compiler implementation. Okasaki
 pointed that the widely used Glasgow Haskell Compiler, GHC,
 utilized the similar implementation for several years before
 1998 \cite{okasaki-int-map}.
 
 If we extend the key from integer to alphabetic
-value, Trie and Patricia tree can be very powerful in solving
+value, Trie and integer tree can be very powerful in solving
 textual manipulation problems.
 
 % ================================================================
@@ -1188,45 +1188,45 @@ alphabetic trie.
 \end{Exercise}
 
 % ================================================================
-%                 Alphabetic Patricia Tree
+%                 Alphabetic Prefix Tree
 % ================================================================
-\section{Alphabetic Patricia}
+\section{Alphabetic prefix tree}
 \index{Patricia}
 \index{Prefix tree}
 
 Similar to integer trie, alphabetic trie is not memory
 efficient. We can use the same method to compress alphabetic trie to
-Patricia.
+prefix tree.
 
 % ================================================================
-%                 Definition of Alphabetic Patricia Tree
+%                 Definition of Alphabetic Prefix Tree
 % ================================================================
 \subsection{Definition}
 
-Alphabetic Patricia tree is a special prefix tree, each node contains
+Alphabetic prefix tree is a special prefix tree, each node contains
 multiple branches. All children of a node share the longest common
 prefix string. As the result, there is no node with only one child,
 because it conflicts with the longest common prefix property.
 
-If we turn the trie shown in figure \ref{fig:trie-of-26} into Patricia
+If we turn the trie shown in figure \ref{fig:trie-of-26} into prefix tree
 by compressing all nodes which have only one child. we can get
-a Patricia prefix tree as in figure \ref{fig:patricia-tree}.
+a prefix tree as in figure \ref{fig:patricia-tree}.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.5]{img/patricia-tree.ps}
-  \caption{A Patricia prefix tree, with keys: 'a', 'an', 'another', 'bool',
+  \caption{A prefix tree, with keys: 'a', 'an', 'another', 'bool',
     'boy' and 'zoo'.}
   \label{fig:patricia-tree}
 \end{figure}
 
 We can modify the definition of alphabetic trie a bit to adapt it
-to Patricia. The Patricia is either empty, or a node in form $T = (v, C)$.
+to prefix tree. The tree is either empty, or a node in form $T = (v, C)$.
 Where $v$ is the optional satellite data; $C = \{(s_1, T_1), (s_2, T_2), ..., (s_n, T_n)\}$
 is a list of pairs. Each pair contains a string $s_i$, which is bound
 to a sub-tree $T_i$.
 
-The following Haskell example code defines Patricia accordingly.
+The following Haskell example code defines prefix tree accordingly.
 
 \lstset{language=Haskell}
 \begin{lstlisting}
@@ -1238,7 +1238,7 @@ data Patricia a = Patricia { value :: Maybe a
 empty = Patricia Nothing []
 \end{lstlisting}
 
-Below Python code reuses the definition for trie to define Patricia.
+Below Python code reuses the definition for trie to define prefix tree.
 
 \lstset{language=Python}
 \begin{lstlisting}
@@ -1252,9 +1252,9 @@ class Patricia:
 %                 Insertion of Alphabetic Patrica Tree
 % ================================================================
 \subsection{Insertion}
-\index{Patricia!insert}
+\index{Prefix tree!insert}
 
-When insert a key, $s$, if the Patricia is empty, we
+When insert a key, $s$, if the prefix tree is empty, we
 create a leaf node as shown in figure \ref{fig:patricia-insert} (a).
 Otherwise, we need check the children.
 If there is some sub-tree $T_i$ bound to the string $s_i$,
@@ -1270,11 +1270,11 @@ $s_i$ may be the prefix of $s$ as in figure \ref{fig:patricia-insert} (d).
 
 \begin{figure}[htbp]
   \centering
-  \subfloat[Insert key `boy' into the empty Patricia, the result is a leaf.]{\hspace{.2\textwidth}\includegraphics[scale=0.45]{img/patricia-insert-a.ps}\hspace{.1\textwidth}}\hspace{.1\textwidth}
+  \subfloat[Insert key `boy' into the empty prefix tree, the result is a leaf.]{\hspace{.2\textwidth}\includegraphics[scale=0.45]{img/patricia-insert-a.ps}\hspace{.1\textwidth}}\hspace{.1\textwidth}
   \subfloat[Insert key `bool'. A new branch with common prefix `bo' is created.]{\hspace{.1\textwidth}\includegraphics[scale=0.45]{img/patricia-insert-b.ps}\hspace{.2\textwidth}} \\
   \subfloat[Insert key `an' with value $y$ into $x$ with prefix `another'.]{\hspace{.3\textwidth}\includegraphics[scale=0.45]{img/patricia-insert-c.ps}\hspace{.3\textwidth}} \\
   \subfloat[Insert `another', into the node with prefix `an'. We recursively insert key `other' to the child.]{\hspace{.3\textwidth}\includegraphics[scale=0.45]{img/patricia-insert-d.ps}\hspace{.3\textwidth}}
-  \caption{Patricia insertion}
+  \caption{Prefix tree insertion}
   \label{fig:patricia-insert}
 \end{figure}
 
@@ -1355,7 +1355,7 @@ we create a new branch node and set $T_1$ and $T_2$ as the two children.
 \EndFunction
 \end{algorithmic}
 
-The following example Python program implements the Patricia insertion algorithm.
+The following example Python program implements the prefix tree insertion algorithm.
 
 \lstset{language=Python}
 \begin{lstlisting}
@@ -1417,7 +1417,7 @@ There are also alternative solution to handle duplicated keys, such
 as using linked-list etc. If there is no child matches the
 key, the program creates a new leaf, and add it to the children.
 
-For Patricia $T = (v, C)$, function $insert(T, k, v')$ inserts
+For prefix tree $T = (v, C)$, function $insert(T, k, v')$ inserts
 key $k$, and value $v'$ to the tree.
 
 \be
@@ -1509,7 +1509,7 @@ lcp(A, B) = \left \{
 \right.
 \ee
 
-The following Haskell example program implements the Patricia insertion
+The following Haskell example program implements the prefix tree insertion
 algorithm.
 
 \lstset{language=Haskell}
@@ -1549,7 +1549,7 @@ lcp (x:xs) (y:ys) = if x == y then x:(lcp xs ys) else []
 %                 Look up in Alphabetic Patrica Tree
 % ================================================================
 \subsection{Look up}
-\index{Patricia!look up}
+\index{Prefix tree!look up}
 When look up a key, we can't examine the characters one by one
 as in trie. Start from the root, we need search among the children
 to see if any one is bound to a prefix of the key.
@@ -1605,7 +1605,7 @@ def lookup(t, key):
             return None
 \end{lstlisting}
 
-This algorithm can also be realized recursively. For Patricia in form
+This algorithm can also be realized recursively. For the prefix tree in form
 $T = (v, C)$, it calls another function to find among the children $C$.
 
 \be
@@ -1650,15 +1650,15 @@ find t k = find' (children t) k where
 % ================================================================
 %                 Trie and Patrica used in Industry
 % ================================================================
-\section{Trie and Patricia applications}
+\section{Trie and prefix tree applications}
 
-Trie and Patricia can be used to solving some interesting problems.
+Trie and prefix tree can be used to solving some interesting problems.
 Integer based prefix tree is used in compiler implementation. Some daily
 used software applications have many interesting features which can be
-realized with trie or Patricia. In this section, some applications are
+realized with trie or prefix tree. In this section, some applications are
 given as examples, including, e-dictionary, word auto-completion, T9
 input method etc.
-The commercial implementations typically do not adopt trie or Patricia
+The commercial implementations typically do not adopt trie or prefix tree
 directly. The solutions we demonstrated here are for illustration purpose
 only.
 
@@ -1696,7 +1696,7 @@ upper position it is in the list.
 In both cases, the software provides a kind of word auto-completion mechanism.
 In some modern IDEs, the editor can even help users to auto-complete program code.
 
-Let's see how to implementation of the e-dictionary with trie or Patricia.
+Let's see how to implementation of the e-dictionary with trie or prefix tree.
 To simplify the problem, we assume the dictionary only supports English - English
 information.
 
@@ -1705,17 +1705,17 @@ words or phrases, the values are the meaning described in English sentences.
 
 We can store all the words and their meanings in a trie, but it isn't
 space effective especially when there are huge amount of items. We'll use
-Patricia to realize e-dictionary.
+prefix tree to realize e-dictionary.
 
 When user wants to look up word 'a', the dictionary does not only
 return the meaning of 'a', but also provides a list of
 candidate words, which all start with 'a', including 'abandon', 'about',
-'accent', 'adam', ... Of course all these words are stored in the Patricia.
+'accent', 'adam', ... Of course all these words are stored in the prefix tree.
 
 If there are too many candidates, one solution is only displaying the top 10
 words, and the user can browse for more.
 
-The following algorithm reuses the looking up defined for Patricia. When it
+The following algorithm reuses the looking up defined for prefix tree. When it
 finds a node bound to a string which is the prefix of what we are looking for,
 it expands all its children until getting $n$ candidates.
 
@@ -1809,7 +1809,7 @@ find one which has prefix equal to this string.
 
 In programming environments supporting lazy evaluation. An intuitive
 solution is to expand all candidates, and take the first $n$ on
-demand. Denote the Patricia prefix tree in form $T = (v, C)$,
+demand. Denote the prefix tree in form $T = (v, C)$,
 below function enumerates all items starts with key $k$.
 
 \be
@@ -1945,10 +1945,10 @@ The only overhead is to store a dictionary of candidate words.
 Method 2 is called as `T9' input method, or predictive input method
 \cite{wiki-t9}, \cite {wiki-predictive-text}. The abbreviation 'T9' stands
 for 'textonym'. It start with 'T' with 9 characters. T9 input can also be
-realized with trie or Patricia.
+realized with trie or prefix tree.
 
 In order to provide candidate words to user, a dictionary must be prepared
-in advance. Trie or Patricia can be used to store the dictionary. The
+in advance. Trie or prefix tree can be used to store the dictionary. The
 commercial T9 implementations typically use complex indexing dictionary in
 both file system and cache. The realization shown here is for illustration
 purpose only.
@@ -2029,7 +2029,7 @@ def trie_lookup_t9(t, key):
 \end{lstlisting}
 
 Because trie is not space effective, we can modify the above algorithm with
-Patricia solution. As far as the queue isn't empty, the algorithm pops the
+prefix tree solution. As far as the queue isn't empty, the algorithm pops the
 tuple. This time, we examine all the (prefix, sub-tree) pairs. For every pair
 $(k_i, T_i)$, we convert the alphabetic prefix $k_i$ back to digits sequence $D'$
 by looking up the T9 map. If $D'$ exactly matches the digits of what user input,
@@ -2075,7 +2075,7 @@ Function \textproc{Convert-T9}($K$) converts each character in $K$ back to digit
 \EndFunction
 \end{algorithmic}
 
-The following example Python program implements the T9 input method with Patricia.
+The following example Python program implements the T9 input method with prefix tree.
 
 \lstset{language=Python}
 \begin{lstlisting}
@@ -2167,7 +2167,7 @@ lookupT9 c children = case lookup c mapT9 of
 mapAppend' x lst = map (\p->(x:(fst p), snd p)) lst
 \end{lstlisting}
 
-There are few modifications when change the realization from trie to Patricia.
+There are few modifications when change the realization from trie to prefix tree.
 Firstly, the sub-tree is bound to prefix string, but not a single character.
 
 \be
@@ -2206,7 +2206,7 @@ convertT9(K) = \{ d | \forall c \in k, \exists (d \rightarrow S) \in M_{T9} \Rig
 \ee
 
 The following example Haskell program implements the T9 input algorithm
-with Patricia.
+with prefix tree.
 
 \begin{lstlisting}
 findT9 t [] = [("", value t)]
@@ -2223,7 +2223,7 @@ toT9 = map (\c -> head $ [ d |(d, s) <- mapT9, c `elem` s])
 
 \begin{Exercise}
 \begin{itemize}
-\item For the T9 input, compare the results of the algorithms realized with trie and Patricia,
+\item For the T9 input, compare the results of the algorithms realized with trie and prefix tree,
 the sequences are different. Why does this happen? How to modify the algorithm so that they
 output the candidates with the same sequence?
 \end{itemize}
@@ -2234,12 +2234,12 @@ output the candidates with the same sequence?
 % ================================================================
 \section{Summary}
 
-In this chapter, we start from the integer base trie and Patricia. The
-map data structure based on integer Patricia plays an important role
-in Compiler implementation. Alphabetic trie and Patricia are
+In this chapter, we start from the integer base trie and prefix tree. The
+map data structure based on integer tree plays an important role
+in Compiler implementation. Alphabetic trie and prefix tree are
 natural extensions. They can be used to manipulate text information.
 As examples, predictive e-dictionary and T9 input method are
-realized with trie or Patricia. Although these examples
+realized with trie or prefix tree. Although these examples
 are different from the real implementation in commercial software.
 They show simple approaches to solve some problems.
 Other important data structure, such as suffix tree, has close
