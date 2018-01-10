@@ -28,7 +28,7 @@ object IntTree {
 
   //find the longest common prefix, returns a pair: (prefix, mask)
   def lcp(p1: Int, p2: Int): (Int, Int) = {
-    def nbits(x: Int) : Int = (x == 0 ? 0 : (1 + nbits(x >> 1)))
+    def nbits(x: Int) : Int = if (x == 0) 0 else (1 + nbits(x >> 1))
     val mask = 1 << nbits(p1 ^ p2)
     val prefix = maskbit(p1, mask)
     (prefix, mask)
@@ -43,8 +43,78 @@ object IntTree {
     }
   }
 
-  def isMatch(key: Int, prefix: Int, mask: Int): Boolean = mask(key, mask) == prefix
+  def matchBits(key: Int, prefix: Int, mask: Int): Boolean = maskbit(key, mask) == prefix
 
   def insert[A] (tr: IntTree[A], key: Int, value: A): IntTree[A] = tr match {
+    case Empty => Leaf(key, value)
+    case Leaf(k, v) => {
+      val t = Leaf(key, value)
+      if (key == k) t else join(key, t, k, tr)
+    }
+    case Branch(p, m, left, right) => {
+      if (matchBits(key, p, m)) {
+        if (isZero(key, m)) {
+          Branch(p, m, insert(left, key, value), right)
+        } else {
+          Branch(p, m, left, insert(right, key, value))
+        }
+      } else {
+        join(key, Leaf(key, value), p, tr)
+      }
+    }
+  }
+
+  // look up
+  def lookup[A] (tr: IntTree[A], key: Int): Option[A] = tr match {
+    case Empty => None
+    case Leaf(k, v) => if (key == k) Some(v) else None
+    case Branch(p, m, left, right) =>
+      if (matchBits(key, p, m))
+        lookup(if (isZero(key, m)) left else right, key)
+      else
+        None
+  }
+
+  def fromList[A] (xs: Seq[(Int, A)]): IntTree[A] =
+    ((Empty: IntTree[A]) /: xs) { (t, kv) => insert(t, kv._1, kv._2) }
+
+  def toList[A] (tr: IntTree[A]): List[(Int, Option[A])] = tr match {
+    case Empty => List()
+    case Leaf(k, v) => List((k, Some(v)))
+    case Branch(p, m, left, right) => toList(left) ::: ((p, None) :: toList(right))
+  }
+
+  def toString[A] (tr: IntTree[A]): String = tr match {
+    case Empty => "."
+    case Leaf(k, v) => k.toString() + ":" + v.toString
+    case Branch(p, m, l, r) => "[" + p.toString() + "@" + m.toString() + "]" +
+      "(" + toString(l) + ", " + toString(r) + ")"
+  }
+
+  //verification
+  val N = 100
+  def genList(r: Random) = r.shuffle(0 to N - 1).take(r.nextInt(N))
+
+  def testBuild(xs: Seq[(Int, Int)]) = {
+    if (!xs.isEmpty) {
+      val tr = fromList(xs)
+      val err = xs.filter( kv => {
+        val (k, v) = kv
+        lookup(tr, k) match {
+          case Some(x) => x != v
+          case None => true
+        }
+      })
+      assert(err.isEmpty, println("err\n" + toString(tr)))
+    }
+  }
+
+  def test() = {
+    val r = Random
+    for (_ <- 1 to N) {
+      val xs = r.shuffle(genList(r) zip (Stream from 1))
+      testBuild(xs)
+    }
+    println(s"$N tests passed")
   }
 }
