@@ -433,23 +433,20 @@ For the left child, the next bit in the key is zero, while it's one
 for the right child.
 \end{itemize}
 
-The following Haskell example code defines integer tree accordingly.
+The following Scala example code defines integer tree accordingly.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-type Key = Int
-type Prefix = Int
-type Mask = Int
-
-data IntTree a = Empty
-               | Leaf Key a
-               | Branch Prefix Mask (IntTree a) (IntTree a)
+  sealed trait IntTree[+A]
+  case object Empty extends IntTree[Nothing]
+  case class Leaf[A] (key: Int, value: A) extends IntTree[A]
+  case class Branch[A] (prefix: Int, mask: Int,
+                        left: IntTree[A], right: IntTree[A]) extends IntTree[A]
 \end{lstlisting}
 
-In order to tell from which bit the left and right children differ, a
-mask is recorded in the branch node. Typically, a mask is power of 2,
-like $2^n$ for some non-negative integer $n$, all
-bits being lower than $n$ don't belong to the common prefix.
+In the branch node, we use a mask number to tell from which bit the sub-trees differ.
+The mask is power of 2, which is $2^n$ for some non-negative integer $n$, all
+bits that are lower than $n$ don't belong to the common prefix.
 
 The following Python example code defines integer tree as well as
 some auxiliary functions.

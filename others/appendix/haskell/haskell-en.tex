@@ -416,6 +416,21 @@ search t k = if even k then search (left t) (k `div` 2)
              else search (right t) (k `div` 2)
 \end{lstlisting}
 
+\subsection{Integer prefix tree}
+
+\subsubsection{Definition}
+
+\lstset{language=Haskell}
+\begin{lstlisting}
+type Key = Int
+type Prefix = Int
+type Mask = Int
+
+data IntTree a = Empty
+               | Leaf Key a
+               | Branch Prefix Mask (IntTree a) (IntTree a)
+\end{lstlisting}
+
 
 \ifx\wholebook\relax \else
 \end{document}
