@@ -27,6 +27,8 @@
 module IntPatricia where
 
 import Data.Bits
+import Test.QuickCheck hiding ((.&.))
+import Data.Maybe (isNothing)
 
 {------------------------------------
   1. Big Edian integer tree
@@ -153,3 +155,19 @@ testIntTree = "t=" ++ (toString t) ++ "\nsearch t 4: " ++ (show $ search t 4) ++
               "\nsearch t 0: " ++ (show $ search t 0)
     where
       t = fromList [(1, 'x'), (4, 'y'), (5, 'z')]
+
+-- Verification
+
+data Sample = S [(Key, Int)] [Int] deriving Show
+
+instance Arbitrary Sample where
+  arbitrary = do
+    n <- choose (2, 100)
+    xs <- shuffle [0..100]
+    let (ks, ks') = splitAt n xs
+    return $ S (zip ks [1..]) ks'
+
+prop_build :: Sample -> Bool
+prop_build (S kvs ks') = let t = fromList kvs in
+  (all (\(k, v) -> Just v == search t k) kvs ) &&
+  (all (isNothing . search t) ks')
