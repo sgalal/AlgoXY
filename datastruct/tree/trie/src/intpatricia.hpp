@@ -45,7 +45,7 @@ int lcp(int& p, int p1, int p2){
 
 template<class T>
 struct IntPatricia{
-  IntPatricia(int k=0, T v=T()): 
+  IntPatricia(int k=0, T v=T()):
     key(k), value(v), prefix(k), mask(1), left(0), right(0){}
 
   ~IntPatricia(){
@@ -58,7 +58,7 @@ struct IntPatricia{
   }
 
   bool match(int x){
-    return (!is_leaf()) && (maskbit(x, mask) == prefix);
+    return maskbit(x, mask) == prefix;
   }
 
   void replace_child(IntPatricia<T>* x, IntPatricia<T>* y){
@@ -93,14 +93,14 @@ IntPatricia<T>* branch(IntPatricia<T>* t1, IntPatricia<T>* t2){
 }
 
 template<class T>
-IntPatricia<T>* insert(IntPatricia<T>* t, int key, T value=T()){
+IntPatricia<T>* insert(IntPatricia<T>* t, int key, T value=T()) {
   if(!t)
     return new IntPatricia<T>(key, value);
 
   IntPatricia<T>* node = t;
   IntPatricia<T>* parent(0);
 
-  while( node->is_leaf()==false && node->match(key) ){
+  while (!node->is_leaf() && node->match(key)) {
     parent = node;
     if(zero(key, node->mask))
       node = node->left;
@@ -124,7 +124,7 @@ T lookup(IntPatricia<T>* t, int key){
   if(!t)
     return T(); //or throw exception
 
-  while( (!t->is_leaf()) && t->match(key)){
+  while (!t->is_leaf() && t->match(key)) {
     if(zero(key, t->mask))
       t = t->left;
     else

@@ -49,7 +49,7 @@ def maskbit(x, mask):
     return x & (~(mask-1))
 
 def match(key, tree):
-    return (not tree.is_leaf()) and maskbit(key, tree.mask) == tree.prefix
+    return maskbit(key, tree.mask) == tree.prefix
 
 def zero(x, mask):
     return x & (mask>>1) == 0
@@ -79,7 +79,7 @@ def insert(t, key, value = None):
     node = t
     parent = None
     while(True):
-        if match(key, node):
+        if (not node.is_leaf()) and match(key, node):
             parent = node
             if zero(key, node.mask):
                 node = node.left

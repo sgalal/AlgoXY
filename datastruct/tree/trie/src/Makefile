@@ -17,8 +17,8 @@
 HEADER = inttrie.hpp intpatricia.hpp trie.hpp patricia.hpp trieutil.hpp edict.hpp
 SOURCE = trie.cpp
 CPP_TEST_OBJS = test.o
-CXX = g++ -Wall -I/usr/include/boost-1_33_1
-CXX_FLAGS = 
+CXX = g++ -Wall -std=c++11 -stdlib=libc++
+CXX_FLAGS =
 HS_TEST_SRCS = IntTrie.hs IntPatricia.hs Trie.hs Patricia.hs TestMain.hs
 HS_TEST_OBJS = $(HS_TEST_SRCS:.hs=.o)
 HS_APP_SRCS = EDict.hs

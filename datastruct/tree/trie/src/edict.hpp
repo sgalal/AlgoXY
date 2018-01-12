@@ -20,9 +20,9 @@
 #include <list>
 #include <queue>
 #include <algorithm> //for std::equal
+#include <tuple>
 #include "trie.hpp"
 #include "patricia.hpp"
-#include "boost/tuple/tuple.hpp"
 
 template<class T>
 std::list<std::pair<typename T::KeyType, typename T::ValueType> >
@@ -52,8 +52,8 @@ expand(typename T::KeyType prefix, T* t, unsigned int n)
 
 //lookup top n candidate with prefix key in Trie
 template<class K, class V>
-std::list<std::pair<K, V> > lookup(Trie<K, V>* t, 
-                                   typename Trie<K, V>::KeyType key, 
+std::list<std::pair<K, V> > lookup(Trie<K, V>* t,
+                                   typename Trie<K, V>::KeyType key,
                                    unsigned int n)
 {
   typedef std::list<std::pair<K, V> > Result;
@@ -78,7 +78,7 @@ bool is_prefix_of(T x, T y){
 }
 
 template<class K, class V>
-std::list<std::pair<K, V> > lookup(Patricia<K, V>* t, 
+std::list<std::pair<K, V> > lookup(Patricia<K, V>* t,
                                    typename Patricia<K, V>::KeyType key,
                                    unsigned int n)
 {
@@ -151,14 +151,14 @@ std::list<std::pair<K, V> > lookup_t9(Trie<K, V>* t,
 
   if((!t) || key.empty())
     return Result();
-  
+
   Key prefix;
   std::map<Char, Key> m = t9map::inst().map;
-  std::queue<boost::tuple<Key, Key, Trie<K, V>*> > q;
-  q.push(boost::make_tuple(prefix, key, t));
+  std::queue<std::tuple<Key, Key, Trie<K, V>*> > q;
+  q.push(std::make_tuple(prefix, key, t));
   Result res;
   while(!q.empty()){
-    boost::tie(prefix, key, t) = q.front();
+    std::tie(prefix, key, t) = q.front();
     q.pop();
     Char c = *key.begin();
     key = Key(key.begin()+1, key.end());
@@ -170,7 +170,7 @@ std::list<std::pair<K, V> > lookup_t9(Trie<K, V>* t,
 	if(key.empty())
 	  res.push_back(std::make_pair(prefix+*it, t->children[*it]->value));
 	else
-	  q.push(boost::make_tuple(prefix+*it, key, t->children[*it]));
+        q.push(std::make_tuple(prefix+*it, key, t->children[*it]));
       }
   }
   return res;
@@ -190,11 +190,11 @@ std::list<std::pair<K, V> > lookup_t9(Patricia<K, V>* t,
 
   Key prefix;
   std::map<Char, Key> m = t9map::inst().map;
-  std::queue<boost::tuple<Key, Key, Patricia<K, V>*> > q;
-  q.push(boost::make_tuple(prefix, key, t));
+  std::queue<std::tuple<Key, Key, Patricia<K, V>*> > q;
+  q.push(std::make_tuple(prefix, key, t));
   Result res;
   while(!q.empty()){
-    boost::tie(prefix, key, t) = q.front();
+    std::tie(prefix, key, t) = q.front();
     q.pop();
     for(Iterator it=t->children.begin(); it!=t->children.end(); ++it){
       Key digits = t9map::inst().to_t9(it->first);
@@ -203,7 +203,7 @@ std::list<std::pair<K, V> > lookup_t9(Patricia<K, V>* t,
 	  res.push_back(std::make_pair(prefix+it->first, it->second->value));
 	else{
 	  key =Key(key.begin()+it->first.size(), key.end());
-	  q.push(boost::make_tuple(prefix+it->first, key, it->second));
+	  q.push(std::make_tuple(prefix+it->first, key, it->second));
 	}
       }
     }
