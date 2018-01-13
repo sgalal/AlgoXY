@@ -104,6 +104,7 @@ public class IntTrie {
                     throw new RuntimeException(String.format("lookup key=%d, expect: None, get: %s\n",
                                                              i, lookup(t, i).get().toString()));
             }
+            System.out.format(".");
         }
 
         public static void test() {

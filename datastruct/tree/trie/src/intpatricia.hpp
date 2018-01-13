@@ -108,9 +108,9 @@ IntPatricia<T>* insert(IntPatricia<T>* t, int key, T value=T()) {
       node = node->right;
   }
 
-  if(node->is_leaf() && key == node->key)
+  if(node->is_leaf() && key == node->key) {
     node->value = value;
-  else{
+  } else {
     IntPatricia<T>* p = branch(node, new IntPatricia<T>(key, value));
     if(!parent)
       return p;
