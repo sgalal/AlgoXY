@@ -26,7 +26,7 @@ public class IntTree {
         }
 
         boolean match(int x) {
-            return !isLeaf() && (maskbit(x, mask) == prefix);
+            return maskbit(x, mask) == prefix;
         }
 
         void replaceSubTree(Node<T> x, Node<T> y) {

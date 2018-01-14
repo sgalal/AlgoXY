@@ -448,36 +448,48 @@ In the branch node, we use a mask number to tell from which bit the sub-trees di
 The mask is power of 2, which is $2^n$ for some non-negative integer $n$, all
 bits that are lower than $n$ don't belong to the common prefix.
 
-The following Python example code defines integer tree as well as
-some auxiliary functions.
+The following example Java code defines integer tree with some auxiliary functions.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-class IntTree:
-    def __init__(self, key = None, value = None):
-        self.key = key
-        self.value = value
-        self.prefix = self.mask = None
-        self.left = self.right = None
+public class Node<T> {
+    int key;
+    T value;
+    int prefix;
+    int mask;
+    Node<T> left;
+    Node<T> right;
 
-    def set_children(self, l, r):
-        self.left = l
-        self.right = r
+    public Node(int k, T v) {
+        key = k;
+        value = v;
+        prefix = k;
+        mask = 1;
+    }
 
-    def replace_child(self, x, y):
-        if self.left == x:
-            self.left = y
-        else:
-            self.right = y
+    public Node() { this(0, null); }
 
-    def is_leaf(self):
-        return self.left is None and self.right is None
+    boolean isLeaf() {
+        return left == null && right == null;
+    }
 
-    def get_prefix(self):
-        if self.prefix is None:
-            return self.key
-        else:
-            return self.prefix
+    boolean match(int x) {
+        return maskbit(x, mask) == prefix;
+    }
+
+    void replaceSubTree(Node<T> x, Node<T> y) {
+        if (left == x) {
+            left = y;
+        } else {
+            right = y;
+        }
+    }
+
+    void setSubTrees(Node<T> l, Node<T> r) {
+        left = l;
+        right = r;
+    }
+}
 \end{lstlisting}
 
 
