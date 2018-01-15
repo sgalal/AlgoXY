@@ -44,10 +44,9 @@ This appendix list the example Haskell code for reference.
 \section{Preface}
 
 \subsection{Minimum free number puzzle}
-The divide and conquer solution to the mininum free number puzzle.
 
-\lstset{language=Haskell}
-\begin{lstlisting}
+\lstset{language=Haskell, frame=single}
+\begin{lstlisting}[caption=The divide and conquer solution to the mininum free number puzzle.]
 import Data.List
 
 minFree xs = bsearch xs 0 (length xs - 1)
@@ -64,7 +63,7 @@ bsearch xs l u | xs == [] = l
 Find the k-th number that only contains factor 2, 3, or 5. Below Haskell
 example based on the idea of infinite stream and lazy evaluation.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption=Recursive Hamming number definition]
 merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
                     | x == y = x : merge xs ys
                     | otherwise = y : merge (x:xs) ys
@@ -79,7 +78,7 @@ last $ take 1500 ns
 
 Alternatively, we can use three queues to populate the regular numbers.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption=Populate Hamming number with queues]
 ks 1 xs _ = xs
 ks n xs (q2, q3, q5) = ks (n-1) (xs++[x]) update
     where
@@ -95,42 +94,30 @@ Run \texttt{last \$ takeN 1500} will generate the 1500th number 859963392.
 
 \section{Binary Search Tree}
 
-\subsection{Definition of BST}
-
-Algebraic data type definition of BST.
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=Algebraic data type definition of BST]
 data Tree a = Empty
             | Node (Tree a) a (Tree a)
 \end{lstlisting}
 
-\subsection{insertion}
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=BST insertion]
 insert Empty k = Node Empty k Empty
 insert (Node l x r) k | k < x = Node (insert l k) x r
                       | otherwise = Node l x (insert r k)
 \end{lstlisting}
 
-\subsection{Flatten the BST to ordered list}
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=Flattern BST to ordered list.]
 toList Empty = []
 toList (Node l x r) = toList l ++ [x] ++ toList r
 \end{lstlisting}
 
-\subsection{BST look up}
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=look up]
 lookup Empty _ = Empty
 lookup t@(Node l k r) x | k == x = t
                         | x < k = lookup l x
                         | otherwise = lookup r x
 \end{lstlisting}
 
-\subsection{delete element from BST}
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=BST deletion]
 delete Empty _ = Empty
 delete (Node l k r) x | x < k = (Node (delete l x) k r)
                       | x > k = (Node l k (delete r x))
@@ -143,34 +130,25 @@ delete (Node l k r) x | x < k = (Node (delete l x) k r)
 
 \section{Insertion Sort}
 
-\subsection{Insertion}
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=ordered insertion]
 insert [] x = [x]
 insert (y:ys) x = if x < y then x:y:ys else y:insert ys x
 \end{lstlisting}
 
 \subsection{Insertion Sort}
 
-Recursive defintion
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=recursive insertion sort]
 isort [] = []
 isort (x:xs) = insert (isort xs) x
 \end{lstlisting}
 
-Definition using folding.
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=define insertion sort with fold]
 isort = foldl insert []
 \end{lstlisting}
 
 \section{Red-black tree}
 
-\subsection{insertion}
-
-Red-black tree insertion with pattern matching
-\begin{lstlisting}
+\begin{lstlisting}[caption=Red-black tree insertion with pattern matching]
 data Color = R | B
 data RBTree a = Empty
               | Node Color (RBTree a) a (RBTree a)
@@ -198,9 +176,9 @@ balance color l k r = Node color l k r
 
 \subsection{deletion}
 
-Red-black tree deletion algorithm with the concept of 'doubly black'.
 
-\begin{lstlisting}
+
+\begin{lstlisting}[caption=Red-black tree deletion algorithm with the concept of 'doubly black'.]
 data Color = R | B | BB deriving (Show, Eq) -- BB is doubly black, used for deletion
 data RBTree a = Empty
               | Node Color (RBTree a) a (RBTree a)
@@ -271,12 +249,10 @@ fixDB color l k r = Node color l k r
 
 \section{AVL tree}
 
-\subsection{AVL tree definition}
-
 AVL tree is defined as Algebraic data type. It's either empty or contains four
 components: the left and right sub trees, the key, and the balance factor.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption=Algebraic AVL tree definition]
 import Prelude hiding (min)
 
 data AVLTree a = Empty
@@ -290,11 +266,7 @@ min (Br Empty x _ _) = x
 min (Br l _ _ _) = min l
 \end{lstlisting}
 
-\subsection{AVL tree insertion}
-
-AVL tree insertion algorithm with Pattern matching approach.
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=AVL tree insertion algorithm with Pattern matching approach.]
 insert::(Ord a)=>AVLTree a -> a -> AVLTree a
 insert t x = fst $ ins t where
     -- result of ins is a pair (t, d), t: tree, d: increment of height
@@ -334,13 +306,11 @@ balance (Br a x (Br (Br b y c dy) z d (-1))    2, dH) =
 balance (t, d) = (t, d)
 \end{lstlisting}
 
-\subsection{AVL tree deletion}
-
 If we extend the height increment to nagative value, most functions we developed
 in insertion are still applicable. We need add two special patterns when fixing
 the balance.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption=AVL tree deletion]
 delete::(Ord a) => AVLTree a -> a -> AVLTree a
 delete t x = fst $ del t x where
   -- result is a pair (t, d), t: tree, d: decrement in height
@@ -379,22 +349,18 @@ balance (t, d) = (t, d)
 \subsection{Integer Trie}
 Little endian integer trie.
 
-\subsubsection{Definition}
-Algebraic definition of integer trie
-
 \lstset{language=Haskell}
-\begin{lstlisting}
+\begin{lstlisting}[caption=Algebraic definition of integer trie]
 data IntTrie a = Empty
                | Branch (IntTrie a) (Maybe a) (IntTrie a)
 \end{lstlisting}
 
-\subsubsection{Insertion}
-
 \lstset{language=Haskell}
-\begin{lstlisting}
+\begin{lstlisting}[caption=Integer trie insertion]
 insert t 0 x = Branch (left t) (Just x) (right t)
-insert t k x | even k = Branch (insert (left t) (k `div` 2) x) (value t) (right t)
-             | otherwise = Branch (left t) (value t) (insert (right t) (k `div` 2) x)
+insert t k x
+    | even k = Branch (insert (left t) (k `div` 2) x) (value t) (right t)
+    | otherwise = Branch (left t) (value t) (insert (right t) (k `div` 2) x)
 
 left (Branch l _ _) = l
 left Empty = Empty
@@ -406,10 +372,8 @@ value (Branch _ v _) = v
 value Empty = Nothing
 \end{lstlisting}
 
-\subsubsection{lookup}
-
 \lstset{language=Haskell}
-\begin{lstlisting}
+\begin{lstlisting}[caption=Integer trie look up]
 search Empty k = Nothing
 search t 0 = value t
 search t k = if even k then search (left t) (k `div` 2)
@@ -418,10 +382,8 @@ search t k = if even k then search (left t) (k `div` 2)
 
 \subsection{Integer prefix tree}
 
-\subsubsection{Definition}
-
 \lstset{language=Haskell}
-\begin{lstlisting}
+\begin{lstlisting}[caption=Integer prefix tree definition]
 type Key = Int
 type Prefix = Int
 type Mask = Int
@@ -431,6 +393,39 @@ data IntTree a = Empty
                | Branch Prefix Mask (IntTree a) (IntTree a)
 \end{lstlisting}
 
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Integer prefix tree insertion.]
+import Data.Bits
+
+insert t k x
+   = case t of
+       Empty -> Leaf k x
+       Leaf k' x' -> if k==k' then Leaf k x
+                     else join k (Leaf k x) k' t -- t@(Leaf k' x')
+       Branch p m l r
+          | match k p m -> if zero k m
+                           then Branch p m (insert l k x) r
+                           else Branch p m l (insert r k x)
+          | otherwise -> join k (Leaf k x) p t -- t@(Branch p m l r)
+
+join p1 t1 p2 t2 = if zero p1 m then Branch p m t1 t2
+                                else Branch p m t2 t1
+    where
+      (p, m) = lcp p1 p2
+
+lcp :: Prefix -> Prefix -> (Prefix, Mask)
+lcp p1 p2 = (p, m) where
+    m = bit (highestBit (p1 `xor` p2))
+    p = mask p1 m
+
+highestBit x = if x == 0 then 0 else 1 + highestBit (shiftR x 1)
+
+mask x m = (x .&. complement (m-1)) -- complement means bit-wise not.
+
+zero x m = x .&. (shiftR m 1) == 0
+
+match k p m = (mask k m) == p
+\end{lstlisting}
 
 \ifx\wholebook\relax \else
 \end{document}

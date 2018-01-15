@@ -498,9 +498,8 @@ public class Node<T> {
 % ================================================================
 \subsection{Insertion}
 \index{Integer tree!insert}
-When insert a key, if the tree is empty,
-we can just create a leaf node with the given key and satellite data,
-as shown in figure \ref{fig:int-patricia-insert-a}.
+When insert a key, if the tree is empty, we create a leaf node as shown in figure
+\ref{fig:int-patricia-insert-a}.
 
 \begin{figure}[htbp]
   \centering
@@ -514,10 +513,10 @@ as shown in figure \ref{fig:int-patricia-insert-a}.
   \label{fig:int-patricia-insert-a}
 \end{figure}
 
-If the tree is just a singleton leaf node $x$, we can create a new leaf $y$,
-put the key and data into it. After that, we need create a new branch
-node, and set $x$ and $y$ as the two children.
-In order to determine if the $y$ should be the left or right node, we need
+If the tree is a singleton leaf node $x$, we create a new leaf $y$,
+put the key and the value into it. After that, we need create a new branch
+node, set $x$ and $y$ as the two sub-trees.
+In order to determine if $y$ should be on the left or right, we need
 find the longest common prefix of $x$ and $y$. For example if $key(x)$
 is 12 ($(1100)_2$ in binary), $key(y)$ is 15 ($(1111)_2$ in binary), then the longest
 common prefix is $(11oo)_2$. Where $o$ denotes the bits we don't care about.
@@ -525,7 +524,7 @@ We can use another integer to mask those bits.
 In this case, the mask number is 4 (100 in binary).
 The next bit after the longest common prefix presents $2^1$. This bit is
 0 in $key(x)$, while it is 1 in $key(y)$. We should set $x$ as the left
-child and $y$ as the right child. Figure \ref{fig:int-patricia-insert-b}
+sub-tree and $y$ as the right sub-tree. Figure \ref{fig:int-patricia-insert-b}
 shows this example.
 
 \begin{figure}[htbp]
@@ -538,30 +537,29 @@ shows this example.
 In case the tree is neither empty, nor a singleton leaf, we need
 firstly check if the key to be inserted matches the longest common
 prefix recorded in the root.
-Then recursively insert the key to the left or the right child
-according to the next bit of the common prefix.
+Then recursively insert the key to the left or right
+according to the next bit of the longest common prefix.
 For example, if insert key 14 ($(1110)_2$ in binary) to the result tree
 in figure \ref{fig:int-patricia-insert-b}, since the common prefix is
 $(11oo)_2$, and the next bit (the bit of $2^1$) is 1, we need recursively
-insert to the right child.
+insert to the right sub-tree.
 
 If the key to be inserted doesn't match the longest
-common prefix stored in the root, we need branch a new leaf
+common prefix in the root, we need branch a new leaf
 out. Figure \ref{fig:int-patricia-insert-c} shows these two different cases.
 
 \begin{figure}[htbp]
   \centering
   \subfloat[Insert key 14. It matches the longest common prefix $(1100)_2$; 14 is then recursively inserted to the right sub-tree.]{\includegraphics[scale=0.5]{img/int-patricia-insert-c.ps}}\\
   \subfloat[Insert key 5. It doesn't match the longest common prefix $(1100)_2$, a new leaf is branched out.]{\includegraphics[scale=0.5]{img/int-patricia-insert-d.ps}}
-  \caption{Insert key to branch node.}
+  \caption{Insert key to the branch node.}
   \label{fig:int-patricia-insert-c}
 \end{figure}
 
-For a given key $k$ and value $v$, denote $(k, v)$ is the leaf node. For branch
+For a given key $k$ and value $v$, denote $(k, v)$ as the leaf node. For branch
 node, denote it in form of $(p, m, T_l, T_r)$, where $p$ is the longest common
-prefix, $m$ is the mask, $T_l$ and $T_r$ are the left and right children.
-Summarize the above cases, the insertion algorithm can be defined as the
-following.
+prefix, $m$ is the mask, $T_l$ and $T_r$ are the left and right sub-trees.
+Summarize the above cases, the insertion algorithm can be defined as below.
 
 \be
 insert(T, k, v) = \left \{
@@ -576,27 +574,26 @@ insert(T, k, v) = \left \{
 \right.
 \ee
 
-The first clause deals with the edge cases, that either $T$ is empty or
-it is a leaf node with the same key. The algorithm overwrites the previous
-value for the later case.
+The first clause deals with the edge cases, if $T$ is empty, the result is a leaf
+node. If $T$ is a leaf node with the same key, we overwrite the previous
+value.
 
 The second clause handles the case that $T$ is a leaf node, but with different
-key. Here we need branch out another new leaf. We need extract the longest
-common prefix, and determine which leaf should be set as the left, and
-which should be set as the right child. Function $join(k_1, T_1, k_2, T_2)$
-does this work. We'll define it later.
+key. Here we branch out another leaf, then extract the longest
+common prefix, and determine which leaf should be set as the left sub-tree.
+Function $join(k_1, T_1, k_2, T_2)$ does this work. We'll define it later.
 
 The third clause deals with the case that $T$ is a branch node, the
 longest common prefix matches the key to be inserted, and the next
 bit to the common prefix is zero. Here we need recursively insert
-to the left child.
+to the left sub-tree.
 
-The fourth clause handles the similar case as the third clause, except
+The fourth clause handles the similar case as the third one, except
 that the next bit to the common prefix is one, but not zero. We need
-recursively insert to the right child.
+recursively insert to the right sub-tree.
 
 The last clause is for the case that the key to be inserted doesn't
-match the longest common prefix stored in the branch. We need branch
+match the longest common prefix in the branch. We need branch
 out a new leaf by calling the $join$ function.
 
 We need define function $match(k, p, m)$ to test if the key $k$, has
@@ -612,7 +609,7 @@ perform bitwise-and with $x$.
 
 Function $zero(k, m)$ test the next bit of the common prefix is zero.
 With the help of the mask $m$, we can shift $m$ one bit to the right,
-then perform bitwise and with the key.
+then perform bitwise-and with the key.
 
 \be
 zero(k, m) = x \& shift_r(m, 1)
@@ -624,7 +621,7 @@ if $k = (k_nk_{n-1}...k_i0...k_0)_2$, then the result is true.
 
 Function $join(p_1, T_1, p_2, T_2)$ takes two different prefixes and trees.
 It extracts the longest common prefix of $p_1$ and $p_2$, create a
-new branch node, and set $T_1$ and $T_2$ as the two children.
+new branch node, and set $T_1$ and $T_2$ as the two sub-trees.
 
 \be
 join(p_1, T_1, p_2, T_2) = \left \{
