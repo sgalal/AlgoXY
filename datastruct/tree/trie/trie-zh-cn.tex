@@ -355,7 +355,7 @@ class IntTree:
             self.right = y
 
     def is_leaf(self):
-        return self.left is None and self.right is None
+        return self.right is None
 
     def get_prefix(self):
         if self.prefix is None:
@@ -584,7 +584,7 @@ def maskbit(x, mask):
     return x & (~(mask-1))
 
 def match(key, tree):
-    return (not tree.is_leaf()) and maskbit(key, tree.mask) == tree.prefix
+    return maskbit(key, tree.mask) == tree.prefix
 
 def zero(x, mask):
     return x & (mask>>1) == 0
