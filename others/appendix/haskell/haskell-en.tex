@@ -427,6 +427,18 @@ zero x m = x .&. (shiftR m 1) == 0
 match k p m = (mask k m) == p
 \end{lstlisting}
 
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Lookup the integer prefix tree]
+search t k
+  = case t of
+      Empty -> Nothing
+      Leaf k' x -> if k == k' then Just x else Nothing
+      Branch p m l r
+             | match k p m -> if zero k m then search l k
+                              else search r k
+             | otherwise -> Nothing
+\end{lstlisting}
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi

@@ -824,11 +824,11 @@ with the insertion algorithm.
 Consider the property of integer prefix tree. When look up a
 key, if it has common prefix with the root,
 then we check the next bit. If
-this bit is zero, we recursively look up the left child;
-otherwise if the bit is one, we next look up the right child.
+this bit is zero, we then recursively look up the left sub-tree;
+otherwise we look up the right sub-tree if the bit is one.
 
-When reach a leaf node, we can directly check if the key of the
-leaf is equal to what we are looking up. This algorithm can be
+When arrive at the leaf node, we check if the key of the
+leaf equals to the one we are looking up. This algorithm can be
 described with the following pseudo code.
 
 \begin{algorithmic}[1]
@@ -851,34 +851,28 @@ described with the following pseudo code.
 \EndFunction
 \end{algorithmic}
 
-Below Python example program implements the looking up algorithm.
+Below Java example program implements the looking up algorithm.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def lookup(t, key):
-    if t is None:
-        return None
-    while (not t.is_leaf()) and match(key, t):
-        if zero(key, t.mask):
-            t = t.left
-        else:
-            t = t.right
-    if t.is_leaf() and t.key == key:
-        return t.value
-    else:
-        return None
+public <T> Optional<T> lookup(Node<T> t, int key) {
+    while (t != null && !t.isLeaf() && t.match(key)) {
+        t = zero(key, t.mask) ? t.left : t.right;
+    }
+    if (t != null && t.isLeaf() && t.key == key)
+        return Optional.ofNullable(t.value);
+    return Optional.empty();
+}
 \end{lstlisting}
 
-The looking up algorithm can also be realized in recursive approach.
+The lookup algorithm can also be realized recursively.
 If the integer tree $T$ is empty, or it's a singleton leaf with
-different key from what we are looking up, the result is empty to
-indicate not found error; If the tree is a singleton leaf, and the
-key of this leaf is equal to what we are looking up, we are done.
-Otherwise, $T$ is a branch node, we need check if the common
-prefix matches the key to be looked up, and recursively look up
-the child according to the next bit. If the common prefix doesn't
-match the key, it means the key doesn't exist in the tree. We
-can return empty result to indicate not found error.
+the key that is different from what we are looking up, the result is empty.
+else if the key in the leaf equals, we are done.
+If $T$ is a branch node, we need check if the common
+prefix matches the subject key, and recursively look up
+the sub-tree according to the next bit. If the common prefix doesn't
+match the key, then the lookup fails.
 
 \be
 lookup(T, k) = \left \{
@@ -894,18 +888,19 @@ lookup(T, k) = \left \{
 \ee
 
 The following Haskell example program implements this recursive
-looking up algorithm.
+lookup up algorithm.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-search t k
-  = case t of
-      Empty -> Nothing
-      Leaf k' x -> if k==k' then Just x else Nothing
-      Branch p m l r
-             | match k p m -> if zero k m then search l k
-                              else search r k
-             | otherwise -> Nothing
+def lookup[A] (tr: IntTree[A], key: Int): Option[A] = tr match {
+  case Empty => None
+  case Leaf(k, v) => if (key == k) Some(v) else None
+  case Branch(p, m, left, right) =>
+    if (matchBits(key, p, m))
+      lookup(if (isZero(key, m)) left else right, key)
+    else
+      None
+}
 \end{lstlisting}
 
 
