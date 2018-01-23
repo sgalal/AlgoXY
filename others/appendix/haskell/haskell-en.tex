@@ -439,6 +439,15 @@ search t k
              | otherwise -> Nothing
 \end{lstlisting}
 
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Definition of Alphabetic trie]
+data Trie a = Trie { value :: Maybe a
+                   , children :: [(Char, Trie a)]}
+
+empty = Trie Nothing []
+\end{lstlisting}
+
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi

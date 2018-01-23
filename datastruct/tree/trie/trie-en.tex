@@ -909,11 +909,9 @@ def lookup[A] (tr: IntTree[A], key: Int): Option[A] = tr match {
 % ================================================================
 \section{Alphabetic Trie}
 \index{Trie}
-Integer based trie and tree can be a good start point. Such
-technical plays important role in Compiler implementation. Okasaki
-pointed that the widely used Glasgow Haskell Compiler, GHC,
-utilized the similar implementation for several years before
-1998 \cite{okasaki-int-map}.
+Integer based trie and tree can be a good start point. The
+Glasgow Haskell Compiler (GHC) utilized the similar integer tree
+implementation for several years before 1998\cite{okasaki-int-map}.
 
 If we extend the key from integer to alphabetic
 value, Trie and integer tree can be very powerful in solving
@@ -923,39 +921,38 @@ textual manipulation problems.
 %                 Definition of Alphabetic trie
 % ================================================================
 \subsection{Definition}
-It's not enough to just use the left and right children to represent
-alphabetic keys. Using English for example, there are 26 letters
-and each can be lower or upper case. If we don't care about the case,
-one solution is to limit the number of branches (children) to 26.
-Some simplified ANSI C implementations of Trie are defined by using
-the array of 26 letters. This can be illustrated as in Figure \ref{fig:trie-of-26}.
+It's not enough to just use the left and right sub-trees to represent
+alphabetic keys. Taking English for example, there are 26 letters.
+If we don't care about the case, one solution is to limit the number
+of branches (children) to 26. Some simplified implementation defines
+the trie with the array of 26 letters.
+This can be illustrated as in Figure \ref{fig:trie-of-26}.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.5]{img/trie-of-26.ps}
-  \caption{A Trie with 26 branches, containing key 'a', 'an', 'another', 'bool',
+  \caption{A trie with 26 branches, containing key 'a', 'an', 'another', 'bool',
     'boy' and 'zoo'.}
   \label{fig:trie-of-26}
 \end{figure}
 
 Not all the 26 branches contain data. For instance, in Figure \ref{fig:trie-of-26},
 the root only has three non-empty branches representing letter 'a',
-'b', and 'z'. Other branches such as for letter c, are all
-empty. We don't show empty branches in the rest of this chapter.
+'b', and 'z'. Other branches such as for letter 'c', are all
+empty. We will not show empty branch in the future.
 
-If deal with case sensitive problems, or handle languages other than English,
-there can be more letters than 26. The problem of dynamic size of sub
-branches can be solved by using some collection data structures. Such
-as Hash table or map.
+When dealing with case sensitive problems, or handling languages other than English,
+there can be more letters. We can use the collection data structures, like Hash map
+to define the trie.
 
-A alphabetic trie is either empty or a node. There are two types of node.
+Alphabetic trie is either empty or a node. There are two types of node.
 
 \begin{itemize}
-\item A leaf node don't has any sub-trees;
+\item A leaf node does not have any sub-trees;
 \item A branch node contains multiple sub-trees. Each sub-tree is bound to a character.
 \end{itemize}
 
-Both leaf and branch may contain optional satellite data. The following Haskell
+Both leaf and branch can contain optional satellite data. The following Haskell
 code shows the example definition.
 
 \lstset{language=Haskell}
