@@ -53,12 +53,12 @@ fromString = fromList . (flip zip (repeat 0)) . words
 
 -- Pre-order traverse to populate keys in lexicographical order
 keys :: Ord k => Trie k v -> [[k]]
-keys t = keys' t [] where
+keys t = map reverse $ keys' t [] where
   keys' t prefix = case (value t) of
     Nothing -> ks
     (Just _ ) -> prefix : ks
     where
-      ks = concat $ map (\(k, t') -> keys' t' (prefix ++ [k])) (sortBy (compare `on` fst) (children t))
+      ks = concatMap (\(k, t') -> keys' t' (k : prefix)) (sortBy (compare `on` fst) (children t))
 
 -- examples
 testTrie = "t=" ++ (show t) ++
