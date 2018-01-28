@@ -23,7 +23,6 @@ object Trie {
   case class Trie[+K, V] (v: Option[V], cs: List[(K, Trie[K, V])]) {
     val value = v
     val children = cs
-    def this() = this(None, List())
   }
 
   def empty[K, V](): Trie[K, V] = Trie(None, List())

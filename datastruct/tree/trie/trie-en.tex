@@ -952,15 +952,17 @@ Alphabetic trie is either empty or a node. There are two types of node.
 \item A branch node contains multiple sub-trees. Each sub-tree is bound to a character.
 \end{itemize}
 
-Both leaf and branch can contain optional satellite data. The following Haskell
+Both leaf and branch can contain optional satellite data. The following Scala
 code shows the example definition.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-data Trie a = Trie { value :: Maybe a
-                   , children :: [(Char, Trie a)]}
+case class Trie[+K, V] (v: Option[V], cs: List[(K, Trie[K, V])]) {
+  val value = v
+  val children = cs
+}
 
-empty = Trie Nothing []
+def empty[K, V](): Trie[K, V] = Trie(None, List())
 \end{lstlisting}
 
 Below ANSI C code defines the alphabetic trie. For illustration purpose only,
