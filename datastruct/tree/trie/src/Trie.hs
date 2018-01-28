@@ -19,7 +19,7 @@
 -- Refer to http://en.wikipedia.org/wiki/Trie
 module Trie where
 
-import Data.List (sortBy)
+import Data.List (sort, sortBy)
 import Data.Function (on)
 
 -- definition
@@ -48,8 +48,8 @@ fromList :: Eq k => [([k], v)] -> Trie k v
 fromList xs = foldl ins empty xs where
     ins t (k, v) = insert t k v
 
-fromString :: Num v => String -> Trie Char v
-fromString = fromList . (flip zip (repeat 0)) . words
+fromString :: (Enum v, Num v) => String -> Trie Char v
+fromString = fromList . (flip zip [1..]) . words
 
 -- Pre-order traverse to populate keys in lexicographical order
 keys :: Ord k => Trie k v -> [[k]]
@@ -58,18 +58,20 @@ keys t = map reverse $ keys' t [] where
     Nothing -> ks
     (Just _ ) -> prefix : ks
     where
-      ks = concatMap (\(k, t') -> keys' t' (k : prefix)) (sortBy (compare `on` fst) (children t))
+      ks = concatMap (\(k, t') -> keys' t' (k : prefix)) ts
+      ts = sortBy (compare `on` fst) (children t)
 
--- examples
-testTrie = "t=" ++ (show t) ++
-           "\nt'=" ++ (show t') ++
-           "\nsearch t an: " ++ (show $ find t "an") ++
-           "\nsearch t boy: " ++ (show $ find t "boy") ++
-           "\nsearch t the: " ++ (show $ find t "the")
-    where
-      t = fromList [("a", 1), ("an", 2), ("another", 7), ("boy", 3), ("bool", 4), ("zoo", 3)]
-      t'= fromList [("zoo", 3), ("bool", 4), ("boy", 3), ("another", 7), ("an", 2), ("a", 1)]
-
+-- example
 example = insert (fromString "a place where animals are for public to see") "zoo" 0
-
 -- keys example
+
+-- test data
+assocs = [[("a", 1), ("an", 2), ("another", 7), ("boy", 3), ("bool", 4), ("zoo", 3)],
+          [("zoo", 3), ("bool", 4), ("boy", 3), ("another", 7), ("an", 2), ("a", 1)]]
+
+verify = all (\as ->
+                 let t = fromList as in
+                   all (\(k, v) -> maybe False (==v) (find t k)) as) assocs
+
+verifyKeys = all (\as ->
+                   keys (fromList as) == (sort $ fst $ unzip as)) assocs
