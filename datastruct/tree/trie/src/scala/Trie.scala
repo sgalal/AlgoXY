@@ -58,6 +58,9 @@ object Trie {
     }
   }
 
+  def lookupString[V] (t: Trie[Char, V], key: String): Option[V] =
+    lookup(t, key.toList)
+
   def fromList[K, V](assoc: List[(List[K], V)]): Trie[K, V] =
     ((empty():Trie[K, V]) /: assoc) { (t, p) => insert(t, p._1, p._2) }
 
@@ -65,6 +68,7 @@ object Trie {
     fromList(assoc map (p => (p._1.toList, p._2)))
 
   //TODO: Check if concatMap is provided as standard method of List.
+  // This one is more efficient than xs.map(f).flattern
   // foldr (\x b -> foldr (:) b (f x)) [] xs
   def concatMap[A, B] (f: A => List[B], xs: List[A]): List[B] =
     (xs :\ (List(): List[B])) { (x, b) => (f(x) :\ b) {_ :: _} }
@@ -87,6 +91,36 @@ object Trie {
   def stringKeys[K <% Ordered[K], V](t: Trie[K, V]): List[String] =
     keys(t) map (_.mkString)
 
+  // verification
+
+  // test data
   val assocs = List(List(("a", 1), ("an", 2), ("antoher", 7), ("boy", 3), ("bool", 4), ("zoo", 3)),
                     List(("zoo", 3), ("bool", 4), ("boy", 3), ("another", 7), ("an", 2), ("a", 1)))
+
+  def testBuild(kvs: List[(String, Int)]) = {
+    val t = fromStringList(kvs)
+    val err = kvs.filter( kv => {
+      val (k, v) = kv
+      lookupString(t, k) match {
+        case Some(x) => x != v
+        case None => true
+      }
+    })
+    assert(err.isEmpty, println("err\n" + t.toString))
+  }
+
+  def testKeys(kvs: List[(String, Int)]) = {
+    val t = fromStringList(kvs)
+    val ks1 = stringKeys(t)
+    val ks2 = kvs.unzip._1.sortWith(_<_)
+    assert(ks1 == ks2, println("ks1=" + ks1.toString + "\nks2=", ks2.toString))
+    println("t=" + t.toString + "\nkeys=" + ks1.toString)
+  }
+
+  def test() = {
+    for (assoc <- assocs) {
+      testBuild(assoc)
+      testKeys(assoc)
+    }
+  }
 }
