@@ -66,19 +66,13 @@ object Trie {
   def fromStringList[V](assoc: List[(String, V)]): Trie[Char, V] =
     fromList(assoc map (p => (p._1.toList, p._2)))
 
-  //TODO: Check if concatMap is provided as standard method of List.
-  // This one is more efficient than xs.map(f).flattern
-  // foldr (\x b -> foldr (:) b (f x)) [] xs
-  def concatMap[A, B] (f: A => List[B], xs: List[A]): List[B] =
-    (xs :\ (List(): List[B])) { (x, b) => (f(x) :\ b) {_ :: _} }
-
   // Pre-order traverse to populate keys in lexicographical order
   def keys[K <% Ordered[K], V] (t: Trie[K, V]): List[List[K]] = {
     def keysOfPrefix[K <% Ordered[K], V](t: Trie[K, V],
                                          prefix: List[K]): List[List[K]] = {
       val ts = t.children.sortWith(_._1 < _._1)
-      val ks = concatMap((p: (K, Trie[K, V])) =>
-                         keysOfPrefix(p._2, p._1 :: prefix), ts)
+      val ks = ts flatMap ((p: (K, Trie[K, V])) =>
+                           keysOfPrefix(p._2, p._1 :: prefix))
       t.value match {
         case None => ks
         case Some(_) => prefix :: ks
