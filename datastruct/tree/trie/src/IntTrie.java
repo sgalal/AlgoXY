@@ -94,10 +94,12 @@ public class IntTrie {
         static <T> void testBuild(Map<Integer, T> m) {
             Node<T> t = fromMap(m);
             for (Integer k : m.keySet()) {
-                T v = lookup(t, k).get();
-                if (!v.equals(m.get(k)))
+                Optional<T> v = lookup(t, k);
+                if (!v.isPresent())
+                    throw new RuntimeException(String.format("not found: %d\n", k));
+                if (!v.get().equals(m.get(k)))
                     throw new RuntimeException(String.format("lookup key=%d, expect: %s, get: %s\n",
-                                                             k, k.toString(), v.toString()));
+                                                             k, m.get(k).toString(), v.get().toString()));
             }
             for (int i = 0; i < N; ++i) {
                 if (!m.containsKey(i) && lookup(t, i).isPresent())
