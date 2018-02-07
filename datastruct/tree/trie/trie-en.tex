@@ -1009,48 +1009,35 @@ value bound the key in the node we arrived.
 \EndFunction
 \end{algorithmic}
 
-The following example ANSI C program implements the insertion algorithm.
+The following example Java program implements the insertion algorithm.
 
-\lstset{language=C}
+\lstset{language=Java}
 \begin{lstlisting}
-struct Trie* insert(struct Trie* t, const char* key, void* value) {
-    int c;
-    struct Trie *p;
-    if(!t)
-        t = create_node();
-    for (p = t; *key; ++key, p = p->children[c]) {
-        c = *key - 'a';
-        if (!p->children[c])
-            p->children[c] = create_node();
+public <T> Node<T> insert(Node<T> t, String key, T value) {
+    if (t == null)
+        t = new Node<T>();
+    Node<T> p = t;
+    int n = key.length();
+    for (int i = 0; i < n; ++i) {
+        int c = key.charAt(i) - 'a';
+        if (p.children.get(c) == null) {
+            p.children.set(c, new Node<T>());
+        }
+        p = p.children.get(c);
     }
-    p->data = value;
+    p.value = value;
     return t;
 }
 \end{lstlisting}
 
-Where function \texttt{create\_node} creates new empty node, with all
-children initialized to empty.
-
-\begin{lstlisting}
-struct Trie* create_node() {
-    struct Trie* t = (struct Trie*) malloc(sizeof(struct Trie));
-    int i;
-    for (i=0; i<26; ++i)
-        t->children[i] = NULL;
-    t->data = NULL;
-    return t;
-}
-\end{lstlisting}
-
-
-The insertion can also be realized in recursive way. Denote the
+The insertion can also be realized recursively. Denote the
 key to be inserted as $K = k_1k_2...k_n$, where $k_i$ is the $i$-th
-character. $K'$ is the rest of characters except $k_1$. $v'$ is the
-satellite data to be inserted.
-The trie is in form $T = (v, C)$, where $v$ is the satellite
-data, $C = \{(c_1, T_1), (c_2, T_2), ..., (c_m, T_m)\}$ is the
-map of children. It maps from character $c_i$ to
-sub-tree $T_i$. if $T$ is empty, then $C$ is also empty.
+character. $K'$ is the rest of characters except $k_1$, $v'$ is the
+data to be inserted.
+The trie is in form $T = (v, C)$, where $v$ is the
+data store in the trie, $C = \{(c_1, T_1), (c_2, T_2), ..., (c_m, T_m)\}$ is the
+collection of sub-trees. It associates a character $c_i$ and the corresponding
+sub-tree $T_i$. $C$ is empty for leaf node in the trie.
 
 \be
 insert(T, K, v') = \left \{
