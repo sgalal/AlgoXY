@@ -11,9 +11,7 @@ public class Trie {
     public static class Node<T> {
         List<Node<T>> children = new ArrayList<>(Collections.nCopies(26, null));
         T value;
-        public Node() {
-            Collections.fill(children, null);
-        }
+        public Node() {}
     }
 
     public static <T> Node<T> insert(Node<T> t, String key, T value) {
@@ -23,8 +21,9 @@ public class Trie {
         int n = key.length();
         for (int i = 0; i < n; ++i) {
             int c = key.charAt(i) - 'a';
-            if (p.children.get(c) == null)
+            if (p.children.get(c) == null) {
                 p.children.set(c, new Node<T>());
+            }
             p = p.children.get(c);
         }
         p.value = value;
@@ -35,8 +34,9 @@ public class Trie {
         int n = key.length();
         for (int i = 0; i < n; ++i) {
             int c = key.charAt(i) - 'a';
-            if (t.children.get(c) == null)
+            if (t.children.get(c) == null) {
                 return Optional.empty();
+            }
             t = t.children.get(c);
         }
         return Optional.ofNullable(t.value);

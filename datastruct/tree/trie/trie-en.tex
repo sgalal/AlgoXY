@@ -965,15 +965,16 @@ case class Trie[+K, V] (v: Option[V], cs: List[(K, Trie[K, V])]) {
 def empty[K, V](): Trie[K, V] = Trie(None, List())
 \end{lstlisting}
 
-Below ANSI C code defines the alphabetic trie. For illustration purpose only,
-we limit the character set to lower case English letters, from 'a' to 'z'.
+Below example Java code defines the alphabetic trie. For illustration purpose,
+it limits the character set to lower case English letters, from 'a' to 'z'.
 
-\lstset{language=C}
+\lstset{language=Java}
 \begin{lstlisting}
-struct Trie {
-  struct Trie* children[26];
-  void* data;
-};
+public class Node<T> {
+    List<Node<T>> children = new ArrayList<>(Collections.nCopies(26, null));
+    T value;
+    public Node() {}
+}
 \end{lstlisting}
 
 
@@ -983,15 +984,13 @@ struct Trie {
 \subsection{Insertion}
 \index{Trie!insert}
 
-When insert string as key, starting from the root, we pick the character
-one by one from the string, examine which child represents the character.
-If the corresponding child is empty, a new empty node is created.
-After that, the next character is used to select the proper grand child.
+When insert a new string as key, starting from the root, we pick the character
+one by one from the string. For each character, we examine which child sub-tree
+represents that character. If the corresponding child is empty, a new node is
+created. After that, we pick the next character and repeat this process.
 
-We repeat this process for all the characters, and finally store the
-optional satellite data in the node we arrived at.
-
-Below pseudo code describes the insertion algorithm.
+After consuming all the characters, we then store the
+value bound the key in the node we arrived.
 
 \begin{algorithmic}[1]
 \Function{Insert}{$T, k, v$}
