@@ -448,13 +448,21 @@ empty = Trie Nothing []
 \end{lstlisting}
 
 \lstset{language=Haskell}
-\begin{lstlisting}[caption=Insertion to aphabetic trie]
+\begin{lstlisting}[caption=Insertion to alphabetic trie]
 insert t []     x = Trie (Just x)  (children t)
 insert t (k:ks) x = Trie (value t) (ins (children t) k ks x) where
     ins [] k ks x = [(k, (insert empty ks x))]
     ins (p:ps) k ks x = if fst p == k
                         then (k, insert (snd p) ks x):ps
                         else p:(ins ps k ks x)
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Look up the alphabetic trie]
+find t [] = value t
+find t (k:ks) = case lookup k (children t) of
+                  Nothing -> Nothing
+                  Just t' -> find t' ks
 \end{lstlisting}
 
 \ifx\wholebook\relax \else

@@ -1100,13 +1100,13 @@ def insert[K, V] (t: Trie[K, V], key: List[K], value: V): Trie[K, V] = {
 \subsection{Look up}
 \index{Trie!look up}
 
-To look up a key, we also extract the character from the
-key one by one. For each character, we search among the children
-to see if there is a branch match this character.
+To look up data with a key, we extract the character from the
+key one by one. For each character, we search among the sub-trees
+to see if there is a branch matches this character.
 If there is no such a child, the look up process terminates
-immediately to indicate the not found error.
-When we reach the last character of the key,
-The data stored in the current node is what we are looking up.
+to indicate that the key does not exist.
+When we arrive at the last character of the key,
+the data stored in the current node is the result.
 
 \begin{algorithmic}[1]
 \Function{Look-Up}{$T, key$}
@@ -1123,25 +1123,30 @@ The data stored in the current node is what we are looking up.
 \EndFunction
 \end{algorithmic}
 
-Below ANSI C program implements the look up algorithm. It returns NULL to indicate
-not found error.
+Below Java example program implements the look up algorithm. It returns empty value if the key does not exist.
 
-\lstset{language=C}
+\lstset{language=Java}
 \begin{lstlisting}
-void* lookup(struct Trie* t, const char* key) {
-    while (*key && t && t->children[*key - 'a'])
-        t = t->children[*key++ - 'a'];
-    return (*key || !t) ? NULL : t->data;
+public <T> Optional<T> lookup(Node<T> t, String key) {
+    int n = key.length();
+    for (int i = 0; i < n; ++i) {
+        int c = key.charAt(i) - 'a';
+        if (t.children.get(c) == null) {
+            return Optional.empty();
+        }
+        t = t.children.get(c);
+    }
+    return Optional.ofNullable(t.value);
 }
 \end{lstlisting}
 
-The look up algorithm can also be realized in recursive manner. When
-look up a key, we start from the first character.
-If it is bound to some child, we then
-recursively search the rest characters in that child.
-Denote the trie as $T = (v, C)$, the key being searched as
+The look up algorithm can also be realized recursively. When
+looking up a key, we start from the first character,
+if it is bound to some sub-tree, we then
+recursively search the rest characters in that child sub-tree.
+Denote the trie as $T = (v, C)$, the key being looked up as
 $K = k_1k_2...k_n$ if it isn't empty. The first character in
-the key is $k_1$, and the rest characters are denoted as $K'$.
+the key is $k_1$, and the rest characters are represented as $K'$.
 
 \be
 lookup(T, K) = \left \{
@@ -1154,12 +1159,13 @@ lookup(T, K) = \left \{
 \right.
 \ee
 
-Where function $find(C, k)$ examine the pairs of key-child one by one to check
-if any child is bound to character $k$. If the list of pairs $C$ is empty,
-the result is empty to indicate non-existence of such a child. Otherwise,
+Where function $find(C, k)$ examines the character-tree pairs one by one to check
+if any child sub-tree is bound to character $k$. If the list of pairs $C$ is empty,
+then the subject key does not exist. Otherwise,
 let $C = \{(k_1, T_1), (k_2, T_2), ..., (k_m, T_m)\}$, the first sub-tree $T_1$
-is bound to $k_1$; the rest of pairs are represented as $C'$. Below
-equation defines the $find$ function.
+is bound to $k_1$, the rest of pairs are represented as $C'$. We repeatedly
+consumes each pair to located the sub-tree for further search.
+Below equation defines the $find$ function.
 
 \be
 find(C, k) = \left \{
@@ -1172,21 +1178,29 @@ find(C, k) = \left \{
 \right.
 \ee
 
-The following Haskell example program implements the trie looking up
-algorithm. It uses the \texttt{lookup} function provided in standard library.
+The following Scala example program implements the trie looking up
+algorithm.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-find t [] = value t
-find t (k:ks) = case lookup k (children t) of
-                  Nothing -> Nothing
-                  Just t' -> find t' ks
+def lookup[K, V] (t: Trie[K, V], key: List[K]): Option[V] = {
+  def find[K, V] (x: K, assoc: List[(K, V)]): Option[V] = assoc match {
+    case List() => None
+    case p :: ps => if (p._1 == x) Some(p._2) else find(x, ps)
+  }
+  key match {
+    case List() => t.value
+    case k :: ks => find(k, t.children) match {
+      case None => None
+      case Some(tr) => lookup(tr, ks)
+    }
+  }
+}
 \end{lstlisting}
 
 \begin{Exercise}
 \begin{itemize}
-\item Develop imperative trie by using collection data structure to manage multiple sub-trees in
-alphabetic trie.
+\item In the imperative approach to define the alphabetic trie, use a collection data structure to manage multiple sub-trees. How does the collection impact the performance?
 \end{itemize}
 \end{Exercise}
 
