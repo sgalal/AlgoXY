@@ -440,13 +440,22 @@ search t k
 \end{lstlisting}
 
 \lstset{language=Haskell}
-\begin{lstlisting}[caption=Definition of Alphabetic trie]
+\begin{lstlisting}[caption=Definition of alphabetic trie]
 data Trie a = Trie { value :: Maybe a
                    , children :: [(Char, Trie a)]}
 
 empty = Trie Nothing []
 \end{lstlisting}
 
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Insertion to aphabetic trie]
+insert t []     x = Trie (Just x)  (children t)
+insert t (k:ks) x = Trie (value t) (ins (children t) k ks x) where
+    ins [] k ks x = [(k, (insert empty ks x))]
+    ins (p:ps) k ks x = if fst p == k
+                        then (k, insert (snd p) ks x):ps
+                        else p:(ins ps k ks x)
+\end{lstlisting}
 
 \ifx\wholebook\relax \else
 \end{document}

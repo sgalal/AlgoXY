@@ -1037,7 +1037,7 @@ data to be inserted.
 The trie is in form $T = (v, C)$, where $v$ is the
 data store in the trie, $C = \{(c_1, T_1), (c_2, T_2), ..., (c_m, T_m)\}$ is the
 collection of sub-trees. It associates a character $c_i$ and the corresponding
-sub-tree $T_i$. $C$ is empty for leaf node in the trie.
+sub-tree $T_i$. $C$ is empty for leaf node.
 
 \be
 insert(T, K, v') = \left \{
@@ -1052,7 +1052,7 @@ insert(T, K, v') = \left \{
 If the key is empty, the previous value $v$ is overwritten with
 $v'$. Otherwise, we need check the children and perform
 recursive insertion. This is realized in function $ins(C, k_1, K', v')$.
-It examines the (key, sub-tree) pairs in $C$ one by one. Let $C'$ be
+It examines the (character, sub-tree) pairs in $C$ one by one. Let $C'$ be
 the rest of pairs except for the first one. This function
 can be defined as below.
 
@@ -1060,7 +1060,7 @@ can be defined as below.
 ins(C, k_1, K', v') = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
-  \{(k_1, insert(\phi, K', v'))\} & C = \phi \\
+  \{(k_1, insert((\phi, \phi), K', v'))\} & C = \phi \\
   \{k_1, insert(T_1, K', v')\} \cup C' & k_1 = c_1 \\
   \{(c_1, T_1)\} \cup ins(C', k_1, K', v') & otherwise
   \end{array}
@@ -1068,21 +1068,29 @@ ins(C, k_1, K', v') = \left \{
 \ee
 
 If $C$ is empty, we create a pair, mapping from character $k_1$ to
-a new empty tree, and recursively insert the rest characters.
+a new empty tree (it is not $\phi$, but a node with empty value and empty sub-tree list), and recursively insert the rest characters.
 Otherwise, the algorithm locates the child which is mapped
 from $k_1$ for further insertion.
 
-The following Haskell example program implements the insertion
+The following Scala example program implements the insertion
 algorithm.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-insert t []     x = Trie (Just x)  (children t)
-insert t (k:ks) x = Trie (value t) (ins (children t) k ks x) where
-    ins [] k ks x = [(k, (insert empty ks x))]
-    ins (p:ps) k ks x = if fst p == k
-                        then (k, insert (snd p) ks x):ps
-                        else p:(ins ps k ks x)
+def insert[K, V] (t: Trie[K, V], key: List[K], value: V): Trie[K, V] = {
+  def ins[K, V] (ts: List[(K, Trie[K, V])],
+    k: K, ks: List[K], value: V): List[(K, Trie[K, V])] = ts match {
+      case List() => List((k, insert(empty(), ks, value)))
+      case p :: ps => if (p._1 == k)
+                        (k, insert(p._2, ks, value)) :: ps
+                      else
+                        p :: ins(ps, k, ks, value)
+  }
+  key match {
+    case List() => Trie(Some(value), t.children)
+    case k :: ks => Trie(t.value, ins(t.children, k, ks, value))
+  }
+}
 \end{lstlisting}
 
 
