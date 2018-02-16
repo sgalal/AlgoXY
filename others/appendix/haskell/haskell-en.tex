@@ -439,6 +439,8 @@ search t k
              | otherwise -> Nothing
 \end{lstlisting}
 
+\subsection{Alphabetic trie}
+
 \lstset{language=Haskell}
 \begin{lstlisting}[caption=Definition of alphabetic trie]
 data Trie a = Trie { value :: Maybe a
@@ -464,6 +466,19 @@ find t (k:ks) = case lookup k (children t) of
                   Nothing -> Nothing
                   Just t' -> find t' ks
 \end{lstlisting}
+
+\subsection{Alphabetic prefix tree}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Alphabetic tree definition]
+type Key = String
+
+data Patricia a = Patricia { value :: Maybe a
+                           , children :: [(Key, Patricia a)]}
+
+empty = Patricia Nothing []
+\end{lstlisting}
+
 
 \ifx\wholebook\relax \else
 \end{document}

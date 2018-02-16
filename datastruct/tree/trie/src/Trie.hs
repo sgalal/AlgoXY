@@ -63,7 +63,6 @@ keys t = map reverse $ keys' t [] where
 
 -- example
 example = insert (fromString "a place where animals are for public to see") "zoo" 0
--- keys example
 
 -- test data
 assocs = [[("a", 1), ("an", 2), ("another", 7), ("boy", 3), ("bool", 4), ("zoo", 3)],

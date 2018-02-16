@@ -1200,7 +1200,8 @@ def lookup[K, V] (t: Trie[K, V], key: List[K]): Option[V] = {
 
 \begin{Exercise}
 \begin{itemize}
-\item In the imperative approach to define the alphabetic trie, use a collection data structure to manage multiple sub-trees. How does the collection impact the performance?
+\item Use a collection data structure to manage sub-trees in the imperative
+alphabetic trie. How does the collection impact the performance?
 \end{itemize}
 \end{Exercise}
 
@@ -1212,7 +1213,7 @@ def lookup[K, V] (t: Trie[K, V], key: List[K]): Option[V] = {
 \index{Prefix tree}
 
 Similar to integer trie, alphabetic trie is not memory
-efficient. We can use the same method to compress alphabetic trie to
+efficient. We can use the same approach to compress alphabetic trie to
 prefix tree.
 
 % ================================================================
@@ -1221,8 +1222,8 @@ prefix tree.
 \subsection{Definition}
 
 Alphabetic prefix tree is a special prefix tree, each node contains
-multiple branches. All children of a node share the longest common
-prefix string. As the result, there is no node with only one child,
+multiple branches. All sub-trees share the longest common
+prefix string in a node. As the result, there is no node has only one child,
 because it conflicts with the longest common prefix property.
 
 If we turn the trie shown in figure \ref{fig:trie-of-26} into prefix tree
@@ -1237,11 +1238,10 @@ a prefix tree as in figure \ref{fig:patricia-tree}.
   \label{fig:patricia-tree}
 \end{figure}
 
-We can modify the definition of alphabetic trie a bit to adapt it
+We can modify the alphabetic trie and adapt it
 to prefix tree. The tree is either empty, or a node in form $T = (v, C)$.
-Where $v$ is the optional satellite data; $C = \{(s_1, T_1), (s_2, T_2), ..., (s_n, T_n)\}$
-is a list of pairs. Each pair contains a string $s_i$, which is bound
-to a sub-tree $T_i$.
+Where $v$ is the optional satellite data; $C = \{(s_1, T_1), (s_2, T_2), ..., (s_n, T_n)\}$ represents the sub-trees. It is a list of pairs. Each pair contains
+a string $s_i$, and a sub-tree $T_i$ the string is bound to.
 
 The following Haskell example code defines prefix tree accordingly.
 
