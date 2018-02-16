@@ -33,7 +33,7 @@ leaf x = PrefixTree (Just x) []
 -- insertion
 insert :: Eq k => PrefixTree k v -> [k] -> v -> PrefixTree k v
 insert t ks x = PrefixTree (value t) (ins (children t) ks x) where
-    ins []     ks x = [(ks, PrefixTree (Just x) [])]
+    ins []     ks x = [(ks, leaf x)]
     ins (p@(ks', t') : ps) ks x
         | ks' == ks
             = (ks, PrefixTree (Just x) (children t')) : ps  -- overwrite
@@ -67,9 +67,9 @@ lcp (x:xs) (y:ys) = if x==y then x : (lcp xs ys) else []
 
 -- lookup
 find :: Eq k => PrefixTree k v -> [k] -> Maybe v
-find t ks = find' (children t) ks where
+find t = find' (children t) where
     find' [] _ = Nothing
-    find' (p@(ks', t') : ps) k
+    find' (p@(ks', t') : ps) ks
           | ks' == ks = value t'
           | ks' `isPrefixOf` ks = find t' (diff ks' ks)
           | otherwise = find' ps ks

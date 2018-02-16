@@ -29,13 +29,14 @@ object Trie {
 
   def insert[K, V] (t: Trie[K, V], key: List[K], value: V): Trie[K, V] = {
     def ins[K, V] (ts: List[(K, Trie[K, V])],
-                   k: K, ks: List[K], value: V): List[(K, Trie[K, V])] = ts match {
-                     case List() => List((k, insert(empty(), ks, value)))
-                     case p :: ps => if (p._1 == k)
-                                       (k, insert(p._2, ks, value)) :: ps
-                                     else
-                                       p :: ins(ps, k, ks, value)
-    }
+                   k: K, ks: List[K], value: V): List[(K, Trie[K, V])] =
+      ts match {
+        case List() => List((k, insert(empty(), ks, value)))
+        case p :: ps => if (p._1 == k)
+                           (k, insert(p._2, ks, value)) :: ps
+                        else
+                          p :: ins(ps, k, ks, value)
+      }
     key match {
       case List() => Trie(Some(value), t.children)
       case k :: ks => Trie(t.value, ins(t.children, k, ks, value))
