@@ -1,5 +1,6 @@
 import scala.util.Random    // for verification
 import scala.language.postfixOps
+import Ordering.Implicits._
 
 object PrefixTree {
   case class Tree[+K, V] (v: Option[V], cs: List[(List[K], Tree[K, V])]) {
@@ -44,7 +45,7 @@ object PrefixTree {
     } else if (key2 == key) { // insert "another" into "an"
       (key, insert(t2, newKey1, v))
     } else {
-      (key, Tree(None, List((newKey1, leaf(x)), (newKey2, t2))))
+      (key, Tree(None, List((newKey1, leaf(v)), (newKey2, t2))))
     }
   }
 
@@ -58,7 +59,8 @@ object PrefixTree {
 
   // lookup
   def lookup[K, V] (t: Tree[K, V], key: List[K]): Option[V] = {
-    def extract[K] (xs: List[K], ys: List[K]) = ys.drop(lcp(xs, ys).length)
+    def diff[K] (xs: List[K], ys: List[K]) = xs.drop(lcp(xs, ys).length)
+
     def find[K, V] (assoc: List[(List[K], Tree[K, V])], key: List[K]): Option[V] =
       assoc match {
         case List() => None
@@ -66,11 +68,72 @@ object PrefixTree {
           val (key1, t1) = p
           if (key1 == key) {
             t1.value
-          } else if (ks.startsWith(key1)) {
-            lookup(t1, extract(key, key1))
+          } else if (key.startsWith(key1)) {
+            lookup(t1, diff(key, key1))
+          } else {
+            find(ps, key)
           }
         }
       }
     find(t.children, key)
+  }
+
+  def lookupString[V] (t: Tree[Char, V], key: String): Option[V] = lookup(t, key.toList)
+
+  def fromList[K, V] (assoc: List[(List[K], V)]): Tree[K, V] =
+    ((empty(): Tree[K, V]) /: assoc) { (t, p) => insert(t, p._1, p._2) }
+
+  def fromStringList[V](assoc: List[(String, V)]): Tree[Char, V] =
+    fromList(assoc map (p => (p._1.toList, p._2)))
+
+  // pre-order travrese to populate keys in lexicographical order
+  def keys[K <% Ordered[K], V] (t: Tree[K, V]): List[List[K]] = {
+    def keysOfPrefix[K <% Ordered[K], V](prefix: List[K],
+                                         t: Tree[K, V]): List[List[K]] = {
+      val ts = t.children.sortWith(_._1 < _._1)
+      val ks = ts flatMap ((p: (List[K], Tree[K, V])) =>
+        keysOfPrefix(prefix ++ p._1, p._2))
+      t.value match {
+        case None => ks
+        case Some(_) => prefix :: ks
+      }
+    }
+    keysOfPrefix(List(), t)
+  }
+
+  def stringKeys[K <% Ordered[K], V] (t: Tree[K, V]): List[String] =
+    keys(t) map (_.mkString)
+
+  // verification
+
+  // test data
+  val assocs = List(List(("a", 1), ("an", 2), ("antoher", 7), ("boy", 3), ("bool", 4), ("zoo", 3)),
+                    List(("zoo", 3), ("bool", 4), ("boy", 3), ("another", 7), ("an", 2), ("a", 1)))
+
+  def testBuild(kvs: List[(String, Int)]) = {
+    val t = fromStringList(kvs)
+    val err = kvs.filter( kv => {
+      val (k, v) = kv
+      lookupString(t, k) match {
+        case Some(x) => x != v
+        case None => true
+      }
+    })
+    assert(err.isEmpty, println("err\n" + t.toString))
+  }
+
+  def testKeys(kvs: List[(String, Int)]) = {
+    val t = fromStringList(kvs)
+    val ks1 = stringKeys(t)
+    val ks2 = kvs.unzip._1.sortWith(_<_)
+    assert(ks1 == ks2, println("ks1=" + ks1.toString + "\nks2=", ks2.toString))
+    println("t=" + t.toString + "\nkeys=" + ks1.toString)
+  }
+
+  def test() = {
+    for (assoc <- assocs) {
+      testBuild(assoc)
+      testKeys(assoc)
+    }
   }
 }

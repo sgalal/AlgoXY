@@ -71,9 +71,9 @@ find t = find' (children t) where
     find' [] _ = Nothing
     find' (p@(ks', t') : ps) ks
           | ks' == ks = value t'
-          | ks' `isPrefixOf` ks = find t' (diff ks' ks)
+          | ks' `isPrefixOf` ks = find t' (diff ks ks')
           | otherwise = find' ps ks
-    diff ks1 ks2 = drop (length (lcp ks1 ks2)) ks2
+    diff ks1 ks2 = drop (length (lcp ks1 ks2)) ks1
 
 fromList :: Eq k => [([k], v)] -> PrefixTree k v
 fromList = foldl ins empty where
