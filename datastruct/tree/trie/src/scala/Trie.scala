@@ -116,5 +116,6 @@ object Trie {
       testBuild(assoc)
       testKeys(assoc)
     }
+    println("pass " + assocs.size + " tests")
   }
 }

@@ -1,6 +1,6 @@
 import scala.util.Random    // for verification
 import scala.language.postfixOps
-import Ordering.Implicits._
+import Ordering.Implicits._ // for list comparison
 
 object PrefixTree {
   case class Tree[+K, V] (v: Option[V], cs: List[(List[K], Tree[K, V])]) {
@@ -135,5 +135,6 @@ object PrefixTree {
       testBuild(assoc)
       testKeys(assoc)
     }
+    println("pass " + assocs.size + " tests")
   }
 }
