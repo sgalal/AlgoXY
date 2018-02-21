@@ -470,13 +470,13 @@ find t (k:ks) = case lookup k (children t) of
 \subsection{Alphabetic prefix tree}
 
 \lstset{language=Haskell}
-\begin{lstlisting}[caption=Alphabetic tree definition]
-type Key = String
+\begin{lstlisting}[caption=Alphabetic prefix tree definition]
+data PrefixTree k v = PrefixTree { value :: Maybe v
+                                 , children :: [([k], PrefixTree k v)]}
 
-data Patricia a = Patricia { value :: Maybe a
-                           , children :: [(Key, Patricia a)]}
+empty = PrefixTree Nothing []
 
-empty = Patricia Nothing []
+leaf x = PrefixTree (Just x) []
 \end{lstlisting}
 
 

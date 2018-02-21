@@ -3,5 +3,6 @@ public class Test {
         IntTrie.Test.test();
         IntTree.Test.test();
         Trie.Test.test();
+        PrefixTree.Test.test();
     }
 }

@@ -1243,16 +1243,18 @@ to prefix tree. The tree is either empty, or a node in form $T = (v, C)$.
 Where $v$ is the optional satellite data; $C = \{(s_1, T_1), (s_2, T_2), ..., (s_n, T_n)\}$ represents the sub-trees. It is a list of pairs. Each pair contains
 a string $s_i$, and a sub-tree $T_i$ the string is bound to.
 
-The following Haskell example code defines prefix tree accordingly.
+The following Scala example code defines prefix tree accordingly.
 
-\lstset{language=Haskell}
+\lstset{language=Scala}
 \begin{lstlisting}
-type Key = String
+case class Tree[+K, V] (v: Option[V], cs: List[(List[K], Tree[K, V])]) {
+  val value = v
+  val children = cs
+}
 
-data Patricia a = Patricia { value :: Maybe a
-                           , children :: [(Key, Patricia a)]}
+def empty[K, V](): Tree[K, V] = Tree(None, List())
 
-empty = Patricia Nothing []
+def leaf[K, V](v: V): Tree[K, V] = Tree(Some(v), List())
 \end{lstlisting}
 
 Below Python code reuses the definition for trie to define prefix tree.
