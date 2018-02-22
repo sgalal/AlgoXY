@@ -1723,29 +1723,28 @@ def lookup[K, V] (t: Tree[K, V], key: List[K]): Option[V] = {
 Trie and prefix tree can be used to solve many interesting problems.
 Integer based prefix tree is used in compiler implementation. Some daily
 used software applications have many interesting features which can be
-realized with trie or prefix tree. In this section, some applications are
-given as examples, including, e-dictionary, word auto-completion, T9
-input method etc.
-The commercial implementations typically do not adopt trie or prefix tree
-directly. The solutions we demonstrated here are for illustration purpose
+realized with trie or prefix tree. In this section, we give some examples,
+including, e-dictionary, word auto-completion, T9
+input method etc. Different from the commerial implementation, the
+solutions we demonstrated here are for illustration purpose
 only.
 
 \subsection{E-dictionary and word auto-completion}
 \index{Auto completion}
-Figure \ref{fig:e-dict} shows a screen shot of an English-Chinese E-dictionary.
-In order to provide good user experience,
-the dictionary searches its word library, and lists all candidate words and
-phrases similar to what user has entered.
+Figure \ref{fig:e-dict} shows a screen shot of an E-dictionary.
+When user enters characters,
+the dictionary searches its word library, then lists the candidate words and
+phrases starts from what the user input.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[scale=0.5]{img/ciba.eps}
+  \includegraphics[scale=0.4]{img/edict-en.eps}
   \caption{E-dictionary. All candidates starting with what the user input are listed.}
   \label{fig:e-dict}
 \end{figure}
 
 A E-dictionary typically contains hundreds of thousands words. It's very expensive
-to performs a whole word search. Commercial software adopts complex approaches, including
+to perform a complete search. Commercial software adopts complex approaches, including
 caching, indexing etc to speed up this process.
 
 Similar with e-dictionary, figure \ref{fig:word-completion} shows a popular
@@ -1762,30 +1761,30 @@ upper position it is in the list.
 \end{figure}
 
 In both cases, the software provides a kind of word auto-completion mechanism.
-In some modern IDEs, the editor can even help users to auto-complete program code.
+Some editors can also help programmers to auto-complete the code.
 
-Let's see how to implementation of the e-dictionary with trie or prefix tree.
+Let's see how to implement the e-dictionary with prefix tree.
 To simplify the problem, we assume the dictionary only supports English - English
 information.
 
-A dictionary stores key-value pairs, the keys are English
-words or phrases, the values are the meaning described in English sentences.
+A dictionary stores key-value pairs, the key is English
+word or phrase, the value is the meaning described in text.
 
-We can store all the words and their meanings in a trie, but it isn't
-space effective especially when there are huge amount of items. We'll use
-prefix tree to realize e-dictionary.
+We can store all the words and their meanings in a trie, but it consumes
+too large space especially when there are huge amount of items. We'll use
+prefix tree to realize the e-dictionary.
 
 When user wants to look up word 'a', the dictionary does not only
 return the meaning of 'a', but also provides a list of
-candidate words, which all start with 'a', including 'abandon', 'about',
+candidates starting with 'a', including 'abandon', 'about',
 'accent', 'adam', ... Of course all these words are stored in the prefix tree.
 
-If there are too many candidates, one solution is only displaying the top 10
-words, and the user can browse for more.
+If there are too many candidates, we can limit only displaying the top 10
+candidates, and allow the user to browse more.
 
-The following algorithm reuses the looking up defined for prefix tree. When it
-finds a node bound to a string which is the prefix of what we are looking for,
-it expands all its children until getting $n$ candidates.
+The following algorithm reuses the looking up defined for prefix tree. When
+finds a node bound the prefix of what we are looking for,
+it expands all its children sub-trees till getting $n$ candidates.
 
 \begin{algorithmic}[1]
 \Function{Look-Up}{$T, k, n$}
