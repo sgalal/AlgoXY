@@ -480,6 +480,43 @@ leaf x = PrefixTree (Just x) []
 \end{lstlisting}
 
 
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Prefix tree insertion]
+insert :: Eq k => PrefixTree k v -> [k] -> v -> PrefixTree k v
+insert t ks x = PrefixTree (value t) (ins (children t) ks x) where
+    ins []     ks x = [(ks, leaf x)]
+    ins (p@(ks', t') : ps) ks x
+        | ks' == ks
+            = (ks, PrefixTree (Just x) (children t')) : ps  -- overwrite
+        | match ks' ks
+            = (branch ks x ks' t') : ps
+        | otherwise
+            = p : (ins ps ks x)
+
+match x y = x /= [] && y /= [] && head x == head y
+
+branch :: Eq k => [k] -> v -> [k] -> PrefixTree k v -> ([k], PrefixTree k v)
+branch ks1 x ks2 t2
+    | ks1 == ks
+        -- ex: insert "an" into "another"
+        = (ks, PrefixTree (Just x) [(ks2', t2)])
+    | ks2 == ks
+        -- ex: insert "another" into "an"
+        = (ks, insert t2 ks1' x)
+    | otherwise = (ks, PrefixTree Nothing [(ks1', leaf x), (ks2', t2)])
+   where
+      ks = lcp ks1 ks2
+      m = length ks
+      ks1' = drop m ks1
+      ks2' = drop m ks2
+
+-- longest common prefix
+lcp :: Eq k => [k] -> [k] -> [k]
+lcp [] _ = []
+lcp _ [] = []
+lcp (x:xs) (y:ys) = if x==y then x : (lcp xs ys) else []
+\end{lstlisting}
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi
