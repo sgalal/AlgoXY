@@ -517,6 +517,19 @@ lcp _ [] = []
 lcp (x:xs) (y:ys) = if x==y then x : (lcp xs ys) else []
 \end{lstlisting}
 
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Alphabetic prefix tree lookup]
+find :: Eq k => PrefixTree k v -> [k] -> Maybe v
+find t = find' (children t) where
+    find' [] _ = Nothing
+    find' (p@(ks', t') : ps) ks
+          | ks' == ks = value t'
+          | ks' `isPrefixOf` ks = find t' (diff ks ks')
+          | otherwise = find' ps ks
+    diff ks1 ks2 = drop (length (lcp ks1 ks2)) ks1
+\end{lstlisting}
+
+
 \ifx\wholebook\relax \else
 \end{document}
 \fi
