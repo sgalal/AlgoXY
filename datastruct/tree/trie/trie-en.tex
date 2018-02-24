@@ -171,6 +171,8 @@ public class Node<T> {
 \subsection{Insertion}
 \index{Integer trie!insert}
 
+TODO: Change the order of FP and Imperative
+
 The key is is stored as little-endian integer, when insert a new key,
 we extract the bit one by one from the right most.
 If it is 0, we go to the left, otherwise for 1, we go to the right.
@@ -309,6 +311,8 @@ goest into $m$ levels. The performance is bound to $O(m)$ time.
 % ================================================================
 \subsection{Look up}
 \index{Integer trie!look up}
+
+TODO: Change the order of FP and Imperative
 
 To look up key $k$ in the little-endian integer binary trie, we examine each
 bit of $k$ from the lowest one. We go left if the bit is 0, otherwise,
@@ -821,6 +825,9 @@ with the insertion algorithm.
 % ================================================================
 \subsection{Look up}
 \index{Integer tree!look up}
+
+TODO: Change the order of FP and Imperative
+
 Consider the property of integer prefix tree. When look up a
 key, if it has common prefix with the root,
 then we check the next bit. If
@@ -887,7 +894,7 @@ lookup(T, k) = \left \{
 \right.
 \ee
 
-The following Haskell example program implements this recursive
+The following Scala example program implements this recursive
 lookup up algorithm.
 
 \lstset{language=Scala}
@@ -983,6 +990,9 @@ public class Node<T> {
 % ================================================================
 \subsection{Insertion}
 \index{Trie!insert}
+
+TODO: Change the order of FP and Imperative
+
 
 When insert a new string as key, starting from the root, we pick the character
 one by one from the string. For each character, we examine which child sub-tree
@@ -1099,6 +1109,9 @@ def insert[K, V] (t: Trie[K, V], key: List[K], value: V): Trie[K, V] = {
 % ================================================================
 \subsection{Look up}
 \index{Trie!look up}
+
+TODO: Change the order of FP and Imperative
+
 
 To look up data with a key, we extract the character from the
 key one by one. For each character, we search among the sub-trees
@@ -1280,6 +1293,8 @@ public static <T> Node<T> leaf(T val) { return new Node<T>(val); }
 % ================================================================
 \subsection{Insertion}
 \index{Prefix tree!insert}
+
+TODO: Change the order of FP and Imperative
 
 When insert a key $s$, if the prefix tree is empty, we
 create a leaf node as shown in figure \ref{fig:patricia-insert} (a).
@@ -1603,6 +1618,9 @@ def lcp[K] (xs: List[K], ys: List[K]): List[K] =
 % ================================================================
 \subsection{Look up}
 \index{Prefix tree!look up}
+
+TODO: Change the order of FP and Imperative
+
 When look up a key, we can't examine the characters one by one
 as in trie any more. Start from the root, we need search among the
 children sub-trees to see if any one is bound to some prefix of the key.
@@ -1782,6 +1800,8 @@ candidates starting with 'a', including 'abandon', 'about',
 If there are too many candidates, we can limit only displaying the top 10
 candidates, and allow the user to browse more.
 
+TODO: Change the order of FP and Imperative
+
 The following algorithm reuses the looking up defined for prefix tree. When
 finds a node bound the prefix of what we are looking for,
 it expands all its children sub-trees till getting $n$ candidates.
@@ -1812,7 +1832,7 @@ it expands all its children sub-trees till getting $n$ candidates.
 \end{algorithmic}
 
 Where function \textproc{Expand}($T, prefix, n$) picks $n$ sub-trees, which
-share the same prefix in $T$. It is realized as BFS (Bread-First-Search) traverse. Chapter search
+share the same prefix in $T$. It is realized as BFS (Bread-First-Search) traverse. 14.3.1 in the Chapter of search
 explains BFS in detail.
 
 \begin{algorithmic}[1]
@@ -1824,49 +1844,65 @@ explains BFS in detail.
     \If{\Call{Data}{$T$} $\neq$ NIL}
       \State $R \gets R \cup \{(k, $ \Call{Data}{$T$} $)\}$
     \EndIf
-    \For{$\forall (k_i, T_i) \in$ \Call{Children}{$T$}}
+    \For{$\forall (k_i, T_i) \in$ \Call{Children}{$T$} in sorted order}
       \State \Call{Push}{$Q, (k + k_i, T_i)$}
     \EndFor
   \EndWhile
 \EndFunction
 \end{algorithmic}
 
-The following example Python program implements the e-dictionary application.
-When testing if a string is prefix of another one, it uses the \texttt{find}
-function provided in standard string library.
+The following example Java program implements the e-dictionary application.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-import string
+public <T> List<Map.Entry<String, T>> lookup(PrefixTree.Node<T> t,
+                                             String key, int n) {
+    if (t == null)
+        return Collections.emptyList();
+    String prefix = "";
+    boolean match;
+    do {
+        match = false;
+        for (Map.Entry<String, PrefixTree.Node<T>> entry : t.subTrees.entrySet()) {
+            String k = entry.getKey();
+            PrefixTree.Node<T> tr = entry.getValue();
+            if (k.startsWith(key)) { // key is prefix of k
+                return expand(prefix + k, tr, n);
+            }
+            if (key.startsWith(k)) {
+                match = true;
+                key = key.substring(k.length());
+                t = tr;
+                prefix = prefix + k;
+                break;
+            }
+        }
+    } while (match);
+    return Collections.emptyList();
+}
 
-def patricia_lookup(t, key, n):
-    if t is None:
-        return None
-    prefix = ""
-    while True:
-        match = False
-        for k, tr in t.children.items():
-            if string.find(k, key) == 0: #is prefix of
-                return expand(prefix+k, tr, n)
-            if string.find(key, k) ==0:
-                match = True
-                key = key[len(k):]
-                t = tr
-                prefix += k
-                break
-        if not match:
-            return None
+<T> List<Map.Entry<String, T>> expand(String prefix, PrefixTree.Node<T> t, int n) {
+    List<Map.Entry<String, T>> res = new ArrayList<>();
+    Queue<Map.Entry<String, PrefixTree.Node<T> >> q = new LinkedList<>();
+    q.offer(entryOf(prefix, t));
+    while(res.size() < n && !q.isEmpty()) {
+        Map.Entry<String, PrefixTree.Node<T>> entry = q.poll();
+        String s = entry.getKey();
+        PrefixTree.Node<T> tr = entry.getValue();
+        if (tr.value.isPresent()) {
+            res.add(entryOf(s, tr.value.get()));
+        }
+        for (Map.Entry<String, PrefixTree.Node<T>> e :
+                 new TreeMap<>(tr.subTrees).entrySet()) {
+            q.offer(entryOf(s + e.getKey(), e.getValue()));
+        }
+    }
+    return res;
+}
 
-def expand(prefix, t, n):
-    res = []
-    q = [(prefix, t)]
-    while len(res)<n and len(q)>0:
-        (s, p) = q.pop(0)
-        if p.value is not None:
-            res.append((s, p.value))
-        for k, tr in p.children.items():
-            q.append((s+k, tr))
-    return res
+<K, V> Map.Entry<K, V> entryOf(K key, V val) {
+    return new AbstractMap.SimpleImmutableEntry<K, V>(key, val);
+}
 \end{lstlisting}
 
 This algorithm can also be implemented recursively, if the string we
