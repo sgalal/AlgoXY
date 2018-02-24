@@ -1,5 +1,6 @@
 import java.util.*;
 import java.util.stream.*;
+import java.lang.Math;
 import java.lang.Exception;
 
 public class PrefixTreeApp {
@@ -40,7 +41,8 @@ public class PrefixTreeApp {
             if (tr.value.isPresent()) {
                 res.add(entryOf(s, tr.value.get()));
             }
-            for (Map.Entry<String, PrefixTree.Node<T>> e : tr.subTrees.entrySet()) {
+            for (Map.Entry<String, PrefixTree.Node<T>> e :
+                     new TreeMap<>(tr.subTrees).entrySet()) {
                 q.offer(entryOf(s + e.getKey(), e.getValue()));
             }
         }
@@ -49,5 +51,65 @@ public class PrefixTreeApp {
 
     static <K, V> Map.Entry<K, V> entryOf(K key, V val) {
         return new AbstractMap.SimpleImmutableEntry<K, V>(key, val);
+    }
+
+    public static class Test {
+        final static String[] testKeys =
+            new String[]{"a", "an", "another", "abandon", "about", "adam", "boy", "body", "zoo"};
+        final static String[] testVals =
+            new String[]{"the first letter of English",
+                         "used instead of 'a' when the following word begins witha vowel sound",
+                         "one more person or thing or an extra amount",
+                         "to leave a place, thing or person forever",
+                         "on the subject of; connected with",
+                         "a character in the Bible who was the first man made by God",
+                         "a male child or, more generally, a male of any age",
+                         "the whole physical structure that forms a person or animal",
+                         "an area in which animals, especially wild animals, are kept so that people can go and look at them, or study them"};
+
+        static void testEdict() {
+            PrefixTree.Node<String> t = null;
+            Map<String, String> m = new HashMap<>();
+            int n = Math.min(testKeys.length, testVals.length);
+            for (int i = 0; i < n; ++i) {
+                t = PrefixTree.insert(t, testKeys[i], testVals[i]);
+                m.put(testKeys[i], testVals[i]);
+            }
+            verifyLookup(m, t, "a", 5);
+            verifyLookup(m, t, "a", 6);
+            verifyLookup(m, t, "a", 7);
+            verifyLookup(m, t, "ab", 2);
+            verifyLookup(m, t, "ab", 5);
+            verifyLookup(m, t, "b", 2);
+            verifyLookup(m, t, "bo", 5);
+            verifyLookup(m, t, "z", 3);
+        }
+
+        static void verifyLookup(Map<String, String> m, PrefixTree.Node<String> t, String key, int n) {
+            System.out.format("lookup %s with limit: %d\n", key, n);
+            SortedMap<String, String> m1 = new TreeMap<>();
+            for (Map.Entry<String, String> e : lookup(t, key, n)) {
+                m1.put(e.getKey(), e.getValue());
+            }
+            SortedMap<String, String> m2 =
+                take(n, toSortedMap(m.entrySet().stream()
+                                    .filter(e -> e.getKey().startsWith(key))));
+            if (!m2.equals(m1))
+                throw new RuntimeException("\n" + m1.toString() + "\n!=\n" + m2.toString());
+
+            System.out.println("result:\n" + m1.toString());
+        }
+
+        static <T> SortedMap<String, T> take(int n, SortedMap<String, T> m) {
+            return toSortedMap(m.entrySet().stream().limit(n));
+        }
+
+        static <K, V> SortedMap<K, V> toSortedMap(Stream<Map.Entry<K, V>> s) {
+            return new TreeMap<>(s.collect(Collectors.toMap(e -> e.getKey(), e ->e.getValue())));
+        }
+
+        public static void test() {
+            testEdict();
+        }
     }
 }

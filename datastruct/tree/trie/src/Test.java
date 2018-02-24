@@ -4,5 +4,6 @@ public class Test {
         IntTree.Test.test();
         Trie.Test.test();
         PrefixTree.Test.test();
+        PrefixTreeApp.Test.test();
     }
 }
