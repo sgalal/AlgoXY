@@ -1101,51 +1101,7 @@ public <T> Node<T> insert(Node<T> t, String key, T value) {
 \subsection{Look up}
 \index{Trie!look up}
 
-TODO: Change the order of FP and Imperative
-
-
-To look up data with a key, we extract the character from the
-key one by one. For each character, we search among the sub-trees
-to see if there is a branch matches this character.
-If there is no such a child, the look up process terminates
-to indicate that the key does not exist.
-When we arrive at the last character of the key,
-the data stored in the current node is the result.
-
-\begin{algorithmic}[1]
-\Function{Look-Up}{$T, key$}
-  \If{$T = $ NIL}
-    \State \Return not found
-  \EndIf
-  \For{each $c$ in $key$}
-    \If{\Call{Children}{$T$}[$c$] = NIL}
-      \State \Return not found
-    \EndIf
-    \State $T \gets $ \Call{Children}{$T$}[$c$]
-  \EndFor
-  \State \Return \Call{Data}{$T$}
-\EndFunction
-\end{algorithmic}
-
-Below Java example program implements the look up algorithm. It returns empty value if the key does not exist.
-
-\lstset{language=Java}
-\begin{lstlisting}
-public <T> Optional<T> lookup(Node<T> t, String key) {
-    int n = key.length();
-    for (int i = 0; i < n; ++i) {
-        int c = key.charAt(i) - 'a';
-        if (t.children.get(c) == null) {
-            return Optional.empty();
-        }
-        t = t.children.get(c);
-    }
-    return Optional.ofNullable(t.value);
-}
-\end{lstlisting}
-
-The look up algorithm can also be realized recursively. When
-looking up a key, we start from the first character,
+When looking up a key, we start from the first character,
 if it is bound to some sub-tree, we then
 recursively search the rest characters in that child sub-tree.
 Denote the trie as $T = (v, C)$, the key being looked up as
@@ -1199,6 +1155,46 @@ def lookup[K, V] (t: Trie[K, V], key: List[K]): Option[V] = {
       case Some(tr) => lookup(tr, ks)
     }
   }
+}
+\end{lstlisting}
+
+To realize the look up algorithm imperatively, we extract the character from the
+key one by one. For each character, we search among the sub-trees
+to see if there is a branch matches this character.
+If there is no such a child, the look up process terminates
+to indicate that the key does not exist.
+When we arrive at the last character of the key,
+the data stored in the current node is the result.
+
+\begin{algorithmic}[1]
+\Function{Look-Up}{$T, key$}
+  \If{$T = $ NIL}
+    \State \Return not found
+  \EndIf
+  \For{each $c$ in $key$}
+    \If{\Call{Children}{$T$}[$c$] = NIL}
+      \State \Return not found
+    \EndIf
+    \State $T \gets $ \Call{Children}{$T$}[$c$]
+  \EndFor
+  \State \Return \Call{Data}{$T$}
+\EndFunction
+\end{algorithmic}
+
+Below Java example program implements the look up algorithm. It returns empty value if the key does not exist.
+
+\lstset{language=Java}
+\begin{lstlisting}
+public <T> Optional<T> lookup(Node<T> t, String key) {
+    int n = key.length();
+    for (int i = 0; i < n; ++i) {
+        int c = key.charAt(i) - 'a';
+        if (t.children.get(c) == null) {
+            return Optional.empty();
+        }
+        t = t.children.get(c);
+    }
+    return Optional.ofNullable(t.value);
 }
 \end{lstlisting}
 
