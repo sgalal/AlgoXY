@@ -1281,8 +1281,6 @@ public static <T> Node<T> leaf(T val) { return new Node<T>(val); }
 \subsection{Insertion}
 \index{Prefix tree!insert}
 
-TODO: Change the order of FP and Imperative
-
 When insert a key $s$, if the prefix tree is empty, we
 create a leaf node as shown in figure \ref{fig:patricia-insert} (a).
 Otherwise, we examine the sub-trees to see if
@@ -1306,154 +1304,6 @@ $s_i$ can be the prefix of $s$ as shown in figure \ref{fig:patricia-insert} (d).
   \caption{Prefix tree insertion}
   \label{fig:patricia-insert}
 \end{figure}
-
-The insertion algorithm can be described as below.
-
-\begin{algorithmic}[1]
-\Function{Insert}{$T, k, v$}
-  \If{$T = $ NIL}
-   \State $T \gets$ \Call{Empty-Node}{}
-  \EndIf
-  \State $p \gets T$
-  \Loop
-    \State $match \gets$ FALSE
-    \For{each $(s_i, T_i) \in$ \Call{Children}{$p$}}
-      \If{$k = s_i$}
-        \State \Call{Value}{$p$} $\gets v$
-        \State \Return $T$
-      \EndIf
-      \State $c \gets$ \Call{LCP}{$k, s_i$}
-      \State $k_1 \gets k - c$
-      \State $k_2 \gets s_i - c$
-      \If{$c \neq $ NIL}
-        \State $match \gets$ TRUE
-        \If{$k_2 = $ NIL} \Comment{$s_i$ is prefix of $k$}
-          \State $p \gets T_i$
-          \State $k \gets k_1$
-          \State break
-        \Else \Comment{Branch out a new leaf}
-          \State \textproc{Add}(\Call{Children}{$p$}, ($c$, \textproc{Branch}($k_1$, \Call{Leaf}{$v$}, $k_2$, $T_i$)))
-          \State \textproc{Delete}(\Call{Children}{$p$}, $(s_i, T_i)$)
-          \State \Return $T$
-        \EndIf
-      \EndIf
-    \EndFor
-    \If{$\lnot match$} \Comment{Add a new leaf}
-      \State \textproc{Add}(\Call{Children}{$p$}, ($k$, \Call{Leaf}{$v$}))
-      \State break
-    \EndIf
-  \EndLoop
-  \State \Return $T$
-\EndFunction
-\end{algorithmic}
-
-In this algorithm, function \textproc{LCP} finds the longest
-common prefix of the two strings. For example, string `bool' and `boy'
-have the longest common prefix `bo'. The subtraction symbol '-' for
-strings gives the different part of two strings. For example `bool' - `bo' = `ol'. Function \textproc{Branch} creates a branch node and updates keys.
-
-The longest common prefix can be extracted character by character from two strings till there is unmatch.
-
-\begin{algorithmic}[1]
-\Function{LCP}{$A, B$}
-  \State $i \gets 1 $
-  \While{$i \leq |A| \land i \leq |B| \land A[i] = B[i]$}
-    \State $i \gets i + 1$
-  \EndWhile
-  \State \Return $A[1...i-1]$
-\EndFunction
-\end{algorithmic}
-
-There are two cases when branch out a new leaf. \textproc{Branch}($s_1, T_1, s_2, T_2$)
-takes two different keys and trees. If $s_1$ is empty, we are
-dealing with the case such as insert key `an' into a child bound to
-string `another'. We set $T_2$ as the child sub-tree of $T_1$. Otherwise,
-we create a new branch node and set $T_1$ and $T_2$ as the two children.
-
-\begin{algorithmic}[1]
-\Function{Branch}{$s_1, T_1, s_2, T_2$}
-  \If{$s_1 = \phi$}
-    \State \textproc{Add}(\Call{Children}{$T_1$}, $(s_2, T_2)$)
-    \State \Return $T_1$
-  \EndIf
-  \State $T \gets$ \Call{Empty-Node}{}
-  \State \Call{Children}{$T$} $\gets \{(s_1, T_1), (s_2, T_2)\}$
-  \State \Return $T$
-\EndFunction
-\end{algorithmic}
-
-The following example Java program implements the prefix tree insertion algorithm.
-
-\lstset{language=Java}
-\begin{lstlisting}
-public <T> Node<T> insert(Node<T> t, String key, T val) {
-    if (t == null)
-        t = new Node<T>();
-    Node<T> p = t;
-    for (;;) {
-        String prefix = "";
-        for (Map.Entry<String, Node<T>> entry : p.subTrees.entrySet()) {
-            String k = entry.getKey();
-            Node<T> tr = entry.getValue();
-            if (k.equals(key)) { // overwrite
-                p.value = Optional.of(val);
-                return t;
-            }
-            String[] r = lcp(key, k);
-            prefix = r[0];
-            String k1 = r[1], k2 = r[2];
-            if (!prefix.isEmpty()) {
-                if (k2.isEmpty()) {
-                    // e.g. insert "another" into "an", go on traversing
-                    p = tr;
-                    key = k1;
-                    break;
-                } else {
-                    // branch out a new leaf
-                    p.subTrees.put(prefix, branch(k1, leaf(val), k2, tr));
-                    p.subTrees.remove(k);
-                    return t;
-                }
-            }
-        }
-        if (prefix.isEmpty()) {
-            p.subTrees.put(key, leaf(val)); // add a new leaf
-            break;
-        }
-    }
-    return t;
-}
-\end{lstlisting}
-
-Where the \texttt{lcp} and \texttt{branch} functions are implemented as below.
-
-\begin{lstlisting}
-static String[] lcp(String s1, String s2) {
-    int i = 0, m = s1.length(), n = s2.length();
-    while (i < m && i < n && s1.charAt(i) == s2.charAt(i))
-        ++i;
-    return new String[] {s1.substring(0, i), s1.substring(i), s2.substring(i)};
-}
-
-static <T> Node<T> branch(String key1, Node<T> t1, String key2, Node<T> t2) {
-    if (key1.isEmpty()) {    // e.g. insert "an" into "another"
-        t1.subTrees.put(key2, t2);
-        return t1;
-    }
-    Node<T> t = new Node<>();
-    t.subTrees.put(key1, t1);
-    t.subTrees.put(key2, t2);
-    return t;
-}
-\end{lstlisting}
-
-The insertion can also be realized recursively. Start from the root,
-we check all the sub-trees to find if there is a node matches
-the key, which means they have common prefix. If there is no sub-tree matches the
-key, the program creates a new leaf and add it as a sub-tree.
-If the key already exists, we overwrite the previous value.
-There are also alternative solution to handle duplicated keys, such
-as using linked-list to store the values.
 
 For prefix tree $T = (v, C)$, function $insert(T, k, v')$ inserts
 key $k$, and value $v'$ to the tree.
@@ -1599,6 +1449,146 @@ def lcp[K] (xs: List[K], ys: List[K]): List[K] =
   }
 \end{lstlisting}
 
+The insertion algorithm can be realized imperative as below.
+
+\begin{algorithmic}[1]
+\Function{Insert}{$T, k, v$}
+  \If{$T = $ NIL}
+   \State $T \gets$ \Call{Empty-Node}{}
+  \EndIf
+  \State $p \gets T$
+  \Loop
+    \State $match \gets$ FALSE
+    \For{each $(s_i, T_i) \in$ \Call{Children}{$p$}}
+      \If{$k = s_i$}
+        \State \Call{Value}{$p$} $\gets v$
+        \State \Return $T$
+      \EndIf
+      \State $c \gets$ \Call{LCP}{$k, s_i$}
+      \State $k_1 \gets k - c$
+      \State $k_2 \gets s_i - c$
+      \If{$c \neq $ NIL}
+        \State $match \gets$ TRUE
+        \If{$k_2 = $ NIL} \Comment{$s_i$ is prefix of $k$}
+          \State $p \gets T_i$
+          \State $k \gets k_1$
+          \State break
+        \Else \Comment{Branch out a new leaf}
+          \State \textproc{Add}(\Call{Children}{$p$}, ($c$, \textproc{Branch}($k_1$, \Call{Leaf}{$v$}, $k_2$, $T_i$)))
+          \State \textproc{Delete}(\Call{Children}{$p$}, $(s_i, T_i)$)
+          \State \Return $T$
+        \EndIf
+      \EndIf
+    \EndFor
+    \If{$\lnot match$} \Comment{Add a new leaf}
+      \State \textproc{Add}(\Call{Children}{$p$}, ($k$, \Call{Leaf}{$v$}))
+      \State break
+    \EndIf
+  \EndLoop
+  \State \Return $T$
+\EndFunction
+\end{algorithmic}
+
+In this algorithm, function \textproc{LCP} finds the longest
+common prefix of the two strings. For example, string `bool' and `boy'
+have the longest common prefix `bo'. The subtraction symbol '-' for
+strings gives the different part of two strings. For example `bool' - `bo' = `ol'. Function \textproc{Branch} creates a branch node and updates keys.
+
+The longest common prefix can be extracted character by character from two strings till there is unmatch.
+
+\begin{algorithmic}[1]
+\Function{LCP}{$A, B$}
+  \State $i \gets 1 $
+  \While{$i \leq |A| \land i \leq |B| \land A[i] = B[i]$}
+    \State $i \gets i + 1$
+  \EndWhile
+  \State \Return $A[1...i-1]$
+\EndFunction
+\end{algorithmic}
+
+There are two cases when branch out a new leaf. \textproc{Branch}($s_1, T_1, s_2, T_2$)
+takes two different keys and trees. If $s_1$ is empty, we are
+dealing with the case such as insert key `an' into a child bound to
+string `another'. We set $T_2$ as the child sub-tree of $T_1$. Otherwise,
+we create a new branch node and set $T_1$ and $T_2$ as the two children.
+
+\begin{algorithmic}[1]
+\Function{Branch}{$s_1, T_1, s_2, T_2$}
+  \If{$s_1 = \phi$}
+    \State \textproc{Add}(\Call{Children}{$T_1$}, $(s_2, T_2)$)
+    \State \Return $T_1$
+  \EndIf
+  \State $T \gets$ \Call{Empty-Node}{}
+  \State \Call{Children}{$T$} $\gets \{(s_1, T_1), (s_2, T_2)\}$
+  \State \Return $T$
+\EndFunction
+\end{algorithmic}
+
+The following example Java program implements the prefix tree insertion algorithm.
+
+\lstset{language=Java}
+\begin{lstlisting}
+public <T> Node<T> insert(Node<T> t, String key, T val) {
+    if (t == null)
+        t = new Node<T>();
+    Node<T> p = t;
+    for (;;) {
+        String prefix = "";
+        for (Map.Entry<String, Node<T>> entry : p.subTrees.entrySet()) {
+            String k = entry.getKey();
+            Node<T> tr = entry.getValue();
+            if (k.equals(key)) { // overwrite
+                p.value = Optional.of(val);
+                return t;
+            }
+            String[] r = lcp(key, k);
+            prefix = r[0];
+            String k1 = r[1], k2 = r[2];
+            if (!prefix.isEmpty()) {
+                if (k2.isEmpty()) {
+                    // e.g. insert "another" into "an", go on traversing
+                    p = tr;
+                    key = k1;
+                    break;
+                } else {
+                    // branch out a new leaf
+                    p.subTrees.put(prefix, branch(k1, leaf(val), k2, tr));
+                    p.subTrees.remove(k);
+                    return t;
+                }
+            }
+        }
+        if (prefix.isEmpty()) {
+            p.subTrees.put(key, leaf(val)); // add a new leaf
+            break;
+        }
+    }
+    return t;
+}
+\end{lstlisting}
+
+Where the \texttt{lcp} and \texttt{branch} functions are implemented as below.
+
+\begin{lstlisting}
+static String[] lcp(String s1, String s2) {
+    int i = 0, m = s1.length(), n = s2.length();
+    while (i < m && i < n && s1.charAt(i) == s2.charAt(i))
+        ++i;
+    return new String[] {s1.substring(0, i), s1.substring(i), s2.substring(i)};
+}
+
+static <T> Node<T> branch(String key1, Node<T> t1, String key2, Node<T> t2) {
+    if (key1.isEmpty()) {    // e.g. insert "an" into "another"
+        t1.subTrees.put(key2, t2);
+        return t1;
+    }
+    Node<T> t = new Node<>();
+    t.subTrees.put(key1, t1);
+    t.subTrees.put(key2, t2);
+    return t;
+}
+\end{lstlisting}
+
 
 % ================================================================
 %                 Look up in Alphabetic Patrica Tree
@@ -1606,14 +1596,63 @@ def lcp[K] (xs: List[K], ys: List[K]): List[K] =
 \subsection{Look up}
 \index{Prefix tree!look up}
 
-TODO: Change the order of FP and Imperative
-
 When look up a key, we can't examine the characters one by one
 as in trie any more. Start from the root, we need search among the
 children sub-trees to see if any one is bound to some prefix of the key.
 If there is such a sub-tree, we remove the prefix from the key,
 and recursively look up the updated key in this child sub-tree.
 The look up fails if there's no sub-tree bound to any prefix of the key.
+
+For prefix tree $T = (v, C)$, we search among its children sub-tree $C$.
+
+\be
+lookup(T, k) = find(C, k)
+\ee
+
+If $C$ is empty, the lookup fails; Otherwise, For $C = \{(k_1, T_1), (k_2, T_2), ..., (k_n, T_n)\}$, we firstly examine if $k$ is the prefix of $k_1$, then
+recursively check the rest pairs denoted as $C'$.
+
+\be
+find(C, k) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  \phi & C = \phi \\
+  v_{T_1} & k = k_1 \\
+  lookup(T_1, k - k_1) & k_1 \sqsubset k \\
+  find(C', k) & otherwise
+  \end{array}
+\right.
+\ee
+
+Where $A \sqsubset B$ means string $A$ is prefix of $B$. $find$ mutually
+calls $lookup$ if a child is bound to some prefix of the key.
+
+Below Scala example program implements the looking up algorithm.
+
+\lstset{language=Scala}
+\begin{lstlisting}
+def lookup[K, V] (t: Tree[K, V], key: List[K]): Option[V] = {
+  def diff[K] (xs: List[K], ys: List[K]) = xs.drop(lcp(xs, ys).length)
+
+  def find[K, V] (assoc: List[(List[K], Tree[K, V])], key: List[K]): Option[V] =
+    assoc match {
+      case List() => None
+      case p :: ps => {
+        val (key1, t1) = p
+        if (key1 == key) {
+          t1.value
+        } else if (key.startsWith(key1)) {
+          lookup(t1, diff(key, key1))
+        } else {
+          find(ps, key)
+        }
+      }
+    }
+  find(t.children, key)
+}
+\end{lstlisting}
+
+The look up algorithm can also be realized imperatively.
 
 \begin{algorithmic}[1]
 \Function{Look-Up}{$T, k$}
@@ -1668,57 +1707,6 @@ public <T> Optional<T> lookup(Node<T> t, String key) {
     return Optional.empty();
 }
 \end{lstlisting}
-
-This algorithm can also be realized recursively. For prefix tree
-$T = (v, C)$, we search among its children sub-tree $C$.
-
-\be
-lookup(T, k) = find(C, k)
-\ee
-
-If $C$ is empty, the lookup fails; Otherwise, For $C = \{(k_1, T_1), (k_2, T_2), ..., (k_n, T_n)\}$, we firstly examine if $k$ is the prefix of $k_1$, then
-recursively check the rest pairs denoted as $C'$.
-
-\be
-find(C, k) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  \phi & C = \phi \\
-  v_{T_1} & k = k_1 \\
-  lookup(T_1, k - k_1) & k_1 \sqsubset k \\
-  find(C', k) & otherwise
-  \end{array}
-\right.
-\ee
-
-Where $A \sqsubset B$ means string $A$ is prefix of $B$. $find$ mutually
-calls $lookup$ if a child is bound to some prefix of the key.
-
-Below Scala example program implements the looking up algorithm.
-
-\lstset{language=Haskell}
-\begin{lstlisting}
-def lookup[K, V] (t: Tree[K, V], key: List[K]): Option[V] = {
-  def diff[K] (xs: List[K], ys: List[K]) = xs.drop(lcp(xs, ys).length)
-
-  def find[K, V] (assoc: List[(List[K], Tree[K, V])], key: List[K]): Option[V] =
-    assoc match {
-      case List() => None
-      case p :: ps => {
-        val (key1, t1) = p
-        if (key1 == key) {
-          t1.value
-        } else if (key.startsWith(key1)) {
-          lookup(t1, diff(key, key1))
-        } else {
-          find(ps, key)
-        }
-      }
-    }
-  find(t.children, key)
-}
-\end{lstlisting}
-
 
 % ================================================================
 %                 Trie and Patrica used in Industry
