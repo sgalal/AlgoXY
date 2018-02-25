@@ -36,7 +36,7 @@ findAll t (k:ks) =
       Nothing -> []
       Just t' -> mapAppend k (findAll t' ks)
 
-mapAppend x lst = map (\p->(x:(fst p), snd p)) lst
+mapAppend x = map (\p->(x:(fst p), snd p))
 
 -- find all candidates in Patricia
 findAll' :: Patricia a -> Key -> [(Key, a)]
@@ -59,7 +59,7 @@ findAll' t k = find' (children t) k where
           | otherwise = find' ps k
     diff x y = drop (length y) x
 
-mapAppend' s lst = map (\p->(s++(fst p), snd p)) lst
+mapAppend' s = map (\p->(s++(fst p), snd p))
 
 -- T9 mapping
 mapT9 = [('2', "abc"), ('3', "def"), ('4', "ghi"), ('5', "jkl"),

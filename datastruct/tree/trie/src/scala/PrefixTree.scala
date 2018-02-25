@@ -1,4 +1,3 @@
-import scala.util.Random    // for verification
 import scala.language.postfixOps
 import Ordering.Implicits._ // for list comparison
 
