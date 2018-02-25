@@ -391,8 +391,8 @@ number of bits of the key.
 \index{Integer Patricia}
 \index{Integer prefix tree}
 
-Trie has some drawbacks. It wastes a lot of
-spaces. Note in figure \ref{int-trie}, the real data is mostly stored in leafs.
+Trie has some drawbacks. It occupies a lot of
+spaces. As shown in figure \ref{fig:int-trie}, the real data is mostly stored in leafs.
 It's very common that an integer binary trie contains many nodes only have one child.
 One idea is to compress the chained nodes to one.
 Integer prefix tree is such a data structure invented by
@@ -824,53 +824,6 @@ with the insertion algorithm.
 \subsection{Look up}
 \index{Integer tree!look up}
 
-TODO: Change the order of FP and Imperative
-
-Consider the property of integer prefix tree. When look up a
-key, if it has common prefix with the root,
-then we check the next bit. If
-this bit is zero, we then recursively look up the left sub-tree;
-otherwise we look up the right sub-tree if the bit is one.
-
-When arrive at the leaf node, we check if the key of the
-leaf equals to the one we are looking up. This algorithm can be
-described with the following pseudo code.
-
-\begin{algorithmic}[1]
-\Function{Look-Up}{$T, k$}
-  \If{$T =$ NIL}
-    \State \Return $NIL$ \Comment{Not found}
-  \EndIf
-  \While{$T$ is not leaf, and \textproc{Match}($k$, \Call{Prefix}{$T$}, \Call{Mask}{$T$})}
-    \If{\textproc{Zero?}($k$, \Call{Mask}{$T$})}
-      \State $T \gets$ \Call{Left}{$T$}
-    \Else
-      \State $T \gets$ \Call{Right}{$T$}
-    \EndIf
-  \EndWhile
-  \If{$T$ is leaf, and \Call{Key}{$T$} $=k$}
-    \State \Return \Call{Data}{$T$}
-  \Else
-    \State \Return $NIL$ \Comment{Not found}
-  \EndIf
-\EndFunction
-\end{algorithmic}
-
-Below Java example program implements the looking up algorithm.
-
-\lstset{language=Java}
-\begin{lstlisting}
-public <T> Optional<T> lookup(Node<T> t, int key) {
-    while (t != null && !t.isLeaf() && t.match(key)) {
-        t = zero(key, t.mask) ? t.left : t.right;
-    }
-    if (t != null && t.isLeaf() && t.key == key)
-        return Optional.ofNullable(t.value);
-    return Optional.empty();
-}
-\end{lstlisting}
-
-The lookup algorithm can also be realized recursively.
 If the integer tree $T$ is empty, or it's a singleton leaf with
 the key that is different from what we are looking up, the result is empty.
 else if the key in the leaf equals, we are done.
@@ -905,6 +858,50 @@ def lookup[A] (tr: IntTree[A], key: Int): Option[A] = tr match {
       lookup(if (isZero(key, m)) left else right, key)
     else
       None
+}
+\end{lstlisting}
+
+The look up algorithm can also be realized imperatively.
+Consider the property of integer prefix tree. When look up a
+key, if it has common prefix with the root,
+then we check the next bit. If
+this bit is zero, we then recursively look up the left sub-tree;
+otherwise we look up the right sub-tree if the bit is one.
+
+When arrive at the leaf node, we check if the key of the
+leaf equals to the one we are looking up.
+
+\begin{algorithmic}[1]
+\Function{Look-Up}{$T, k$}
+  \If{$T =$ NIL}
+    \State \Return $NIL$ \Comment{Not found}
+  \EndIf
+  \While{$T$ is not leaf, and \textproc{Match}($k$, \Call{Prefix}{$T$}, \Call{Mask}{$T$})}
+    \If{\textproc{Zero?}($k$, \Call{Mask}{$T$})}
+      \State $T \gets$ \Call{Left}{$T$}
+    \Else
+      \State $T \gets$ \Call{Right}{$T$}
+    \EndIf
+  \EndWhile
+  \If{$T$ is leaf, and \Call{Key}{$T$} $=k$}
+    \State \Return \Call{Data}{$T$}
+  \Else
+    \State \Return $NIL$ \Comment{Not found}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+
+Below Java example program implements the looking up algorithm.
+
+\lstset{language=Java}
+\begin{lstlisting}
+public <T> Optional<T> lookup(Node<T> t, int key) {
+    while (t != null && !t.isLeaf() && t.match(key)) {
+        t = zero(key, t.mask) ? t.left : t.right;
+    }
+    if (t != null && t.isLeaf() && t.key == key)
+        return Optional.ofNullable(t.value);
+    return Optional.empty();
 }
 \end{lstlisting}
 
@@ -989,56 +986,7 @@ public class Node<T> {
 \subsection{Insertion}
 \index{Trie!insert}
 
-TODO: Change the order of FP and Imperative
-
-
-When insert a new string as key, starting from the root, we pick the character
-one by one from the string. For each character, we examine which child sub-tree
-represents that character. If the corresponding child is empty, a new node is
-created. After that, we pick the next character and repeat this process.
-
-After consuming all the characters, we then store the
-value bound the key in the node we arrived.
-
-\begin{algorithmic}[1]
-\Function{Insert}{$T, k, v$}
-  \If{$T = $ NIL}
-    \State $T \gets $ \Call{Empty-Node}{}
-  \EndIf
-  \State $p \gets T$
-  \For{each $c$ in $k$}
-    \If{\Call{Children}{$p$}[c] = NIL}
-      \State \Call{Children}{$p$}[c] $\gets$ \Call{Empty-Node}{}
-    \EndIf
-    \State $p \gets $ \Call{Children}{$p$}[c]
-  \EndFor
-  \State \Call{Data}{$p$} $\gets v$
-  \State \Return $T$
-\EndFunction
-\end{algorithmic}
-
-The following example Java program implements the insertion algorithm.
-
-\lstset{language=Java}
-\begin{lstlisting}
-public <T> Node<T> insert(Node<T> t, String key, T value) {
-    if (t == null)
-        t = new Node<T>();
-    Node<T> p = t;
-    int n = key.length();
-    for (int i = 0; i < n; ++i) {
-        int c = key.charAt(i) - 'a';
-        if (p.children.get(c) == null) {
-            p.children.set(c, new Node<T>());
-        }
-        p = p.children.get(c);
-    }
-    p.value = value;
-    return t;
-}
-\end{lstlisting}
-
-The insertion can also be realized recursively. Denote the
+When insert to the trie, denote the
 key to be inserted as $K = k_1k_2...k_n$, where $k_i$ is the $i$-th
 character. $K'$ is the rest of characters except $k_1$, $v'$ is the
 data to be inserted.
@@ -1101,6 +1049,51 @@ def insert[K, V] (t: Trie[K, V], key: List[K], value: V): Trie[K, V] = {
 }
 \end{lstlisting}
 
+To realize the insertion imperatively, starting from the root, we pick the character
+one by one from the string. For each character, we examine which child sub-tree
+represents that character. If the corresponding child is empty, a new node is
+created. After that, we pick the next character and repeat this process.
+
+After consuming all the characters, we then store the
+value bound the key in the node we arrived.
+
+\begin{algorithmic}[1]
+\Function{Insert}{$T, k, v$}
+  \If{$T = $ NIL}
+    \State $T \gets $ \Call{Empty-Node}{}
+  \EndIf
+  \State $p \gets T$
+  \For{each $c$ in $k$}
+    \If{\Call{Children}{$p$}[c] = NIL}
+      \State \Call{Children}{$p$}[c] $\gets$ \Call{Empty-Node}{}
+    \EndIf
+    \State $p \gets $ \Call{Children}{$p$}[c]
+  \EndFor
+  \State \Call{Data}{$p$} $\gets v$
+  \State \Return $T$
+\EndFunction
+\end{algorithmic}
+
+The following example Java program implements the insertion algorithm.
+
+\lstset{language=Java}
+\begin{lstlisting}
+public <T> Node<T> insert(Node<T> t, String key, T value) {
+    if (t == null)
+        t = new Node<T>();
+    Node<T> p = t;
+    int n = key.length();
+    for (int i = 0; i < n; ++i) {
+        int c = key.charAt(i) - 'a';
+        if (p.children.get(c) == null) {
+            p.children.set(c, new Node<T>());
+        }
+        p = p.children.get(c);
+    }
+    p.value = value;
+    return t;
+}
+\end{lstlisting}
 
 % ================================================================
 %                 Look up in Alphabetic trie
