@@ -312,9 +312,41 @@ goest into $m$ levels. The performance is bound to $O(m)$ time.
 \subsection{Look up}
 \index{Integer trie!look up}
 
-TODO: Change the order of FP and Imperative
+To look up key $k$ in the little-endian integer binary trie,
+if the trie is empty, the looking up fails; if $k=0$, then we return the data stored
+in the current node; if the last bit is 0, we recursively look up the
+left sub-tree; otherwise we look up the right sub-tree.
 
-To look up key $k$ in the little-endian integer binary trie, we examine each
+\be
+lookup(T, k) =  \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  \phi & T = \phi \\
+  d & k = 0 \\
+  lookup(T_l, k / 2) & even(k) \\
+  lookup(T_r, \lfloor k / 2 \rfloor) & otherwise
+  \end{array}
+\right.
+\ee
+
+The following Scala example program implements the recursive
+look up algorithm.
+
+\lstset{language=Scala}
+\begin{lstlisting}
+def search[A] (t: IntTrie[A], key: Int) : Option[A] = t match {
+  case Empty => None
+  case Br(l, v, r) => if (key == 0) {
+    v
+  } else if (key % 2 == 0) {  //even
+    search(l, key / 2)
+  } else {
+    search(r, key / 2)
+  }
+}
+\end{lstlisting}
+
+The look up algorithm can also be realized imperatively. We examine each
 bit of $k$ from the lowest one. We go left if the bit is 0, otherwise,
 go right. The looking up completes when all bits are consumed.
 
@@ -345,40 +377,6 @@ public <T> Optional<T> lookup(Node<T> t, int key) {
         key >>= 1;
     }
     return Optional.ofNullable(t == null ? null : t.value);
-}
-\end{lstlisting}
-
-Looking up can also be define in recursive manner. If the tree is
-empty, the looking up fails; If $k=0$, then we return the satellite data stored
-in the current node; If the last bit is 0, we recursively look up the
-left sub-tree; otherwise we look up the right sub-tree.
-
-\be
-lookup(T, k) =  \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  \phi & T = \phi \\
-  d & k = 0 \\
-  lookup(T_l, k / 2) & even(k) \\
-  lookup(T_r, \lfloor k / 2 \rfloor) & otherwise
-  \end{array}
-\right.
-\ee
-
-The following Scala example program implements the recursive
-look up algorithm.
-
-\lstset{language=Scala}
-\begin{lstlisting}
-def search[A] (t: IntTrie[A], key: Int) : Option[A] = t match {
-  case Empty => None
-  case Br(l, v, r) => if (key == 0) {
-    v
-  } else if (key % 2 == 0) {  //even
-    search(l, key / 2)
-  } else {
-    search(r, key / 2)
-  }
 }
 \end{lstlisting}
 
