@@ -1,4 +1,4 @@
-import scala.languaeg.postfixOps
+import scala.language.postfixOps
 
 object PrefixTreeApp {
   // lazy function to find all candidates start with given prefix
@@ -10,20 +10,23 @@ object PrefixTreeApp {
         case p :: ps => mapAppend(p._1, findAll(p._2, List())) #::: enum(ps)
       }
     def find(cs: List[(List[K], PrefixTree.Tree[K, V])],
-             key: List[K]): Stream[(List[K], V)] = cs match {
-               case List() => Stream.empty
-               case p :: ps =>
-                 if (p._1 == key) {
-                   mapAppend(key, findAll(p._2, List()))
-                 } else if (k.startsWith(p._1)) {
-                   mapAppend(p._1, findAll(p._2, key.drop(p._1.length)))
-                 } else if (p._1.startsWith(key)) {
-                   findAll(p._2, List())
-                 } else {
-                   find(ps, key)
-                 }
-             }
-    if (key.isEMpty) {
+             key: List[K]): Stream[(List[K], V)] =
+      cs match {
+        case List() => Stream.empty
+        case p :: ps => {
+          val (k, tr) = p
+          if (k == key) {
+            mapAppend(key, findAll(tr, List()))
+          } else if (key.startsWith(k)) {
+            mapAppend(k, findAll(tr, key.drop(k.length)))
+          } else if (k.startsWith(key)) {
+            findAll(tr, List())
+          } else {
+            find(ps, key)
+          }
+        }
+      }
+    if (key.isEmpty) {
       val ps = enum(t.children)
       if (t.value.isEmpty) ps else (List(), t.value.get) #:: ps
     } else {
@@ -31,8 +34,37 @@ object PrefixTreeApp {
     }
   }
 
-  def mapAppend[A, B] (a: A, ps: Stream[(A, B)]) : Stream[(A, B)] =
+  def mapAppend[A, B] (a: List[A], ps: Stream[(List[A], B)]) : Stream[(List[A], B)] =
     ps.map {p => (a ++ p._1, p._2)}
 
+  def lookup[K, V] (t: PrefixTree.Tree[K, V], key: List[K], n: Int): List[(List[K], V)] =
+    findAll(t, key).take(n).toList
+
   // verification
+  def testEdict() {
+    val m = Map("a" -> "the first letter of English",
+                "an" -> "used instead of 'a' when the following word begins with a vowel sound",
+                "another" -> "one more person or thing or an extra amount",
+                "abandon" -> "to leave a place, thing or person forever",
+                "about" -> "on the subject of; connected with",
+                "adam" -> "a character in the Bible who was the first man made by God",
+                "boy" -> "a male child or, more generally, a male of any age",
+                "bodyl" -> "the whole physical structure that forms a person or animal",
+                "zoo" -> "an area in which animals, especially wild animals, are kept so that people can go and look at them, or study them")
+    val t = PrefixTree.fromStringList(m.toList)
+    verifyLookup(m, t, "a", 5)
+    verifyLookup(m, t, "a", 6);
+    verifyLookup(m, t, "a", 7);
+    verifyLookup(m, t, "ab", 2);
+    verifyLookup(m, t, "ab", 5);
+    verifyLookup(m, t, "b", 2);
+    verifyLookup(m, t, "bo", 5);
+    verifyLookup(m, t, "z", 3);
+  }
+
+  def verifyLookup(m: Map[String, String], t: PrefixTree.Tree[Char, String],
+                   key: String, n: Int) {
+    val r = lookup(t, key.toList, n)
+    println(r)
+  }
 }
