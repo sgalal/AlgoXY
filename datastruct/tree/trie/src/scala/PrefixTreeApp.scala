@@ -15,12 +15,10 @@ object PrefixTreeApp {
         case List() => Stream.empty
         case p :: ps => {
           val (k, tr) = p
-          if (k == key) {
-            mapAppend(key, findAll(tr, List()))
+          if (k.startsWith(key)) {
+            mapAppend(k, findAll(tr, List()))
           } else if (key.startsWith(k)) {
             mapAppend(k, findAll(tr, key.drop(k.length)))
-          } else if (k.startsWith(key)) {
-            findAll(tr, List())
           } else {
             find(ps, key)
           }
@@ -49,7 +47,7 @@ object PrefixTreeApp {
                 "about" -> "on the subject of; connected with",
                 "adam" -> "a character in the Bible who was the first man made by God",
                 "boy" -> "a male child or, more generally, a male of any age",
-                "bodyl" -> "the whole physical structure that forms a person or animal",
+                "body" -> "the whole physical structure that forms a person or animal",
                 "zoo" -> "an area in which animals, especially wild animals, are kept so that people can go and look at them, or study them")
     val t = PrefixTree.fromStringList(m.toList)
     verifyLookup(m, t, "a", 5)
@@ -64,7 +62,13 @@ object PrefixTreeApp {
 
   def verifyLookup(m: Map[String, String], t: PrefixTree.Tree[Char, String],
                    key: String, n: Int) {
-    val r = lookup(t, key.toList, n)
-    println(r)
+    val r = lookup(t, key.toList, n).map {p => (p._1.mkString, p._2) }
+    println(s"lookup $key with limit $n, get: \n" + r)
+    r.foreach(p => {
+      val (k, v) = p
+      assert(k.startsWith(key), println(s"$k does not start with $key"))
+      assert(m.contains(k), println(s"$k does not exists"))
+    })
+    assert(r.length <= n, println(s"expected $n results, get: " + r))
   }
 }
