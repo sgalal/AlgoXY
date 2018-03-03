@@ -21,6 +21,8 @@ module PrefixTree where
 
 import Data.List (isPrefixOf, sort, sortBy)
 import Data.Function (on)
+import Control.Arrow (first)
+import qualified Data.Map as Map
 
 -- definition
 data PrefixTree k v = PrefixTree { value :: Maybe v
@@ -92,6 +94,27 @@ keys = keys' [] where
       kss = concatMap (\(ks, t') -> keys' (prefix ++ ks) t') ts
       ts = sortBy (compare `on` fst) (children t)
 
+-- find all candidates in PrefixTree
+
+findAll :: Eq k => PrefixTree k v -> [k] -> [([k], v)]
+findAll (PrefixTree Nothing cs) [] = enum cs
+findAll (PrefixTree (Just x) cs) [] = ([], x) : enum cs
+findAll (PrefixTree _ cs) k = find' cs k
+  where
+    find' [] _ = []
+    find' ((k', t') : ps) k
+          | k `isPrefixOf` k'
+              = map (first (k' ++)) (findAll t' [])
+          | k' `isPrefixOf` k
+              = map (first (k' ++)) (findAll t' $ drop (length k') k)
+          | otherwise = find' ps k
+
+enum :: Eq k => [([k], PrefixTree k v)] -> [([k], v)]
+enum = concatMap (\(k, t) -> map (first (k ++)) (findAll t []))
+
+-- look up in the prefix tree up to n candidates
+get n t k = take n $ findAll t k
+
 --
 example = insert (fromString "a place where animals are for public to see") "zoo" 0
 
@@ -99,9 +122,29 @@ example = insert (fromString "a place where animals are for public to see") "zoo
 assocs = [[("a", 1), ("an", 2), ("another", 7), ("boy", 3), ("bool", 4), ("zoo", 3)],
           [("zoo", 3), ("bool", 4), ("boy", 3), ("another", 7), ("an", 2), ("a", 1)]]
 
+-- tests
 verify = all (\as ->
                  let t = fromList as in
                    all (\(k, v) -> maybe False (==v) (find t k)) as) assocs
 
 verifyKeys = all (\as ->
                    keys (fromList as) == (sort $ fst $ unzip as)) assocs
+
+verifyFindAll = all verifyLookup [("a", 5), ("a", 6), ("a", 7), ("ab", 2),
+                                  ("ab", 5), ("b", 2), ("bo", 5), ("z", 3)]
+  where
+    lst = [("a", "the first letter of English"),
+           ("an", "used instead of 'a' when the following word begins with a vowel sound"),
+           ("another", "one more person or thing or an extra amount"),
+           ("abandon", "to leave a place, thing or person forever"),
+           ("about", "on the subject of; connected with"),
+           ("adam", "a character in the Bible who was the first man made by God"),
+           ("boy", "a male child or, more generally, a male of any age"),
+           ("bodyl", "the whole physical structure that forms a person or animal"),
+           ("zoo", "an area in which animals, especially wild animals, are kept so that people can go and look at them, or study them")]
+    t = fromList lst
+    m = Map.fromList lst
+    verifyLookup (k, n) = length r <= n &&
+                          all (\(k', v) -> k `isPrefixOf` k' && k' `Map.member` m) r
+      where
+        r = get n t k

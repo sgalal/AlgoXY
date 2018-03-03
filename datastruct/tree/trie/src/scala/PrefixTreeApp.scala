@@ -1,4 +1,5 @@
 import scala.language.postfixOps
+import Ordering.Implicits._ // for list comparison
 
 object PrefixTreeApp {
   // lazy function to find all candidates start with given prefix

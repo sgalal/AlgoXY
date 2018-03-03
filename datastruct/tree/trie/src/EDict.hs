@@ -20,7 +20,7 @@ module Main where
 
 import qualified Data.List
 import qualified Trie
-import Patricia
+import PrefixTree
 
 -- find all candidates in Trie
 findAll:: Trie.Trie a -> String -> [(String, a)]
@@ -38,28 +38,6 @@ findAll t (k:ks) =
 
 mapAppend x = map (\p->(x:(fst p), snd p))
 
--- find all candidates in Patricia
-findAll' :: Patricia a -> Key -> [(Key, a)]
-findAll' t [] =
-    case value t of
-      Nothing -> enum $ children t
-      Just x  -> ("", x):(enum $ children t)
-    where
-      enum [] = []
-      enum (p:ps) = (mapAppend' (fst p) (findAll' (snd p) [])) ++ (enum ps)
-findAll' t k = find' (children t) k where
-    find' [] _ = []
-    find' (p:ps) k
-          | (fst p) == k
-              = mapAppend' k (findAll' (snd p) [])
-          | (fst p) `Data.List.isPrefixOf` k
-              = mapAppend' (fst p) (findAll' (snd p) (k `diff` (fst p)))
-          | k `Data.List.isPrefixOf` (fst p)
-              = findAll' (snd p) []
-          | otherwise = find' ps k
-    diff x y = drop (length y) x
-
-mapAppend' s = map (\p->(s++(fst p), snd p))
 
 -- T9 mapping
 mapT9 = [('2', "abc"), ('3', "def"), ('4', "ghi"), ('5', "jkl"),
