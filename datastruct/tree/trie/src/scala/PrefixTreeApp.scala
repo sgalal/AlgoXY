@@ -6,10 +6,7 @@ object PrefixTreeApp {
   def findAll[K, V] (t: PrefixTree.Tree[K, V],
                      key: List[K]): Stream[(List[K], V)] = {
     def enum[K, V] (cs: List[(List[K], PrefixTree.Tree[K, V])]): Stream[(List[K], V)] =
-      cs match {
-        case List() => Stream.empty
-        case p :: ps => mapAppend(p._1, findAll(p._2, List())) #::: enum(ps)
-      }
+      cs.toStream.flatMap { p => mapAppend(p._1, findAll(p._2, List()))}
     def find(cs: List[(List[K], PrefixTree.Tree[K, V])],
              key: List[K]): Stream[(List[K], V)] =
       cs match {
@@ -52,19 +49,20 @@ object PrefixTreeApp {
                 "zoo" -> "an area in which animals, especially wild animals, are kept so that people can go and look at them, or study them")
     val t = PrefixTree.fromStringList(m.toList)
     verifyLookup(m, t, "a", 5)
-    verifyLookup(m, t, "a", 6);
-    verifyLookup(m, t, "a", 7);
-    verifyLookup(m, t, "ab", 2);
-    verifyLookup(m, t, "ab", 5);
-    verifyLookup(m, t, "b", 2);
-    verifyLookup(m, t, "bo", 5);
-    verifyLookup(m, t, "z", 3);
+    verifyLookup(m, t, "a", 6)
+    verifyLookup(m, t, "a", 7)
+    verifyLookup(m, t, "ab", 2)
+    verifyLookup(m, t, "ab", 5)
+    verifyLookup(m, t, "b", 2)
+    verifyLookup(m, t, "bo", 5)
+    verifyLookup(m, t, "z", 3)
+    println("edict verified")
   }
 
   def verifyLookup(m: Map[String, String], t: PrefixTree.Tree[Char, String],
                    key: String, n: Int) {
     val r = lookup(t, key.toList, n).map {p => (p._1.mkString, p._2) }
-    println(s"lookup $key with limit $n, get: \n" + r)
+    //println(s"lookup $key with limit $n, get: \n" + r)
     r.foreach(p => {
       val (k, v) = p
       assert(k.startsWith(key), println(s"$k does not start with $key"))

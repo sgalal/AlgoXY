@@ -92,7 +92,7 @@ testFindAll = "t=" ++ (Trie.toString t) ++
            ("bodyl", "the whole physical structure that forms a person or animal"),
            ("zoo", "an area in which animals, especially wild animals, are kept so that people can go and look at them, or study them")]
 
-testFindT9 = "t=" ++ (Trie.toString t) ++
+Testfindt9 = "t=" ++ (Trie.toString t) ++
              "\npress 4: " ++ (show $ take 5 $ findT9 t "4")++
              "\npress 46: " ++ (show $ take 5 $ findT9 t "46")++
              "\npress 4663: " ++ (show $ take 5 $ findT9 t "4663")++
