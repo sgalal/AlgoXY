@@ -112,7 +112,7 @@ findAll (PrefixTree _ cs) k = find' cs k
 enum :: Eq k => [([k], PrefixTree k v)] -> [([k], v)]
 enum = concatMap (\(k, t) -> map (first (k ++)) (findAll t []))
 
--- look up in the prefix tree up to n candidates
+-- look up the prefix tree up to n candidates
 get n t k = take n $ findAll t k
 
 --

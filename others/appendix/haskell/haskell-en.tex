@@ -529,6 +529,27 @@ find t = find' (children t) where
     diff ks1 ks2 = drop (length (lcp ks1 ks2)) ks1
 \end{lstlisting}
 
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=Look up the prefix tree up to $n$ candidates]
+get n t k = take n $ findAll t k
+
+findAll :: Eq k => PrefixTree k v -> [k] -> [([k], v)]
+findAll (PrefixTree Nothing cs) [] = enum cs
+findAll (PrefixTree (Just x) cs) [] = ([], x) : enum cs
+findAll (PrefixTree _ cs) k = find' cs k
+  where
+    find' [] _ = []
+    find' ((k', t') : ps) k
+          | k `isPrefixOf` k'
+              = map (first (k' ++)) (findAll t' [])
+          | k' `isPrefixOf` k
+              = map (first (k' ++)) (findAll t' $ drop (length k') k)
+          | otherwise = find' ps k
+
+enum :: Eq k => [([k], PrefixTree k v)] -> [([k], v)]
+enum = concatMap (\(k, t) -> map (first (k ++)) (findAll t []))
+\end{lstlisting}
+
 
 \ifx\wholebook\relax \else
 \end{document}
