@@ -1904,7 +1904,7 @@ it expands all its children sub-trees till getting $n$ candidates.
     \State $match \gets$ FALSE
     \For{$\forall (k_i, T_i) \in $ \Call{Children}{$T$}}
       \If{$k$ is prefix of $k_i$}
-        \State \Return \Call{Expand}{$T_i, prefix, n$}
+        \State \Return \Call{Expand}{$prefix + k _i, T_i, n$}
       \EndIf
       \If{$k_i$ is prefix of $k$}
         \State $match \gets$ TRUE
@@ -1919,15 +1919,14 @@ it expands all its children sub-trees till getting $n$ candidates.
 \EndFunction
 \end{algorithmic}
 
-Where function \textproc{Expand}($T, prefix, n$) picks $n$ sub-trees, which
-share the same prefix in $T$. It is realized as BFS (Bread-First-Search) traverse. 14.3.1 in the Chapter of search
-explains BFS in detail.
+Where function \textproc{Expand}($T, prefix, n$) picks $n$ sub-trees. They
+share the same prefix in $T$. It is realized as BFS (Bread-First-Search) traverse. 14.3.1 in the Chapter of search explains BFS in detail.
 
 \begin{algorithmic}[1]
-\Function{Expand}{$T, prefix, n$}
+\Function{Expand}{$prefix, T, n$}
   \State $R \gets \phi$
   \State $Q \gets \{(prefix, T)\}$
-  \While{$|R| < n \land |Q| > 0$}
+  \While{$|R| < n \land Q$ is not empty}
     \State $(k, T) \gets$ \Call{Pop}{$Q$}
     \If{\Call{Data}{$T$} $\neq$ NIL}
       \State $R \gets R \cup \{(k, $ \Call{Data}{$T$} $)\}$
@@ -1992,7 +1991,6 @@ public <T> List<Map.Entry<String, T>> lookup(PrefixTree.Node<T> t,
     return new AbstractMap.SimpleImmutableEntry<K, V>(key, val);
 }
 \end{lstlisting}
-
 
 %=====================================
 % T9
