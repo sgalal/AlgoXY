@@ -19,7 +19,7 @@
 
 module PrefixTree where
 
-import Data.List (isPrefixOf, sort, sortBy)
+import Data.List (isPrefixOf, sort, sortBy, inits, nub)
 import Data.Function (on)
 import Control.Arrow (first)
 import qualified Data.Map as Map
@@ -122,16 +122,17 @@ mapT9 = Map.fromList [('1', ",."), ('2', "abc"), ('3', "def"), ('4', "ghi"),
 -- reverse T9 map
 rmapT9 = Map.fromList $ concatMap (\(d, s) -> [(c, d) | c <- s]) $ Map.toList mapT9
 
+digits = map (\c -> Map.findWithDefault '#' c rmapT9)
+
 findT9 :: PrefixTree Char v -> String -> [String]
 findT9 t [] = [""]
 findT9 t k = concatMap find prefixes
   where
-    find (s, t') = map (s++) $ findT9 t' (k `diff` s)
+    n = length k
+    find (s, t') = map (take n . (s++)) $ findT9 t' (k `diff` s)
     diff x y = drop (length y) x
-    prefixes = [(s, t') | (s, t') <- children t, digits s `isPrefixOf` k]
-    digits = map (\c -> Map.findWithDefault '#' c rmapT9)
-
-t9lst = [("home", 1), ("good", 2), ("gone", 3), ("hood", 4), ("a", 5), ("another", 6), ("an", 7)]
+    prefixes = [(s, t') | (s, t') <- children t, let ds = digits s in
+                          ds `isPrefixOf` k || k `isPrefixOf` ds]
 
 -- look up the prefix tree up to n candidates
 get n t k = take n $ findAll t k
@@ -170,4 +171,11 @@ verifyFindAll = all verifyLookup [("a", 5), ("a", 6), ("a", 7), ("ab", 2),
       where
         r = get n t k
 
---verifyT9 = all verify' ["4", "46", "4663"]
+t9lst = [("home", 1), ("good", 2), ("gone", 3), ("hood", 4), ("a", 5), ("another", 6), ("an", 7)]
+t9 = fromList t9lst
+
+verifyT9 = all verify' $ concatMap (tail . inits) ["4663", "22", "2668437"]
+  where
+    verify' ds = ((==) `on` sort . nub) as bs where
+      as = findT9 t9 ds
+      bs = filter ((==) ds . digits) (map (take (length ds) . fst) t9lst)
