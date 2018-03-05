@@ -27,6 +27,7 @@ import qualified Data.Map as Map
 -- definition
 data PrefixTree k v = PrefixTree { value :: Maybe v
                                  , children :: [([k], PrefixTree k v)]}
+                      deriving Show
 
 empty = PrefixTree Nothing []
 
@@ -112,6 +113,26 @@ findAll (PrefixTree _ cs) k = find' cs k
 enum :: Eq k => [([k], PrefixTree k v)] -> [([k], v)]
 enum = concatMap (\(k, t) -> map (first (k ++)) (findAll t []))
 
+-- T9 (Textonym) lookup
+
+mapT9 = Map.fromList [('1', ",."), ('2', "abc"), ('3', "def"), ('4', "ghi"),
+                      ('5', "jkl"), ('6', "mno"), ('7', "pqrs"), ('8', "tuv"),
+                      ('9', "wxyz")]
+
+-- reverse T9 map
+rmapT9 = Map.fromList $ concatMap (\(d, s) -> [(c, d) | c <- s]) $ Map.toList mapT9
+
+findT9 :: PrefixTree Char v -> String -> [String]
+findT9 t [] = [""]
+findT9 t k = concatMap find prefixes
+  where
+    find (s, t') = map (s++) $ findT9 t' (k `diff` s)
+    diff x y = drop (length y) x
+    prefixes = [(s, t') | (s, t') <- children t, digits s `isPrefixOf` k]
+    digits = map (\c -> Map.findWithDefault '#' c rmapT9)
+
+t9lst = [("home", 1), ("good", 2), ("gone", 3), ("hood", 4), ("a", 5), ("another", 6), ("an", 7)]
+
 -- look up the prefix tree up to n candidates
 get n t k = take n $ findAll t k
 
@@ -148,3 +169,5 @@ verifyFindAll = all verifyLookup [("a", 5), ("a", 6), ("a", 7), ("ab", 2),
                           all (\(k', v) -> k `isPrefixOf` k' && k' `Map.member` m) r
       where
         r = get n t k
+
+--verifyT9 = all verify' ["4", "46", "4663"]
