@@ -58,19 +58,7 @@ findT9 t (k:ks) = foldl f [] (lookupT9 k (Trie.children t))
     where
       f lst (c, tr) = (mapAppend c (findT9 tr ks)) ++ lst
 
--- T9-find in Patricia
-findPrefixT9' :: String -> [(String, b)] -> [(String, b)]
-findPrefixT9' s lst = filter f lst where
-    f (k, _) = (toT9 k) `Data.List.isPrefixOf` s
-
 toT9 = map (\c -> head $ [ d |(d, s) <- mapT9, c `elem` s])
-
-findT9' :: Patricia a -> String -> [(String, Maybe a)]
-findT9' t [] = [("", value t)]
-findT9' t k = foldl f [] (findPrefixT9' k (children t))
-    where
-      f lst (s, tr) = (mapAppend' s (findT9' tr (k `diff` s))) ++ lst
-      diff x y = drop (length y) x
 
 -- test
 testFindAll = "t=" ++ (Trie.toString t) ++
