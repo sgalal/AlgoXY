@@ -20,10 +20,9 @@ module Main where
 
 import qualified Data.List
 import qualified Trie
-import PrefixTree
 
 -- find all candidates in Trie
-findAll:: Trie.Trie a -> String -> [(String, a)]
+findAll:: Trie.Trie Char v -> String -> [(String, v)]
 findAll t [] =
     case Trie.value t of
       Nothing -> enum (Trie.children t)
@@ -52,7 +51,7 @@ lookupT9 c children = case lookup c mapT9 of
                  Just t  -> (x, t):lst
 
 -- T9-find in Trie
-findT9:: Trie.Trie a -> String -> [(String, Maybe a)]
+findT9:: Trie.Trie Char v -> String -> [(String, Maybe v)]
 findT9 t [] = [("", Trie.value t)]
 findT9 t (k:ks) = foldl f [] (lookupT9 k (Trie.children t))
     where
@@ -61,15 +60,11 @@ findT9 t (k:ks) = foldl f [] (lookupT9 k (Trie.children t))
 toT9 = map (\c -> head $ [ d |(d, s) <- mapT9, c `elem` s])
 
 -- test
-testFindAll = "t=" ++ (Trie.toString t) ++
+testFindAll = "t=" ++ (show t) ++
               "\nlook up a: " ++ (show $ take 5 $findAll t "a") ++
-              "\nlook up ab: " ++ (show $ take 5 $findAll t "ab") ++ "\n\n" ++
-              "t'=" ++ (toString t') ++
-              "\nlook up a: " ++ (show $ take 5 $findAll' t' "a") ++
-              "\nlook up ab: " ++ (show $ take 5 $findAll' t' "ab")
+              "\nlook up ab: " ++ (show $ take 5 $findAll t "ab") ++ "\n\n"
     where
       t = Trie.fromList lst
-      t'= fromList lst
       lst=[("a", "the first letter of English"),
            ("an", "used instead of 'a' when the following word begins with a vowel sound"),
            ("another", "one more person or thing or an extra amount"),
@@ -80,23 +75,14 @@ testFindAll = "t=" ++ (Trie.toString t) ++
            ("bodyl", "the whole physical structure that forms a person or animal"),
            ("zoo", "an area in which animals, especially wild animals, are kept so that people can go and look at them, or study them")]
 
-Testfindt9 = "t=" ++ (Trie.toString t) ++
+testFindT9 = "t=" ++ (show t) ++
              "\npress 4: " ++ (show $ take 5 $ findT9 t "4")++
              "\npress 46: " ++ (show $ take 5 $ findT9 t "46")++
              "\npress 4663: " ++ (show $ take 5 $ findT9 t "4663")++
              "\npress 2: " ++ (show $ take 5 $ findT9 t "2")++
-             "\npress 22: " ++ (show $ take 5 $ findT9 t "22")++
-             "\n\nt'=" ++ (toString t') ++
-             "\npress 4: " ++ (show $ take 5 $ findT9' t' "4")++
-             "\npress 46: " ++ (show $ take 5 $ findT9' t' "46")++
-             "\npress 466: " ++ (show $ take 5 $ findT9' t' "466")++
-             "\npress 4663: " ++ (show $ take 5 $ findT9' t' "4663")++
-             "\npress 2: " ++ (show $ take 5 $ findT9' t' "2")++
-             "\npress 22: " ++ (show $ take 5 $ findT9' t' "22")
-
+             "\npress 22: " ++ (show $ take 5 $ findT9 t "22")
     where
       t = Trie.fromList lst
-      t' = fromList lst
       lst = [("home", 1), ("good", 2), ("gone", 3), ("hood", 4), ("a", 5), ("another", 6), ("an", 7)]
 
 main = do
