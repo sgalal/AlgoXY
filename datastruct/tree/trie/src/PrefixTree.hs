@@ -171,11 +171,9 @@ verifyFindAll = all verifyLookup [("a", 5), ("a", 6), ("a", 7), ("ab", 2),
       where
         r = get n t k
 
-t9lst = [("home", 1), ("good", 2), ("gone", 3), ("hood", 4), ("a", 5), ("another", 6), ("an", 7)]
-t9 = fromList t9lst
-
 verifyT9 = all verify' $ concatMap (tail . inits) ["4663", "22", "2668437"]
   where
+    t9lst = [("home", 1), ("good", 2), ("gone", 3), ("hood", 4), ("a", 5), ("another", 6), ("an", 7)]
     verify' ds = ((==) `on` sort . nub) as bs where
-      as = findT9 t9 ds
+      as = findT9 (fromList t9lst) ds
       bs = filter ((==) ds . digits) (map (take (length ds) . fst) t9lst)
