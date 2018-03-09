@@ -1815,7 +1815,7 @@ enum(C) = \left \{
 \ee
 
 Where $mapAppend(k, L) = \{(k + k_i, v_i)| (k_i, v_i) \in L\}$. It concatenate
-the prefix $k$ in front of every key-value pair in list $L$\footnote{The concept here is to map on the first thing. In some environment, like Haskell, $mapAppend$ can be expressed as $map(first(k+), L)$}.
+the prefix $k$ in front of every key-value pair in list $L$\footnote{The concept here is to map on the first thing. In some environment, like Haskell, $mapAppend$ can be expressed as $map(first(k+), L)$ by using the arrow in category theory.}.
 
 Function $enum$ can also be defined with concept of $concatMap$ (also called $flatMap$)\footnote{Literally, it results like first map on each element, then concatenate the result together. It's typically realized with 'build-foldr' to eliminate the intermediate list.}.
 

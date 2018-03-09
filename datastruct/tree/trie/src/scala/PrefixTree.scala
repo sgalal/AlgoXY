@@ -85,6 +85,9 @@ object PrefixTree {
   def fromStringList[V](assoc: List[(String, V)]): Tree[Char, V] =
     fromList(assoc map (p => (p._1.toList, p._2)))
 
+  def fromString(txt: String): Tree[Char, Int] =
+    fromStringList(txt.split("\\s+").toList.zipWithIndex)
+
   // pre-order travrese to populate keys in lexicographical order
   def keys[K <% Ordered[K], V] (t: Tree[K, V]): List[List[K]] = {
     def keysOfPrefix[K <% Ordered[K], V](prefix: List[K],

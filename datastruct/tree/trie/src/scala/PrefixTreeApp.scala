@@ -36,6 +36,30 @@ object PrefixTreeApp {
   def lookup[K, V] (t: PrefixTree.Tree[K, V], key: List[K], n: Int): List[(List[K], V)] =
     findAll(t, key).take(n).toList
 
+  // T9 (Textonym) lookup
+
+  val mapT9 = Map('1' -> ",.", '2' -> "abc", '3' -> "def", '4' -> "ghi", '5' -> "jkl",
+                  '6' -> "mno", '7'-> "pqrs", '8' -> "tuv", '9' -> "wxyz")
+
+  val rmapT9 = mapT9.toList.flatMap(p => p._2.toList.map {(_, p._1)}).toMap
+
+  def digits(w: String) = w.map {rmapT9.getOrElse(_, '#')}
+
+  def findT9[V](t: PrefixTree.Tree[Char, V], key: String): Stream[String] =
+    if(key.isEmpty){
+      Stream("")
+    } else {
+      val n = key.length
+      val prefixes = t.children.toStream.filter(p => {
+        val ds = digits(p._1.mkString)
+        ds.startsWith(key) || key.startsWith(ds)
+      })
+      def find(s: String, tr: PrefixTree.Tree[Char, V]): Stream[String] = {
+        findT9(tr, key.drop(s.length)).map { w => (s ++ w).take(n)}
+      }
+      prefixes.flatMap { p => find(p._1.mkString, p._2) }
+    }
+
   // verification
   def testEdict() {
     val m = Map("a" -> "the first letter of English",
@@ -62,12 +86,29 @@ object PrefixTreeApp {
   def verifyLookup(m: Map[String, String], t: PrefixTree.Tree[Char, String],
                    key: String, n: Int) {
     val r = lookup(t, key.toList, n).map {p => (p._1.mkString, p._2) }
-    //println(s"lookup $key with limit $n, get: \n" + r)
     r.foreach(p => {
       val (k, v) = p
       assert(k.startsWith(key), println(s"$k does not start with $key"))
       assert(m.contains(k), println(s"$k does not exists"))
     })
     assert(r.length <= n, println(s"expected $n results, get: " + r))
+  }
+
+  def testT9() = {
+    val txt = "home good gone hood a another an"
+    val words = txt.split("\\s+").toList
+    val t = PrefixTree.fromString(txt)
+    def norm[A <% Ordered[A]](ws: Seq[A]): Seq[A] = ws.distinct.sortWith(_ < _)
+    List("4663", "22", "2668437").flatMap { _.inits.toList.init }.foreach { key =>
+      val as = norm(findT9(t, key)).toList
+      val bs = norm(words.map(_.take(key.length)).filter(digits(_) == key))
+      assert(as == bs, println(s"$as\n!=\n$bs"))
+    }
+    println("t9 verified")
+  }
+
+  def test() {
+    testEdict
+    testT9
   }
 }
