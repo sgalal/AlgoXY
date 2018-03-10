@@ -55,17 +55,78 @@ public class PrefixTreeApp {
     }
 
     // T9 map
-
-    static final Map<Character, String> mapT9 = new HashMap<Character, String>(){{
+    static final Map<Character, String> MAP_T9 = new HashMap<Character, String>(){{
             put('1', ",."); put('2', "abc"); put('3', "def");
             put('4', "ghi"); put('5', "jkl"); put('6', "mno");
             put('7', "pqrs"); put('8', "tuv"); put('9', "wxyz");
         }};
 
-    static final Map<Character, Character> rmapT9 = mapT9.entrySet().stream()
-        .flatMap(e -> e.getValue().chars().mapToObj(i -> (char)i)
-                 .map(c -> entryOf(c, e.getKey())))
-        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    // T9 reverse map
+    static final Map<Character, Character> RMAP_T9 = new HashMap<Character, Character>(){{
+            for (Character d : MAP_T9.keySet()) {
+                String cs = MAP_T9.get(d);
+                for (int i = 0; i < cs.length(); ++i)
+                    put(cs.charAt(i), d);
+            }
+        }};
+
+    /*
+     * The T9 reverse map can be built with stream, but it's hard to read
+     *
+     *    static final Map<Character, Character> RMAP_T9 = MAP_T9.entrySet().stream()
+     *        .flatMap(e -> e.getValue().chars().mapToObj(i -> (char)i)
+     *                 .map(c -> entryOf(c, e.getKey())))
+     *        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+     */
+
+    public static String digits(String w) {
+        StringBuilder d = new StringBuilder();
+        for(int i = 0; i < w.length(); ++i)
+            d.append(RMAP_T9.get(w.charAt(i)));
+        return d.toString();
+    }
+
+    static class Tuple<T> {
+        String prefix;
+        String key;
+        PrefixTree.Node<T> tree;
+        public Tuple(String p, String k, PrefixTree.Node<T> t) {
+            prefix = p; key = k; tree = t;
+        }
+
+        public static <T> Tuple<T> of(String prefix, String key,
+                                      PrefixTree.Node<T> tree) {
+            return new Tuple<T>(prefix, key, tree);
+        }
+    }
+
+    static String limit(int n, String s) {
+        return s.substring(0, Math.min(n, s.length()));
+    }
+
+    public static <T> List<String> lookupT9(PrefixTree.Node<T> t, String key) {
+        List<String> res = new ArrayList<>();
+        if (t == null || key.isEmpty())
+            return res;
+        Queue<Tuple<T>> q = new LinkedList<>();
+        q.offer(Tuple.of("", key, t));
+        while (!q.isEmpty()) {
+            Tuple<T> elem = q.poll();
+            for (Map.Entry<String, PrefixTree.Node<T>> e :
+                     elem.tree.subTrees.entrySet()) {
+                String k = e.getKey();
+                String ds = digits(k);
+                if (ds.startsWith(elem.key)) {
+                    res.add(limit(key.length(), elem.prefix + k));
+                } else if (elem.key.startsWith(ds)) {
+                    q.offer(Tuple.of(elem.prefix + k,
+                                     elem.key.substring(k.length()),
+                                     e.getValue()));
+                }
+            }
+        }
+        return res;
+    }
 
     public static class Test {
         final static String[] testKeys =
@@ -123,8 +184,29 @@ public class PrefixTreeApp {
         }
 
         public static void testT9() {
-            System.out.println("T9 map: " + mapT9);
-            System.out.println("reverse T9 map: " + rmapT9);
+            //System.out.println("T9 map: " + MAP_T9);
+            //System.out.println("reverse T9 map: " + RMAP_T9);
+            final String txt = "home good gone hood a another an";
+            final String[] words = txt.split("\\W+");
+            PrefixTree.Node<Integer> t = PrefixTree.fromString(txt);
+            for (String testDigits : new String[]{"4663", "22", "2668437"}) {
+                for (int i = 1; i <= testDigits.length(); ++i) {
+                    String ds = limit(i, testDigits);
+                    SortedSet<String> as = new TreeSet<>(lookupT9(t, ds));
+                    SortedSet<String> bs = new TreeSet<>();
+                    for (String w : words) {
+                        String candidate = limit(i, w);
+                        if (digits(candidate).equals(ds))
+                            bs.add(candidate);
+                    }
+                    //System.out.println("T9 look up: " + as);
+                    //System.out.println("Brute force:" + bs);
+                    if (!as.equals(bs))
+                        throw new RuntimeException("T9 look up " + as + "\n!=\n" +
+                                                   "Brute force" + bs + "\n");
+                }
+            }
+            System.out.println("T9 verified");
         }
 
         public static void test() {

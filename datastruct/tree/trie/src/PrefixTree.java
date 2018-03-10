@@ -140,6 +140,14 @@ public class PrefixTree {
         return t;
     }
 
+    public static Node<Integer> fromString(String txt) {
+        String[] words = txt.split("\\W+");
+        Node<Integer> t = null;
+        for (int i = 0; i < words.length; ++i)
+            t = insert(t, words[i], i);
+        return t;
+    }
+
     public static class Test {
         final static int N = 100;
         final static List<String> testData =
