@@ -2056,66 +2056,78 @@ M_{T9} = \{ & 2 \rightarrow abc, 3 \rightarrow def, 4 \rightarrow ghi, \\
 \end{array}
 \ee
 
-With this mapping, $M_{T9}[i]$ returns the corresponding characters for digit $i$.
+With this mapping, $M_{T9}[i]$ returns the corresponding characters for digit $i$. We can also define the reversed mapping from a character back to digit.
 
-When input digits $D = d_1d_2...d_n$, if $D$ isn't empty, denote the
-rest digits except for $d_1$ as $D'$,
+\be
+M^{-1}_{T9} = concat(\{\{c \rightarrow d | c \in S\} | (d \rightarrow S) \in M_{T9}\})
+\ee
 
-TODO: Here
+Given a sequence of characters, we can convert it to a sequence of digits by looking up $M^{-1}_{T9}$.
 
-below pseudo code shows how to realize T9 with prefix tree.
+\be
+digits(S) = \{ M^{-1}_{T9}[c]| c \in S \}
+\ee
 
+When input digits $D = d_1d_2...d_n$, we define the T9 lookup algorithm as below.
 
 \be
 findT9(T, D) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   \{ \phi \} & D = \phi \\
-  fold(f, \phi, findPrefixT9(D, C)) & otherwise
+  concatMap(find, prefixes(T)) & otherwise
   \end{array}
 \right.
 \ee
 
-The list for folding is given by calling function $findPrefixT9(D, C)$.
-And $f$ is also modified to reflect this change. It appends the
-candidate prefix $D'$ in front of every result output by the
-recursive search, and then accumulates the words.
+Where $T$ is the prefix tree built from a set of words and phrases. It's kind of a dictionary we'll look up. If the input
+$D$ is empty, the result is an empty string. Otherwise, it looks up the sub-trees that match the input, and concat the result together.
+
+To enumerate the matched sub-trees, we examine all the children sub-trees $C_T$,
+for every pair $(k_i, T_i)$. We first convert string $k_i$ to digit sequence $d_i$,
+then compare $d_i$ and $D$. If either one is the prefix of the other, then this pair
+is selected as a candidate for further search.
 
 \be
-f(L, (D', T')) = mapAppend(D', findT9(T', D - D')) \cup L
+prefixes(T) = \{(k_i, T_i) | (k_i, T_i) \in C_T, d_i = digits(k_i), d_i \sqsubset D \lor D \sqsubset d_i \}
 \ee
 
-Function $findPrefixT9(D, C)$ examines all the children. For
-every pair $(k_i, T_i)$, if converting $k_i$ back to digits
-yields a prefix of $D$, then this pair is selected as a
-candidate.
+
+Function $find$ takes a passed in prefix $S$, and a sub-tree $T'$ to look up further. As $S$ is prefix of $D$, it removes it from $D$ to get a new input to $D' = D - S$ to search, then later insert $S$ back in front of every recursive search result.
 
 \be
-findPrefixT9(D, C) = \{ (k_i, T_i) |(k_i, T_i) \in C, convertT9(k_i) \sqsubset D\}
+find(S, T') = \{ take(n, S + s_i) | s_i \in findT9(T', D - S) \}
 \ee
 
-Function $convertT9(k)$ converts every alphabetic character in $k$ back
-to digits according to T9 map.
+Where $n = |D|$ is the length of the input digits. Function $take(n, L)$ takes the first $n$ elements from the list $L$. If the length of the list is less then $n$, or the elements are taken.
 
-\be
-convertT9(K) = \{ d | \forall c \in k, \exists (d \rightarrow S) \in M_{T9} \Rightarrow c \in S\}
-\ee
-
-The following example Haskell program implements the T9 input algorithm
+The following example Scala program implements the T9 look up algorithm
 with prefix tree.
 
+\lstset{languaeg=Scala}
 \begin{lstlisting}
-findT9 t [] = [("", value t)]
-findT9 t k = foldl f [] (findPrefixT9 k (children t))
-    where
-      f lst (s, tr) = (mapAppend s (findT9 tr (k `diff` s))) ++ lst
-      diff x y = drop (length y) x
+val mapT9 = Map('1' -> ",.", '2' -> "abc", '3' -> "def", '4' -> "ghi", '5' -> "jkl",
+                '6' -> "mno", '7'-> "pqrs", '8' -> "tuv", '9' -> "wxyz")
 
-findPrefixT9 s lst = filter f lst where
-    f (k, _) = (toT9 k) `Data.List.isPrefixOf` s
+val rmapT9 = mapT9.toList.flatMap(p => p._2.toList.map {(_, p._1)}).toMap
 
-toT9 = map (\c -> head $ [ d |(d, s) <- mapT9, c `elem` s])
-\end{lstlisting} %$
+def digits(w: String) = w.map {rmapT9.getOrElse(_, '#')}
+
+def findT9[V](t: PrefixTree.Tree[Char, V], key: String): Stream[String] =
+  if(key.isEmpty){
+    Stream("")
+  } else {
+    val n = key.length
+    val prefixes = t.children.toStream.filter(p => {
+      val ds = digits(p._1.mkString)
+      ds.startsWith(key) || key.startsWith(ds)
+    })
+    def find(s: String, tr: PrefixTree.Tree[Char, V]): Stream[String] = {
+      findT9(tr, key.drop(s.length)).map { w => (s ++ w).take(n)}
+    }
+    prefixes.flatMap { p => find(p._1.mkString, p._2) }
+  }
+\end{lstlisting}
 
 
 this algorithm performs BFS search with a queue $Q$. The queue is
