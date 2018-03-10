@@ -2129,6 +2129,7 @@ def findT9[V](t: PrefixTree.Tree[Char, V], key: String): Stream[String] =
   }
 \end{lstlisting}
 
+TODO:
 
 this algorithm performs BFS search with a queue $Q$. The queue is
 initialized with a tuple $(prefix, D, T)$, containing empty prefix, the digit sequence to be
@@ -2211,9 +2212,9 @@ def patricia_lookup_t9(t, key):
 
 \begin{Exercise}
 \begin{itemize}
-\item For the T9 input, compare the results of the algorithms realized with trie and prefix tree,
-the sequences are different. Why does this happen? How to modify the algorithm so that they
-output the candidates with the same sequence?
+\item Realize the e-dictionary and T9 lookup with trie.
+\item For the alphabetic prefix tree look up algorithms that return multiple results, how to ensure the result is in lexicographic order? What is the performance?
+\item How to realize the e-dictionary and T9 look up without lazy evaluation?
 \end{itemize}
 \end{Exercise}
 

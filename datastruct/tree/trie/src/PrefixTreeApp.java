@@ -4,6 +4,7 @@ import java.lang.Math;
 import java.lang.Exception;
 
 public class PrefixTreeApp {
+    // returns up to n candidates start with given prefix
     public static <T> List<Map.Entry<String, T>> lookup(PrefixTree.Node<T> t,
                                                         String key, int n) {
         if (t == null)
@@ -52,6 +53,19 @@ public class PrefixTreeApp {
     static <K, V> Map.Entry<K, V> entryOf(K key, V val) {
         return new AbstractMap.SimpleImmutableEntry<K, V>(key, val);
     }
+
+    // T9 map
+
+    static final Map<Character, String> mapT9 = new HashMap<Character, String>(){{
+            put('1', ",."); put('2', "abc"); put('3', "def");
+            put('4', "ghi"); put('5', "jkl"); put('6', "mno");
+            put('7', "pqrs"); put('8', "tuv"); put('9', "wxyz");
+        }};
+
+    static final Map<Character, Character> rmapT9 = mapT9.entrySet().stream()
+        .flatMap(e -> e.getValue().chars().mapToObj(i -> (char)i)
+                 .map(c -> entryOf(c, e.getKey())))
+        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 
     public static class Test {
         final static String[] testKeys =
@@ -108,8 +122,14 @@ public class PrefixTreeApp {
             return new TreeMap<>(s.collect(Collectors.toMap(e -> e.getKey(), e ->e.getValue())));
         }
 
+        public static void testT9() {
+            System.out.println("T9 map: " + mapT9);
+            System.out.println("reverse T9 map: " + rmapT9);
+        }
+
         public static void test() {
             testEdict();
+            testT9();
         }
     }
 }
