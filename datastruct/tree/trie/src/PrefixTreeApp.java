@@ -90,7 +90,7 @@ public class PrefixTreeApp {
         String prefix;
         String key;
         PrefixTree.Node<T> tree;
-        public Tuple(String p, String k, PrefixTree.Node<T> t) {
+        Tuple(String p, String k, PrefixTree.Node<T> t) {
             prefix = p; key = k; tree = t;
         }
 

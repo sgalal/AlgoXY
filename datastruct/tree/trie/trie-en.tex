@@ -2104,16 +2104,18 @@ Where $n = |D|$ is the length of the input digits. Function $take(n, L)$ takes t
 The following example Scala program implements the T9 look up algorithm
 with prefix tree.
 
-\lstset{languaeg=Scala}
+\lstset{language=Scala}
 \begin{lstlisting}
-val mapT9 = Map('1' -> ",.", '2' -> "abc", '3' -> "def", '4' -> "ghi", '5' -> "jkl",
-                '6' -> "mno", '7'-> "pqrs", '8' -> "tuv", '9' -> "wxyz")
+val mapT9 = Map('1' -> ",.", '2' -> "abc", '3' -> "def",
+                '4' -> "ghi", '5' -> "jkl", '6' -> "mno",
+                '7'-> "pqrs", '8' -> "tuv", '9' -> "wxyz")
 
-val rmapT9 = mapT9.toList.flatMap(p => p._2.toList.map {(_, p._1)}).toMap
+val rmapT9 = mapT9.toList.flatMap(p =>
+                     p._2.toList.map {(_, p._1)}).toMap
 
 def digits(w: String) = w.map {rmapT9.getOrElse(_, '#')}
 
-def findT9[V](t: PrefixTree.Tree[Char, V], key: String): Stream[String] =
+def findT9[V](t: Tree[Char, V], key: String): Stream[String] =
   if(key.isEmpty){
     Stream("")
   } else {
@@ -2122,48 +2124,43 @@ def findT9[V](t: PrefixTree.Tree[Char, V], key: String): Stream[String] =
       val ds = digits(p._1.mkString)
       ds.startsWith(key) || key.startsWith(ds)
     })
-    def find(s: String, tr: PrefixTree.Tree[Char, V]): Stream[String] = {
+    def find(s: String, tr: Tree[Char, V]): Stream[String] =
       findT9(tr, key.drop(s.length)).map { w => (s ++ w).take(n)}
-    }
     prefixes.flatMap { p => find(p._1.mkString, p._2) }
   }
 \end{lstlisting}
 
-TODO:
-
-this algorithm performs BFS search with a queue $Q$. The queue is
-initialized with a tuple $(prefix, D, T)$, containing empty prefix, the digit sequence to be
-searched, and the trie. It keeps picking the tuple from the queue as far as
-it isn't empty. Then get the candidate characters from the first digit to
-be processed via the T9 map. For each character $c$, if there is a sub-tree
-bound to it, we created a new tuple, update the prefix by appending $c$,
-using the rest of digits to update $D$, and use that sub-tree. This new tuple
-is pushed back to the queue for further searching. If all the digits are
-processed, it means a candidate word is found. We put this word to the
-result list $R$.
-
-As far as the queue isn't empty, the algorithm pops the
-tuple. This time, we examine all the (prefix, sub-tree) pairs. For every pair
-$(k_i, T_i)$, we convert the alphabetic prefix $k_i$ back to digits sequence $D'$
-by looking up the T9 map. If $D'$ exactly matches the digits of what user input,
-we find a candidate word; otherwise if the digit sequence is prefix of what user inputs,
-the program creates a new tuple, updates the prefix, the digits to be processed,
-and the sub-tree. Then put the tuple back to the queue for further search.
+To realize this algorithm imperatively, we can perform BFS search with a queue $Q$.
+The queue stores tuples $(prefix, D, T)$. Every tuple records the possible
+prefix string we've searched so far; the rest of the digits to be searched;
+and the sub-tree we are going to search. The queue is initialized with the
+empty prefix, the whole digit sequence, and the prefix tree root. The algorithm
+keeps picking the tuple from the queue until it's empty. For every tuple
+popped from the queue, we extract the tree from the tuple, then examine the
+children sub-trees of it. for each sub-tree $T_i$, we convert the corresponding
+prefix string $k_i$ to digits $D'$ by looking up the reversed T9 map. If the
+$D$ is prefix of $D'$, it's a valid candidate. We concatenate $k_i$ after
+the prefix in the tuple, and record this string in the result. If $D'$ is
+prefix of $D$, we need furthur search this sub-tree. To do this, we
+create a new tuple consist of the new prefix ends with $k_i$, the rest of
+the digits $D-D'$, and the sub-tree. Then push this tuple back to the queue.
 
 \begin{algorithmic}[1]
 \Function{Look-Up-T9}{$T, D$}
-  \State $Q \gets \{(\phi, D, T)\}$
   \State $R \gets \phi$
+  \If{$T =$ NIL or $D = \phi$}
+    \State \Return $R$
+  \EndIf
+  \State $n \gets |D|$
+  \State $Q \gets \{(\phi, D, T)\}$
   \While{$Q \neq \phi$}
     \State $(prefix, D, T) \gets$ \Call{Pop}{$Q$}
-    \For{each $(k_i, T_i) \in $ \Call{Children}{$T$}}
-      \State $D' \gets$ \Call{Convert-T9}{$k_i$}
+    \For{$\forall (k_i, T_i) \in $ \Call{Children}{$T$}}
+      \State $D' \gets$ \Call{Digits}{$k_i$}
       \If{$D' \sqsubset D$} \Comment{$D'$ is prefix of $D$}
-        \If{$D' = D$}
-          \State $R \gets R \cup \{prefix + k_i\}$
-        \Else
-          \State \textproc{Push}($Q, (prefix + k_i, D - D', T_i)$)
-        \EndIf
+        \State $R \gets R \cup \{$ \textproc{Take} $(n, prefix + k_i) \}$ \Comment{limit the length to $n$}
+      \ElsIf{$D \sqsubset D'$}
+        \State \textproc{Push}($Q, (prefix + k_i, D - D', T_i)$)
       \EndIf
     \EndFor
   \EndWhile
@@ -2171,42 +2168,85 @@ and the sub-tree. Then put the tuple back to the queue for further search.
 \EndFunction
 \end{algorithmic}
 
-Function \textproc{Convert-T9}($K$) converts each character in $K$ back to digit.
+Function \textproc{Digits}($S$) converts string $S$ to sequence of digits.
 
 \begin{algorithmic}[1]
-\Function{Convert-T9}{$K$}
+\Function{Digits}{$S$}
   \State $D \gets \phi$
-  \For{each $c \in K$}
-     \For{each $(d \rightarrow S) \in M_{T9}$}
-       \If{$c \in S$}
-         \State $D \gets D \cup \{d\}$
-         \State break
-       \EndIf
-     \EndFor
+  \For{each $c \in S$}
+    \State $D \gets D \cup \{M^{-1}_{T9}[c]\}$
   \EndFor
   \State \Return $D$
 \EndFunction
 \end{algorithmic}
 
-The following example Python program implements the T9 input method with prefix tree.
+The following example Java program implements the T9 input method with prefix tree.
 
-\lstset{language=Python}
+\lstset{language=Java}
 \begin{lstlisting}
-def patricia_lookup_t9(t, key):
-    if t is None or key == "":
-        return None
-    q = [("", key, t)]
-    res = []
-    while len(q)>0:
-        (prefix, key, t) = q.pop(0)
-        for k, tr in t.children.items():
-            digits = toT9(k)
-            if string.find(key, digits)==0: #is prefix of
-                if key == digits:
-                    res.append((prefix+k, tr.value))
-                else:
-                    q.append((prefix+k, key[len(k):], tr))
-    return res
+static final Map<Character, String> MAP_T9 = Map.of('1', ",.",
+       '2', "abc", '3', "def", '4', "ghi", '5', "jkl",
+       '6', "mno", '7', "pqrs", '8', "tuv", '9', "wxyz");
+
+static final Map<Character, Character> RMAP_T9 = reverseMap();
+
+static Map<Character, Character> reverseMap() {
+    Map<Character, Character> m = new HashMap<>();
+    for (Character d : MAP_T9.keySet()) {
+        String cs = MAP_T9.get(d);
+        for (int i = 0; i < cs.length(); ++i)
+                m.put(cs.charAt(i), d);
+    }
+    return m;
+}
+
+public static String digits(String w) {
+    StringBuilder d = new StringBuilder();
+    for(int i = 0; i < w.length(); ++i)
+        d.append(RMAP_T9.get(w.charAt(i)));
+    return d.toString();
+}
+
+static class Tuple<T> {
+    String prefix;
+    String key;
+    Node<T> tree;
+    Tuple(String p, String k, Node<T> t) {
+        prefix = p; key = k; tree = t;
+    }
+    public static <T> Tuple<T> of(String prefix, String key,
+                                  Node<T> tree) {
+        return new Tuple<T>(prefix, key, tree);
+    }
+}
+
+static String limit(int n, String s) {
+    return s.substring(0, Math.min(n, s.length()));
+}
+
+public static <T> List<String> lookupT9(Node<T> t, String key) {
+    List<String> res = new ArrayList<>();
+    if (t == null || key.isEmpty())
+        return res;
+    Queue<Tuple<T>> q = new LinkedList<>();
+    q.offer(Tuple.of("", key, t));
+    while (!q.isEmpty()) {
+        Tuple<T> elem = q.poll();
+        for (Map.Entry<String, Node<T>> e :
+                 elem.tree.subTrees.entrySet()) {
+            String k = e.getKey();
+            String ds = digits(k);
+            if (ds.startsWith(elem.key)) {
+                res.add(limit(key.length(), elem.prefix + k));
+            } else if (elem.key.startsWith(ds)) {
+                q.offer(Tuple.of(elem.prefix + k,
+                                 elem.key.substring(k.length()),
+                                 e.getValue()));
+            }
+        }
+    }
+    return res;
+}
 \end{lstlisting}
 
 

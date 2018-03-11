@@ -54,9 +54,8 @@ object PrefixTreeApp {
         val ds = digits(p._1.mkString)
         ds.startsWith(key) || key.startsWith(ds)
       })
-      def find(s: String, tr: PrefixTree.Tree[Char, V]): Stream[String] = {
+      def find(s: String, tr: PrefixTree.Tree[Char, V]): Stream[String] =
         findT9(tr, key.drop(s.length)).map { w => (s ++ w).take(n)}
-      }
       prefixes.flatMap { p => find(p._1.mkString, p._2) }
     }
 
