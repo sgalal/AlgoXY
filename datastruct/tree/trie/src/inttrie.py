@@ -24,10 +24,9 @@ class IntTrie:
         self.value = None
         self.left = self.right = None
 
-def trie_insert(t, key, value = None):
+def insert(t, key, value = None):
     if t is None:
         t = IntTrie()
-
     p = t
     while key != 0:
         if key & 1 == 0:
@@ -38,33 +37,28 @@ def trie_insert(t, key, value = None):
             if p.right is None:
                 p.right = IntTrie()
             p = p.right
-        key = key>>1
+        key = key >> 1  # key / 2
     p.value = value
     return t
 
 def lookup(t, key):
-    while key != 0 and (t is not None):
+    while t is not None and k != 0:
         if key & 1 == 0:
             t = t.left
         else:
             t = t.right
-        key = key>>1
-    if t is not None:
-        return t.value
-    else:
-        return None
+        key = key >> 1
+    return None if t is None else t.value
 
-def trie_to_str(t, prefix=0, depth=0):
-    to_str = lambda x: "%s" %x
-    str="("+to_str(prefix)
+def to_str(t, prefix = 0, depth = 0):
+    s = "(" + str(prefix)
     if t.value is not None:
-        str += ":"+t.value
+        s += ":" + t.value
     if t.left is not None:
-        str += ", "+trie_to_str(t.left, prefix, depth+1)
+        s += ", " + to_str(t.left, prefix, depth + 1)
     if t.right is not None:
-        str += ", "+trie_to_str(t.right, (1<<depth)+prefix, depth+1)
-    str+=")"
-    return str
+        s += ", " + to_str(t.right, (1 << depth) + prefix, depth + 1)
+    return s + ")"
 
 def list_to_trie(l):
     return from_list(l, trie_insert)
