@@ -16,8 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import string
-from trieutil import from_list, from_map
+import random
 
 class IntTrie:
     def __init__(self):
@@ -42,13 +41,31 @@ def insert(t, key, value = None):
     return t
 
 def lookup(t, key):
-    while t is not None and k != 0:
+    while t is not None and key != 0:
         if key & 1 == 0:
             t = t.left
         else:
             t = t.right
         key = key >> 1
     return None if t is None else t.value
+
+def keys(t):
+    pass
+
+def from_keys(l):
+    t = None
+    for x in l:
+        t = insert(t, x)
+    return t
+
+def from_list(kvs):
+    t = None
+    for k, v in kvs:
+        t = insert(t, k, v)
+    return t
+
+def from_map(m):
+    return from_list(m.items())
 
 def to_str(t, prefix = 0, depth = 0):
     s = "(" + str(prefix)
@@ -60,37 +77,28 @@ def to_str(t, prefix = 0, depth = 0):
         s += ", " + to_str(t.right, (1 << depth) + prefix, depth + 1)
     return s + ")"
 
-def list_to_trie(l):
-    return from_list(l, trie_insert)
-
-def map_to_trie(m):
-    return from_map(m, trie_insert)
-
-class IntTrieTest:
-    def __init__(self):
-        print "start trie test"
-
-    def run(self):
-        self.test_insert()
-        self.test_lookup()
-
-    def test_insert(self):
-        t = None
-        t = trie_insert(t, 0);
-        t = trie_insert(t, 1);
-        t = trie_insert(t, 4);
-        t = trie_insert(t, 5);
-        print trie_to_str(t)
-        t1 = list_to_trie([1, 4, 5])
-        print trie_to_str(t1)
-        t2 = map_to_trie({4:'b', 1:'a', 5:'c', 9:'d'})
-        print trie_to_str(t2)
-
-    def test_lookup(self):
-        t = map_to_trie({4:'y', 1:'x', 5:'z'})
-        print "look up 4: ", lookup(t, 4)
-        print "look up 5: ", lookup(t, 5)
-        print "look up 0: ", lookup(t, 0)
+def test():
+    def generate_map(size):
+        m = {}
+        xs = range(size);
+        random.shuffle(xs)
+        for i in xrange(size):
+            m[i] = xs[i]
+        return m
+    sz = 100
+    for i in xrange(sz):
+        m = generate_map(random.randint(0, sz-1))
+        t = from_map(m)
+        for k, v in m.items():
+            val = lookup(t, k)
+            if v != val:
+                print "lookup", k, "got", val, "!=", v, "t=\n", to_str(t)
+                exit()
+        for k in xrange(sz):
+            if k not in m and lookup(t, k) is not None:
+                print "lookup", i, "expected None, but get", lookup(t, i) ,to_str(t)
+                exit()
+    print "passed", sz, "cases"
 
 if __name__ == "__main__":
-    IntTrieTest().run()
+    test()
