@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# patricia.py, Alphabetic Patricia tree.
+# prefixtree.py, Alphabetic prefix tree
 # Copyright (C) 2010, Liu Xinyu (liuxinyu95@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,14 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import string
-from trieutil import *
+from itertools import count
 
-# Patricia Trie definition
-class Patricia:
+# Prefix tree definition
+class PrefixTree:
     def __init__(self, value = None):
         self.value = value
-        self.children = {}
+        self.subtrees = {}
 
 # longest common prefix
 # returns (p, s1', s2'), where p is lcp, s1'=s1-p, s2'=s2-p
@@ -36,38 +35,38 @@ def lcp(s1, s2):
 def branch(key1, tree1, key2, tree2):
     if key1 == "":
         #example: insert "an" into "another"
-        tree1.children[key2] = tree2
+        tree1.subtrees[key2] = tree2
         return tree1
-    t = Patricia()
-    t.children[key1] = tree1
-    t.children[key2] = tree2
+    t = PrefixTree()
+    t.subtrees[key1] = tree1
+    t.subtrees[key2] = tree2
     return t
 
-def insert(t, key, value = None):
+def insert(t, key, value):
     if t is None:
-        t = Patricia()
+        t = PrefixTree()
     node = t
     while True:
         match = False
-        for k, tr in node.children.items():
-            if key == k: # just overwrite
+        for k, tr in node.subtrees.items():
+            if key == k: # overwrite
                 node.value = value
                 return t
-            (prefix, k1, k2) = lcp(key, k)
+            prefix, k1, k2 = lcp(key, k)
             if prefix != "":
                 match = True
                 if k2 == "":
-                    # example: insert "another" into "an", go on traversing
+                    # e.g.: insert "another" into "an", go on traversing
                     node = tr
                     key = k1
                     break
                 else: #branch out a new leaf
-                    node.children[prefix] = branch(k1, Patricia(value), k2, tr)
-                    del node.children[k]
+                    node.subtrees[prefix] = branch(k1, PrefixTree(value), k2, tr)
+                    del node.subtrees[k]
                     return t
         if not match: # add a new leaf
-            node.children[key] = Patricia(value)
-            return t
+            node.subtrees[key] = PrefixTree(value)
+            break
     return t
 
 def lookup(t, key):
@@ -75,58 +74,53 @@ def lookup(t, key):
         return None
     while True:
         match = False
-        for k, tr in t.children.items():
+        for k, tr in t.subtrees.items():
             if k == key:
                 return tr.value
-            (prefix, k1, k2) = lcp(key, k)
+            prefix, k1, k2 = lcp(key, k)
             if prefix != "" and k2 == "":
                 match = True
                 key = k1
                 t = tr
                 break
         if not match:
-            return None
+            break
+    return None
 
-def to_string(t):
-    return trie_to_str(t)
+def keys(t, prefix = ""):
+    ks = []
+    if t.value is not None:
+        ks.append(prefix)
+    for k, tr in sorted(t.subtrees.items()):
+        ks += keys(tr, prefix + k)
+    return ks
 
-def list_to_patricia(l):
-    return from_list(l, insert)
+def from_list(kvs):
+    t = None
+    for k, v in kvs:
+        t = insert(t, k, v)
+    return t
 
-def map_to_patricia(m):
-    return from_map(m, insert)
+def from_map(m):
+    return from_list(m.items())
 
-class PatriciaTest:
-    def run(self):
-        self.test_lcp()
-        self.test_insert()
-        self.test_lookup()
+def from_text(txt):
+    return from_list(zip(txt.split(), count()))
 
-    def test_lcp(self):
-        print "test lcp"
-        print lcp("om", "ub")
-        print lcp("romane", "romanus")
-        print lcp("an", "another")
-
-    def test_insert(self):
-        print "test insert"
-        t = list_to_patricia(["a", "an", "another", "b", "bob", "bool", "home"])
-        print to_string(t)
-        t = list_to_patricia(["romane", "romanus", "romulus"])
-        print to_string(t)
-        t = map_to_patricia({"001":'y', "100":'x', "101":'z'})
-        print to_string(t)
-        t = list_to_patricia(["home", "bool", "bob", "b", "another", "an", "a"]);
-        print to_string(t)
-
-    def test_lookup(self):
-        print "test lookup"
-        t = map_to_patricia({"a":1, "an":2, "another":7, "boy":3, "bool":4, "home":4})
-        print "search t another", lookup(t, "another")
-        print "search t boo", lookup(t, "boo")
-        print "search t boy", lookup(t, "boy")
-        print "search t by", lookup(t, "by")
-        print "search t boolean", lookup(t, "boolean")
+def test():
+    n = 100
+    txts = ["a another an boy bool zoo",
+            "zoo bool boy another an a",
+            "zoo is a place where animals are for public to see"]
+    for txt in txts:
+        m = dict(zip(txt.split(), count()))
+        t = from_map(m)
+        for k in m:
+            v = lookup(t, k)
+            assert(v is not None)
+            assert(v == m[k])
+        assert(sorted(keys(t)) == sorted(m.keys()))
+    print len(txts), "tests passed."
 
 if __name__ == "__main__":
-    PatriciaTest().run()
+    test()
