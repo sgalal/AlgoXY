@@ -29,7 +29,7 @@ struct Trie {
 struct Trie* create_node() {
     struct Trie* t = (struct Trie*) malloc(sizeof(struct Trie));
     int i;
-    for (i=0; i<26; ++i)
+    for (i = 0; i < 26; ++i)
         t->children[i] = NULL;
     t->data = NULL;
     return t;
@@ -38,7 +38,7 @@ struct Trie* create_node() {
 void destroy(struct Trie* t) {
     int i;
     if(t) {
-        for (i=0; i<26; ++i)
+        for (i = 0; i < 26; ++i)
             destroy(t->children[i]);
         if (t->data)
             free(t->data);
