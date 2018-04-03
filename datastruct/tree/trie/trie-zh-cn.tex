@@ -21,7 +21,7 @@
 %                 COVER PAGE
 % ================================================================
 
-\title{基数树－Trie和Patricia}
+\title{基数树－Trie和前缀树}
 
 \author{刘新宇
 \thanks{{\bfseries 刘新宇 } \newline
@@ -31,10 +31,10 @@
 \maketitle
 \fi
 
-\markboth{基数树－Trie和Patricia}{初等算法}
+\markboth{基数树－Trie和前缀树}{初等算法}
 
 \ifx\wholebook\relax
-\chapter{基数树－Trie和Patricia}
+\chapter{基数树－Trie和前缀树}
 \numberwithin{Exercise}{chapter}
 \fi
 
@@ -48,7 +48,7 @@
 \label{introduction}
 \index{基数树}
 
-前面章节介绍的各种树都是利用节点来存储信息，我们也可以利用边（edge）来存储。基数树（Radix tree），如Trie和Patricia就是这样的数据结构。它们产生于1960年代，被广泛用于编译器\cite{okasaki-int-map}和生物信息处理（如DNA模式匹配）\cite{wiki-suffix-tree}等领域。
+前面章节介绍的各种树都是利用节点来存储信息，我们也可以利用边（edge）来存储。基数树（Radix tree），如Trie和前缀树就是这样的数据结构。它们产生于1960年代，被广泛用于编译器\cite{okasaki-int-map}和生物信息处理（如DNA模式匹配）\cite{wiki-suffix-tree}等领域。
 
 \begin{figure}[htbp]
   \centering
@@ -56,11 +56,9 @@
   \caption{基数树} \label{fig:radix-tree}
 \end{figure}
 
-图\ref{fig:radix-tree}展示了一棵基数树\cite{CLRS}。它包含了串1011、10、011、100和0。如果要在其中查找$k=(b_0b_1...b_n)_2$，我们首先检查$b_0$（左侧的MSB）是1还是0，如果为0，我们接下来去左侧分支查找；如果为1，则去右侧分支查找。然后，我们检查第二位，并重复这一过程直到处理完所有的n位或者遇到了一个叶子节点。
+图\ref{fig:radix-tree}展示了一棵基数树（\cite{CLRS}第269页）。它包含了串1011、10、011、100和0。如果要在其中查找二进制数$k=(b_0b_1...b_n)_2$，我们首先检查左侧的最高位$b_0$是1还是0，若为0，则接下来在左侧分支查找；若为1，则继续在右侧分支查找。接着，我们检查第二位，并重复这一过程直到处理完所有的$n$位或到达某一叶子节点。
 
-基数树并不在节点中存储key，信息由边来代表。图中节点中标注的key仅仅是为了方便理解。
-
-人们自然要问：“可以用整数取代串来代表key么？”由于整数可以用二进制来表示，因此可以节省空间，而且使用位运算后，速度也可以加快。
+基数树并不在节点中存储key，信息由边来代表。图中节点中标注的key仅仅是为了方便理解。使用整数的二进制串来代表key，既可以节省空间，又可以通过位运算，加快处理速度。
 
 % ================================================================
 %                 Int Trie
@@ -69,11 +67,9 @@
 \label{int-trie}
 \index{基数树!整数trie}
 
-图\ref{fig:radix-tree}中所示的数据结构常被称为\emph{binary trie}。Trie是Edward Fredkin提出的。它来自英文单词retrieval，最开始发音为/'tri:/。但是许多人都把它读作/'trai/(和英文单词try的发音相同)\cite{wiki-trie}。Trie也被称为前缀树（prefix tree）。一棵binary trie是一种特殊的二叉树，每个key存放的位置由它的全部二进制位来决定。0表示“向左”，而1表示“向右”\cite{okasaki-int-map}。
+图\ref{fig:radix-tree}中所示的数据结构常被称为\emph{binary trie}。Trie是Edward Fredkin提出的。它来自英文单词retrieval，最开始发音为/'tri:/。但是许多人都把它读作/'trai/(和英文单词try的发音相同)\cite{wiki-trie}。Trie也被称为前缀树。一棵binary trie是一种特殊的二叉树，每个key存放的位置由它的二进制位来决定。0表示“向左”，而1表示“向右”\cite{okasaki-int-map}。
 
-由于整数可以表示为二进制，我们可以用整数代替0/1串作为key。当把一个整数插入到Trie时，我们首先将其转化为二进制，然后检查第一位，若为0，则递归插入到左侧分支，若为1，则插入到右侧分支。
-
-但是这里有一个问题，考虑图\ref{fig:big-endian-trie}中的Trie。如果使用0/1串，这3个key是各不相同的。但它们却代表同一个十进制整数。对于这个例子来说，我们应该在Trie中的哪个位置插入整数3呢？
+由于整数可以表示为二进制，我们可以用整数代替0/1串作为key。当把一个整数插入到Trie时，我们首先将其转化为二进制，然后检查第一位，若为0，则递归插入到左侧分支，若为1，则插入到右侧分支。但是这里有一个问题。考虑图\ref{fig:big-endian-trie}中的Trie，如果使用0/1串，这3个key各不相同，但它们却代表同一个十进制整数。对于这个例子来说，我们应该在Trie中的哪个位置插入整数3呢？
 
 \begin{figure}[htbp]
   \centering
@@ -81,17 +77,17 @@
   \caption{大端（big-endian）Trie} \label{fig:big-endian-trie}
 \end{figure}
 
-一个办法是将有效位前的0也当作有效位。如果整数由32位表示，我们向一个空Trie插入1，结果将是一个有32层分支的树。其中的31个中间节点只有一个左子树，最后一个节点只有一个右子树。空间利用率很低。
+如果把前面的0也当作有效位，在一个32位整数的系统中，向空Trie插入1，结果将是一棵有32层分支的树。其中的31个中间节点只有一个左子树，最后一个节点只有一个右子树。空间利用率很低。
 
-Okasaki给出了一种解决方法\cite{okasaki-int-map}。我们通常把二进制的高位（MSB）放在左边，低位（LSB）放在右边。这样的Trie称作大端（big-endian）树。相反，我们可以使用小端（little-endian）来表示key。这样，十进制的1表示为小端二进制的1。如果插入到空Trie中，结果就是含有一个右侧叶子节点的根。只有一层分支。十进制的2将被表示为小端二进制的01，十进制的3表示为小端二进制$(11)_2$。这样就消除了有效位前面的0，每一个整数key在Trie中的位置可以被唯一确定。
+Okasaki给出了一种解决方法\cite{okasaki-int-map}。二进制数的最高位（MSB）通常在左边，最低位（LSB）在右边。这种Trie称作大端（big-endian）树。我们也可以使用小端（little-endian）数来表示key。这样，十进制的1表示为小端二进制的1。如果插入到空Trie中，结果就是含有一个右侧叶子节点的树。它只有一层分支。十进制的2将被表示为小端二进制的01，十进制的3表示为小端二进制$(11)_2$。这样就消除了有效位前面的0，每一个整数key在Trie中的位置可以被唯一确定。
 
 %=========================================================================
 %       Definition of integer trie
 %=========================================================================
 \subsection{整数Trie的定义}
-我们可以复用二叉树的结构来定义binary trie。一个binary trie的节点要么为空，要么包含左右两个分支。非空节点可以保存额外的数据，称为附加数据（satellite data）。左侧分支编码为0，右侧分支编码为1。
+我们可以重用二叉树的结构来定义binary trie。一个binary trie的节点要么为空，要么包含左右两个分支。非空节点可以保存额外的附加数据（satellite data）。左侧分支编码为0，右侧分支编码为1。
 
-下面的Haskell例子代码定义了Trie的代数数据类型（algebraic data type）。
+下面的Haskell例子代码定义了Trie的代数数据类型。
 
 \lstset{language=Haskell}
 \begin{lstlisting}[style=Haskell]
@@ -115,6 +111,43 @@ class IntTrie:
 % ================================================================
 \subsection{插入}
 \index{整数trie!插入}
+
+由于整数Trie的定义是递归的，插入算法可以很自然地用递归进行定义。如果最左侧的位为0，说明待插入的key为偶数，我们接下来在左侧分支递归插入；否则最左侧的位为1，说明key为奇数，我们转向右侧分支。我们这样不断地将key除以2取整以去掉最左侧的位，直到处理完所有的位。此时key变为0，插入结束。记Trie树$T$的左右分支为$T_l$和$T_r$，节点上存储的数据为$d$（可以为空）。如果$T$为空，则其左右分支和数据也定义为空。我们可以这样定义插入算法：
+
+\be
+insert(T, k, v) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  (T_l, v, T_r) & k = 0 \\
+  (insert(T_l, k / 2, v), d, T_r) & even(k) \\
+  (T_l, d, insert(T_r, \lfloor k / 2 \rfloor, v)) & otherwise
+  \end{array}
+\right.
+\ee
+
+如果待插入的key已经存在，这一算法会覆盖原来存储的数据。也可以采用其他处理方法，如使用链表保存新数据而避免覆盖已有的数据。
+
+下面的Haskell例子程序实现了这一插入算法。
+
+\lstset{language=Haskell}
+\begin{lstlisting}[style=Haskell]
+insert t 0 x = Branch (left t) (Just x) (right t)
+insert t k x | even k = Branch (insert (left t) (k `div` 2) x)
+                               (value t) (right t)
+             | otherwise = Branch (left t) (value t)
+                               (insert (right t) (k `div` 2) x)
+
+left (Branch l _ _) = l
+left Empty = Empty
+
+right (Branch _ _ r) = r
+right Empty = Empty
+
+value (Branch _ v _) = v
+value Empty = Nothing
+\end{lstlisting}
+
+对于有$m$个二进制位的整数$k$，这一算法递归$m$次，因此时间复杂度为$O(m)$。
 
 由于key是小端整数，插入时，我们需要从右侧逐位进行处理。若为0，则递归插入左子树；若为1，则插入右子树。如果子树为空，我们需要创建一个新节点。重复这一步骤直到处理完最后一位（最左侧的位）后停止。
 
@@ -177,42 +210,6 @@ def trie_insert(t, key, value = None):
   \label{fig:int-trie}
 \end{figure}
 
-由于整数Trie的定义是递归的，插入算法可以很自然地用递归进行定义。如果最左侧的位为0，说明待插入的key为偶数，我们解下来递归在左侧分支进行插入；否则最左侧的位为1，说明key为奇数，我们转向右侧分支。我们不断将key除以2并取整以去掉最左侧的位，直到处理完所有的位。此时key变为0，插入结束。记Trie $T$的左右分支为$T_l$和$T_r$，节点上存储的数据为$d$（可以为空）。如果$T$为空，则其左右分支和数据也定义为空。我们可以这样定义插入算法：
-
-\be
-insert(T, k, v) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  (T_l, v, T_r) & k = 0 \\
-  (insert(T_l, k / 2, v), d, T_r) & even(k) \\
-  (T_l, d, insert(T_r, \lfloor k / 2 \rfloor, v)) & otherwise
-  \end{array}
-\right.
-\ee
-
-如果待插入的key已经存在，这一算法会覆盖原来存储的数据。也可以采用其他处理方法，如使用链表保存新数据而避免覆盖已有的数据。
-
-下面的Haskell例子程序实现了这一插入算法。
-
-\lstset{language=Haskell}
-\begin{lstlisting}[style=Haskell]
-insert t 0 x = Branch (left t) (Just x) (right t)
-insert t k x | even k = Branch (insert (left t) (k `div` 2) x)
-                               (value t) (right t)
-             | otherwise = Branch (left t) (value t)
-                               (insert (right t) (k `div` 2) x)
-
-left (Branch l _ _) = l
-left Empty = Empty
-
-right (Branch _ _ r) = r
-right Empty = Empty
-
-value (Branch _ v _) = v
-value Empty = Nothing
-\end{lstlisting}
-
-对于有$m$个二进制位的整数$k$，这一算法递归$m$次，因此时间复杂度为$O(m)$。
 
 % ================================================================
 %               Look up in integer binary trie
@@ -827,14 +824,14 @@ insert(T, K, v') = \left \{
 ins(C, k_1, K', v') = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
-  \{(k_1, insert(\phi, K', v'))\} & C = \phi \\
+  \{(k_1, insert((\phi, \phi), K', v'))\} & C = \phi \\
   \{k_1, insert(T_1, K', v')\} \cup C' & k_1 = c_1 \\
   \{(c_1, T_1)\} \cup ins(C', k_1, K', v') & otherwise
   \end{array}
 \right.
 \ee
 
-若$C$为空，我们将字符$k_1$映射到一个新的空子节点上，然后递归插入剩余的字符；否则算法找到字符$k_1$映射到的子树，然后递归进行插入。
+若$C$为空，我们将字符$k_1$映射到一个新的空子节点上（空子节点包含一个空值和一个空子树列表），然后递归插入剩余的字符；否则算法找到字符$k_1$映射到的子树，然后递归进行插入。
 
 下面的Haskell例子程序实现了这一插入算法。
 
@@ -896,7 +893,7 @@ lookup(T, K) = \left \{
 \right.
 \ee
 
-其中函数$find(C, k)$逐一检查所有的字符—子树映射$C$以找出字符$k$对应的子树。如果映射列表$C$为空，则结果为空，查找失败。否则记$C = \{(k_1, T_1), (k_2, T_2), ..., (k_m, T_m)\}$，第一棵子树$T_1$对应$k_1$；剩余映射对记为$C'$。下面的公式定义了$find$函数。
+其中函数$find(C, k)$逐一检查所有的字符—子树映射对$C$以找出字符$k$对应的子树。如果映射列表$C$为空，则结果为空，查找失败。否则记$C = \{(k_1, T_1), (k_2, T_2), ..., (k_m, T_m)\}$，第一棵子树$T_1$对应$k_1$；剩余映射对记为$C'$。下面的公式定义了$find$函数。
 
 \be
 find(C, k) = \left \{
