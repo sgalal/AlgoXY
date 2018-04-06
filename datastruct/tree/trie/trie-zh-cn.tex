@@ -1488,7 +1488,7 @@ def expand(prefix, t, n):
 \index{T9}
 \index{Textonym输入法}
 
-在2000年前后，大多数的手机都带有一个键盘。手机用户编辑短信或者电子邮件时的体验和PC上完全不同。和PC键盘相比，手机键盘（称为ITU-T键盘）上只有非常少的按键。如图\ref{fig:itut-keypad}所示。
+手机用户编辑短信或者电子邮件时的体验和PC上完全不同。手机键盘（称为ITU-T键盘）上只有非常少的按键。如图\ref{fig:itut-keypad}所示。
 
 \begin{figure}[htbp]
   \centering
@@ -1515,9 +1515,9 @@ def expand(prefix, t, n):
 \item ……
 \end{itemize}
 
-对比这两个方法，可以发现后者更加方便，但是需要额外保存一个候选单词字典。这种方法被称作“T9输入法”或预测输入法\cite{wiki-t9}、\cite {wiki-predictive-text}。T9是英文textonym的缩写，它以T开头，后面跟9个字母。T9输入法可以用Trie或前缀树来实现。
+对比这两个方法，可以发现后者更加方便，但是需要额外保存一个候选单词字典。这种方法被称作“T9输入法”或预测输入法\cite{wiki-t9}、\cite {wiki-predictive-text}。T9是英文textonym的缩写，它以T开头，后面跟9个字母。T9输入法可以用前缀树来实现。
 
-为了向用户提供候选单词，T9输入法需要预先准备一个词典。虽然Trie或前缀树可以用来保存候选单词，但商业上的T9输入法通常使用更加复杂的索引词典，同时在文件系统和缓存中进行快速索引。本节中的实现仅仅出于演示的目的。
+为了向用户提供候选单词，T9输入法需要预先准备一个词典。商业上的T9输入法通常使用更加复杂的索引词典，同时在文件系统和缓存中进行快速索引。本节中的实现仅仅出于演示的目的。
 
 首先我们需要定义T9键盘映射，它将数字映射为候选字符。
 
@@ -1529,23 +1529,97 @@ M_{T9} = \{ & 2 \rightarrow abc, 3 \rightarrow def, 4 \rightarrow ghi, \\
 \end{array}
 \ee
 
-使用这一映射后，$M_{T9}[i]$就返回数字$i$对应的若干个字符。
+使用这一映射后，$M_{T9}[i]$就返回数字$i$对应的若干个字符。我们也可以定义从字符到数字的逆映射。
 
-假设用户依次输入了数字$D = d_1d_2...d_n$，如果$D$不是空串，记除$d_1$以外剩余的数字串为$D'$，下面的伪代码描述了如何用Trie来实现T9输入法：
+\be
+M^{-1}_{T9} = concat(\{\{c \rightarrow d | c \in S\} | (d \rightarrow S) \in M_{T9}\})
+\ee
+
+通过查找$M^{-1}_{T9}$，我们可以将字符串转换成一组按键序列。
+
+\be
+digits(S) = \{ M^{-1}_{T9}[c]| c \in S \}
+\ee
+
+
+给定一个数字序列$D = d_1d_2...d_n$，我们定义T9查找的算法如下。
+
+\be
+findT9(T, D) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  \{ \phi \} & D = \phi \\
+  concatMap(find, prefixes(T)) & otherwise
+  \end{array}
+\right.
+\ee
+
+其中$T$是从一组单词和词组中构造出的前缀树。我们将其作为T9输入法的词典。若输入的数字串$D$为空，则候选单词的结果列表也是空。否则，我们搜索匹配输入的子树并将结果连接起来。
+
+为了枚举所有匹配的子树，我们检查子树集$C_T$中的每一对$(k_i, T_i)$。首先将字符串$k_i$转换为数字串$d_i$，然后比较$d_i$和$D$。如果其中之一是另一个的前缀，则选中这一对$(k_i, T_i)$进行进一步查找。
+
+\be
+prefixes(T) = \{(k_i, T_i) | (k_i, T_i) \in C_T, d_i = digits(k_i), d_i \sqsubset D \lor D \sqsubset d_i \}
+\ee
+
+函数$find$接受两个参数，一个前缀$S$和需要进一步查找的子树$T'$。其中$S$是$D$的前缀。为此，我们从$D$中去除这一前缀，然后用剩余的数字串$D' = D - S$继续查找。最后再将$S$添加回递归查找的各个结果前面。
+
+\be
+find(S, T') = \{ take(n, S + s_i) | s_i \in findT9(T', D - S) \}
+\ee
+
+其中$n = |D|$是输入数字串的长度。函数$take(n, L)$从列表$L$中获取前$n$个元素。如果列表的长度短于$n$，则获取全部元素。
+
+下面的Haskell例子程序实现了从前缀树查找的T9输入法。
+
+\lstset{language=Haskell}
+\begin{lstlisting}
+import qualified Data.Map as Map
+
+mapT9 = Map.fromList [('1', ",."), ('2', "abc"), ('3', "def"), ('4', "ghi"),
+                      ('5', "jkl"), ('6', "mno"), ('7', "pqrs"), ('8', "tuv"),
+                      ('9', "wxyz")]
+
+rmapT9 = Map.fromList $ concatMap (\(d, s) -> [(c, d) | c <- s]) $ Map.toList mapT9
+
+digits = map (\c -> Map.findWithDefault '#' c rmapT9)
+
+findT9 :: PrefixTree Char v -> String -> [String]
+findT9 t [] = [""]
+findT9 t k = concatMap find prefixes
+  where
+    n = length k
+    find (s, t') = map (take n . (s++)) $ findT9 t' (k `diff` s)
+    diff x y = drop (length y) x
+    prefixes = [(s, t') | (s, t') <- children t, let ds = digits s in
+                          ds `isPrefixOf` k || k `isPrefixOf` ds]
+\end{lstlisting}  %$
+
+可以使用广度优先搜索实现命令式的T9输入法。我们使用一个队列$Q$，其保存的元素为三元组
+$(prefix, D, T)$。每个三元组包含一个已搜索过的前缀$prefix$，尚未搜索的剩余部分$D$，
+还有待搜索的子树$T$。队列初始的时候，三元组包含一个空前缀，全部待搜索的数字，以及前缀树
+的根节点。算法不断从队列中取出三元组，对其中的树$T$，依次检查它的子树$T_i$。通过检索
+T9的逆映射，我们将子树对应的前缀串$k_i$转换成数字串$D'$。如果$D$是$D'$的前缀，说明
+找到了一个候选单词。我们将$k_i$添加到三元组中的前缀$prefix$后，并纪录下这一结果。
+如果$D'$是$D$的前缀，我们需要继续在这棵子树中查找。为此，我们将已$k_i$结尾的前缀，
+剩余的数字串$D-D'$和该子树组成一个新的三元组，放入队列的尾部。
 
 \begin{algorithmic}[1]
 \Function{Look-Up-T9}{$T, D$}
-  \State $Q \gets \{(\phi, D, T)\}$
   \State $R \gets \phi$
+  \If{$T =$ NIL or $D = \phi$}
+    \State \Return $R$
+  \EndIf
+  \State $n \gets |D|$
+  \State $Q \gets \{(\phi, D, T)\}$
   \While{$Q \neq \phi$}
     \State $(prefix, D, T) \gets$ \Call{Pop}{$Q$}
-    \For{each $c$ in $M_{T9}[d_1]$}
-      \If{$c \in $ \Call{Children}{$T$}}
-        \If{$D' = \phi$}
-          \State $R \gets R \cup \{prefix + c\}$
-        \Else
-          \State \textproc{Push}($Q, (prefix + c, D', $ \Call{Children}{$t$}$[c])$)
-        \EndIf
+    \For{$\forall (k_i, T_i) \in $ \Call{Children}{$T$}}
+      \State $D' \gets$ \Call{Digits}{$k_i$}
+      \If{$D' \sqsubset D$} \Comment{$D'$ is prefix of $D$}
+        \State $R \gets R \cup \{$ \textproc{Take} $(n, prefix + k_i) \}$ \Comment{限制长度不超过$n$}
+      \ElsIf{$D \sqsubset D'$}
+        \State \textproc{Push}($Q, (prefix + k_i, D - D', T_i)$)
       \EndIf
     \EndFor
   \EndWhile
@@ -1553,203 +1627,52 @@ M_{T9} = \{ & 2 \rightarrow abc, 3 \rightarrow def, 4 \rightarrow ghi, \\
 \EndFunction
 \end{algorithmic}
 
-其中$prefix + c$表示将字符$c$添加到字符串$prefix$的尾部。这一算法同样使用广度优先搜索（BFS），它使用一个队列，该队列一开始只含有一个元组$(prefix, D, T)$作为唯一的元素，包含一个空前缀，一个待搜索的数字串，和一棵Trie树。算法不断从队列中取出元组（tuple），然后根据T9映射，获取到首位数字对应的若干候选字符，针对每一个字符$c$，如果存在对应的子分支，就创建一个新元组，将$c$附加到前缀的尾部放入这个元组，同时放入待处理的剩余数字串和字符$c$对应的子树。这一新元组被放回队列等待后继的搜索。当所有的字符都已处理完毕时，就找到了相应的候选单词。我们将此单词放入一个候选列表$R$。
+函数\textproc{Digits}($S$)将字符串$S$转换为数字串。
 
-下面的Python例子程序利用Trie实现了T9输入法。
+\begin{algorithmic}[1]
+\Function{Digits}{$S$}
+  \State $D \gets \phi$
+  \For{each $c \in S$}
+    \State $D \gets D \cup \{M^{-1}_{T9}[c]\}$
+  \EndFor
+  \State \Return $D$
+\EndFunction
+\end{algorithmic}
+
+下面的Python例子程序使用前缀树实现了T9输入法。
 
 \lstset{language=Python}
 \begin{lstlisting}
 T9MAP={'2':"abc", '3':"def", '4':"ghi", '5':"jkl", \
        '6':"mno", '7':"pqrs", '8':"tuv", '9':"wxyz"}
 
-def trie_lookup_t9(t, key):
+T9RMAP = dict([(c, d) for d, cs in T9MAP.items() for c in cs])
+
+def digits(w):
+    return ''.join([T9RMAP[c] for c in w])
+
+def lookup_t9(t, key):
     if t is None or key == "":
-        return None
-    q = [("", key, t)]
+        return []
     res = []
-    while len(q)>0:
-        (prefix, k, t) = q.pop(0)
-        i=k[0]
-        if not i in T9MAP:
-            return None # 非法输入
-        for c in T9MAP[i]:
-            if c in t.children:
-                if k[1:]=="":
-                    res.append((prefix+c, t.children[c].value))
-                else:
-                    q.append((prefix+c, k[1:], t.children[c]))
-    return res
-\end{lstlisting}
-
-考虑Trie消耗大量的空间，我们可以利用前缀树修改上述算法：只要队列不为空，我们不断从中取出元组。这次我们检查所有的“前缀—子树”映射对，对于任何映射对$(k_i, T_i)$，我们通过T9映射将字符前缀$k_i$转化回数字序列$D'$。如果$D'$恰好和用户输入的数字串匹配，说明我们找到了一个候选单词；否则，如果数字串是用户输入的某个前缀，说明我们需要继续寻找，算法将创建一个新的元组，包含新的前缀，待处理的数字串和子树。然后将此元组放回队列等待后继的查找。
-
-\begin{algorithmic}[1]
-\Function{Look-Up-T9}{$T, D$}
-  \State $Q \gets \{(\phi, D, T)\}$
-  \State $R \gets \phi$
-  \While{$Q \neq \phi$}
-    \State $(prefix, D, T) \gets$ \Call{Pop}{$Q$}
-    \For{each $(k_i, T_i) \in $ \Call{Children}{$T$}}
-      \State $D' \gets$ \Call{Convert-T9}{$k_i$}
-      \If{$D' \sqsubset D$} \Comment{$D'$是$D$的前缀}
-        \If{$D' = D$}
-          \State $R \gets R \cup \{prefix + k_i\}$
-        \Else
-          \State \textproc{Push}($Q, (prefix + k_i, D - D', T_i)$)
-        \EndIf
-      \EndIf
-    \EndFor
-  \EndWhile
-  \State \Return $R$
-\EndFunction
-\end{algorithmic}
-
-函数\textproc{Convert-T9}($K$)将$K$中的每个字符转换回数字。
-
-\begin{algorithmic}[1]
-\Function{Convert-T9}{$K$}
-  \State $D \gets \phi$
-  \For{each $c \in K$}
-     \For{each $(d \rightarrow S) \in M_{T9}$}
-       \If{$c \in S$}
-         \State $D \gets D \cup \{d\}$
-         \State break
-       \EndIf
-     \EndFor
-  \EndFor
-  \State \Return $D$
-\EndFunction
-\end{algorithmic}
-
-下面的Python例子程序利用前缀树实现了T9输入法。
-
-\lstset{language=Python}
-\begin{lstlisting}
-def patricia_lookup_t9(t, key):
-    if t is None or key == "":
-        return None
+    n = len(key)
     q = [("", key, t)]
-    res = []
-    while len(q)>0:
-        (prefix, key, t) = q.pop(0)
-        for k, tr in t.children.items():
-            digits = toT9(k)
-            if string.find(key, digits)==0: # 判断是否是前缀
-                if key == digits:
-                    res.append((prefix+k, tr.value))
-                else:
-                    q.append((prefix+k, key[len(k):], tr))
+    while q:
+        prefix, key, t = q.pop(0)
+        for k, tr in t.subtrees.items():
+            ds = digits(k)
+            if string.find(ds, key) == 0: # key is prefix of ds
+                res.append((prefix + k)[:n])
+            elif string.find(key, ds) == 0: # ds is prefix of key
+                q.append((prefix + k, key[len(k):], tr))
     return res
-\end{lstlisting}
-
-也可以使用递归的方式实现T9输入法。我们首先定义使用Trie的算法。该算法接受两个参数：一棵保存有所有候选单词的字典Trie，和用户输入的数字串。如果数字串为空，则结果亦为空；否则，算法查找所有的子分支$C$，利用T9映射，找到和首位数字$d_1$匹配的全部子分支。
-
-\be
-findT9(T, D) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  \{ \phi \} & D = \phi \\
-  fold(f, \phi, lookupT9(d_1, C)) & otherwise
-  \end{array}
-\right.
-\ee
-
-其中fold的详细定义可以参考附录A。函数$f$接受两个参数：一个候选单词列表的中间结果，这一列表初始为空；另一个参数是“字符—子树”映射对$(c, T')$。函数$f$将$c$附加到所有候选单词的尾部，然后将结果连接起来：
-
-\be
-f(L, (c, T')) = mapAppend(c, findT9(T', D')) \cup L
-\ee
-
-注意这里的$mapAppend$函数和前面电子词典一节中的定义略有不同。第一个参数是一个字符，而非字符串。
-
-函数$lookupT9(k, C)$检查所有数字$k$映射到的字符。如果某字符恰好映射到一个子分支，就将其记录为一个候选项。
-
-\be
-lookupT9(k, C) =  fold(g, \phi, M_{T9}[k])
-\ee
-
-其中
-
-\be
-g(L, k) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  L & find(C, k) = \phi \\
-  \{(k, T')\} \cup L & find(C, k) = T'
-  \end{array}
-\right.
-\ee
-
-下面的Haskell例子程序使用Trie实现了T9输入法。
-
-\lstset{language=Haskell}
-\begin{lstlisting}[style=Haskell]
-mapT9 = [('2', "abc"), ('3', "def"), ('4', "ghi"), ('5', "jkl"),
-         ('6', "mno"), ('7', "pqrs"), ('8', "tuv"), ('9', "wxyz")]
-
-findT9 t [] = [("", value t)]
-findT9 t (k:ks) = foldl f [] (lookupT9 k (children t))
-    where
-      f lst (c, tr) = (mapAppend' c (findT9 tr ks)) ++ lst
-
-lookupT9 c children = case lookup c mapT9 of
-        Nothing -> []
-        Just s  -> foldl f [] s where
-             f lst x = case lookup x children of
-                 Nothing -> lst
-                 Just t  -> (x, t):lst
-
-mapAppend' x lst = map (\p->(x:(fst p), snd p)) lst
-\end{lstlisting}
-
-我们可以略做修改，使用前缀树替换Trie来实现递归的T9输入法。首先所有的子树不再对应到字符，而是对应到字符串。
-
-\be
-findT9(T, D) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  \{ \phi \} & D = \phi \\
-  fold(f, \phi, findPrefixT9(D, C)) & otherwise
-  \end{array}
-\right.
-\ee
-
-算法针对函数调用$findPrefixT9(D, C)$的结果进行fold操作。$f$需要做同样的改动：它将候选前缀$D'$添加到递归查找结果的所有单词前面，然后将候选列表连接起来。
-
-\be
-f(L, (D', T')) = mapAppend(D', findT9(T', D - D')) \cup L
-\ee
-
-函数$findPrefixT9(D, C)$检查所有的子分支映射$C$。针对每个映射对$(k_i, T_i)$，如果将$k_i$转换回数字串后，是$D$的某个前缀，则这一映射对就被列入候选项。
-
-\be
-findPrefixT9(D, C) = \{ (k_i, T_i) |(k_i, T_i) \in C, convertT9(k_i) \sqsubset D\}
-\ee
-
-函数$convertT9(k)$利用T9映射，将$k$中的每个字符转换回数字。
-
-\be
-convertT9(K) = \{ d | \forall c \in k, \exists (d \rightarrow S) \in M_{T9} \Rightarrow c \in S\}
-\ee
-
-下面的Haskell例子程序使用前缀树实现了T9输入法。
-
-\begin{lstlisting}[style=Haskell]
-findT9 t [] = [("", value t)]
-findT9 t k = foldl f [] (findPrefixT9 k (children t))
-    where
-      f lst (s, tr) = (mapAppend s (findT9 tr (k `diff` s))) ++ lst
-      diff x y = drop (length y) x
-
-findPrefixT9 s lst = filter f lst where
-    f (k, _) = (toT9 k) `Data.List.isPrefixOf` s
-
-toT9 = map (\c -> head $ [ d |(d, s) <- mapT9, c `elem` s])
 \end{lstlisting}
 
 \begin{Exercise}
 \begin{itemize}
-\item 比较Trie和前缀树实现的T9输入法的结果，会发现它们给出的候选单词列表顺序有所不同。为什么会造成这种差异？如何修改程序使得它们输出相同顺序的候选列表？
+\item 使用Trie实现电子词典和T9输入法。
+\item 对于返回多个候选结果的前缀树查找算法，如何保证输出的结果按照字典顺序排序？这会对性能产生怎样的影响？
+\item 如果不使用惰性求值，如何实现函数式的电子词典和T9输入法？
 \end{itemize}
 \end{Exercise}
 
@@ -1758,7 +1681,7 @@ toT9 = map (\c -> head $ [ d |(d, s) <- mapT9, c `elem` s])
 % ================================================================
 \section{小结}
 
-本章一开始介绍了整数Trie和前缀树。基于整数前缀树的映射结构在编译器的实现中得到了重要的应用。字符Trie和字符前缀树可以看做是整数映射结构的自然扩展。它们可以被用来处理文字信息。作为例子，我们介绍了自动预测完成输入的电子词典和T9输入法。它们都可以使用Trie或者前缀树来实现。尽管和商业软件的实现不同，这些例子展示了如何使用Trie和前缀树来解决问题的方法。某些重要的数据结构，如后缀树（suffix tree）和本章中介绍的内容紧密相关。我们将在下一章加以介绍。
+本章一开始介绍了整数Trie和前缀树。基于整数前缀树的映射结构在编译器的实现中得到了重要的应用。字符Trie和字符前缀树可以看做是整数映射结构的自然扩展。它们可以被用来处理文字信息。作为例子，我们介绍了自动预测完成输入的电子词典和T9输入法。尽管和商业软件的实现不同，这些例子展示了如何使用Trie和前缀树来解决问题的方法。某些重要的数据结构，如后缀树和本章中介绍的内容紧密相关。我们将在下一章加以介绍。
 
 \ifx\wholebook\relax\else
 \begin{thebibliography}{99}
@@ -1768,23 +1691,23 @@ Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein.
 ``Introduction to Algorithms, Second Edition''. Problem 12-1. ISBN:0262032937. The MIT Press. 2001（《算法导论》）
 
 \bibitem{okasaki-int-map}
-Chris Okasaki and Andrew Gill. ``Fast Mergeable Integer Maps''. Workshop on ML, September 1998, pages 77-86.
+Chris Okasaki and Andrew Gill. ``Fast Mergeable Integer Maps''. Workshop on ML, September 1998, pages 77-86.  \url{http://www.cse.ogi.edu/~andy/pub/finite.htm}
 
 \bibitem{patricia-morrison}
 D.R. Morrison, ``PATRICIA -- Practical Algorithm To Retrieve  Information Coded In Alphanumeric", Journal of the ACM, 15(4), October 1968, pages 514-534.
 
 \bibitem{wiki-suffix-tree}
-Suffix Tree, Wikipedia. http://en.wikipedia.org/wiki/Suffix\_tree
+Suffix Tree, Wikipedia. \url{http://en.wikipedia.org/wiki/Suffix_tree}
 
 \bibitem{wiki-trie}
-Trie, Wikipedia. http://en.wikipedia.org/wiki/Trie
+Trie, Wikipedia. \url{http://en.wikipedia.org/wiki/Trie}
 
 \bibitem{wiki-t9}
-T9 (predictive text), Wikipedia. http://en.wikipedia.org/wiki/T9\_(predictive\_text)
+T9 (predictive text), Wikipedia. \url{http://en.wikipedia.org/wiki/T9_(predictive_text)}
 
 \bibitem{wiki-predictive-text}
 Predictive text,
-Wikipedia. http://en.wikipedia.org/wiki/Predictive\_text
+Wikipedia. \url{http://en.wikipedia.org/wiki/Predictive_text}
 
 \end{thebibliography}
 
