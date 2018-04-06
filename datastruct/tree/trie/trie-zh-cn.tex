@@ -1200,6 +1200,44 @@ def branch(key1, tree1, key2, tree2):
 
 和Trie不同，我们不能逐一根据每个字符查找。我们从根节点开始，检查子分支中是否存在某个子树对应的key是待查找字符串的前缀。如果存在，我们从待查找串中将这个前缀去掉，然后在这棵子树中递归查找；否则，如果没有任何子树对应到待查找串的前缀，则查找失败。
 
+记前缀树为$T = (v, C)$，下面的定义调用$find$函数在所有子分支$C$中进行查找。
+
+\be
+lookup(T, k) = find(C, k)
+\ee
+
+若$C$为空，则查找失败，否则记$C = \{(k_1, T_1), (k_2, T_2), ..., (k_n, T_n)\}$，我们首先检查$k$是否是$k_1$的前缀，如果不是，就递归地在剩余的映射对$C'$中查找。
+
+\be
+find(C, k) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  \phi & C = \phi \\
+  v_{T_1} & k = k_1 \\
+  lookup(T_1, k - k_1) & k_1 \sqsubset k \\
+  find(C', k) & otherwise
+  \end{array}
+\right.
+\ee
+
+其中$A \sqsubset B$表示$A$为$B$的前缀，如果某个子分支对应的key是$k$的前缀，则$find$函数就相互递归（mutually recursive call）地调用$lookup$函数进行查找。
+
+下面的Haskell例子程序实现了查找算法。
+
+\lstset{language=Haskell}
+\begin{lstlisting}[style=Haskell]
+find :: Eq k => PrefixTree k v -> [k] -> Maybe v
+find t = find' (children t) where
+    find' [] _ = Nothing
+    find' (p@(ks', t') : ps) ks
+          | ks' == ks = value t'
+          | ks' `isPrefixOf` ks = find t' (diff ks ks')
+          | otherwise = find' ps ks
+    diff ks1 ks2 = drop (length (lcp ks1 ks2)) ks1
+\end{lstlisting}
+
+查找算法也可以用命令式的方法实现。
+
 \begin{algorithmic}[1]
 \Function{Look-Up}{$T, k$}
   \If{$T = $ NIL}
@@ -1232,54 +1270,18 @@ def lookup(t, key):
         return None
     while True:
         match = False
-        for k, tr in t.children.items():
+        for k, tr in t.subtrees.items():
             if k == key:
                 return tr.value
-            (prefix, k1, k2) = lcp(key, k)
+            prefix, k1, k2 = lcp(key, k)
             if prefix != "" and k2 == "":
                 match = True
                 key = k1
                 t = tr
                 break
         if not match:
-            return None
-\end{lstlisting}
-
-这一算法也可以用递归的方式实现。记前缀树为$T = (v, C)$，下面的定义调用$find$函数在所有子分支$C$中进行查找。
-
-\be
-lookup(T, k) = find(C, k)
-\ee
-
-若$C$为空，则查找失败，否则记$C = \{(k_1, T_1), (k_2, T_2), ..., (k_n, T_n)\}$，我们首先检查$k$是否是$k_1$的前缀，如果不是，就递归地在剩余的映射对$C'$中查找。
-
-\be
-find(C, k) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  \phi & C = \phi \\
-  v_{T_1} & k = k_1 \\
-  lookup(T_1, k - k_1) & k_1 \sqsubset k \\
-  find(C', k) & otherwise
-  \end{array}
-\right.
-\ee
-
-其中$A \sqsubset B$表示$A$为$B$的前缀，如果某个子分支对应的key是$k$的前缀，则$find$函数就相互递归（mutually recursive call）地调用$lookup$函数进行查找。
-
-下面的Haskell例子程序实现了查找算法。
-
-\lstset{language=Haskell}
-\begin{lstlisting}[style=Haskell]
-import Data.List (isPrefixOf)
-
-find t k = find' (children t) k where
-    find' [] _ = Nothing
-    find' (p:ps) k
-          | (fst p) == k = value (snd p)
-          | (fst p) `isPrefixOf` k = find (snd p) (diff (fst p) k)
-          | otherwise = find' ps k
-    diff k1 k2 = drop (length (lcp k1 k2)) k2
+            break
+    return None
 \end{lstlisting}
 
 
@@ -1288,7 +1290,7 @@ find t k = find' (children t) k where
 % ================================================================
 \section{Trie和前缀树的应用}
 
-Trie和前缀树可以用来解决许多有趣的问题。整数前缀树可以用在编译器的实现中。一些常见软件中的有趣功能也可以用Trie和前缀树来实现。本节中，我们给出一些例子，包括电子词典，单词自动补齐，T9输入法等等。真正的商业软件通常不会直接使用Trie和前缀树。本节中给出的例子主要用于展示一些有趣的解题思路。
+Trie和前缀树可以用来解决许多有趣的问题。本节中，我们给出一些例子，包括电子词典，单词自动补齐，T9输入法等。
 
 \subsection{电子词典和单词自动补齐}
 \index{自动补齐}
