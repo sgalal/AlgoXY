@@ -1298,7 +1298,7 @@ Trie和前缀树可以用来解决许多有趣的问题。本节中，我们给�
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[scale=0.5]{img/ciba.eps}
+  \includegraphics[scale=0.5]{img/edict-en.eps}
   \caption{电子词典。所有和用户输入匹配的候选单词全被列出}
   \label{fig:e-dict}
 \end{figure}
@@ -1316,98 +1316,13 @@ Trie和前缀树可以用来解决许多有趣的问题。本节中，我们给�
 
 这两个例子中，软件都提供了某种自动完成的机制。在某些现代的IDE（集成开发环境）中，编辑器还可以帮助用户自动完成程序代码。
 
-我们看看如何使用Trie或者前缀树来实现电子词典。为了简化问题，假设我们的词典是英—英词典。
+我们看看如何使用前缀树来实现电子词典。为了简化问题，假设我们的词典是英—英词典。
 
 词典中保存了key-value对，key是英文单词或者词组，value是对应的解释。
 
-我们可以将所有的单词和它们的解释存入一棵Trie，但是这样的空间消耗很大，尤其当词汇量很大时，这一问题更加严重。本节中，我们使用前缀树来实现电子词典。
-
 当用户输入‘a’的时候，词典不是只给出‘a’的意思，而是提供一系列候选单词的列表。这些候选单词都以‘a’开头，包括abandon、about、accent、adam……当然，这些都是存储在前缀树中的单词。
 
-如果候选单词太多，一种方案是只显示前10个，如果用户查找的单词不在其中，他可以浏览更多的候选项。
-
-下面的算法复用了前面定义的前缀树查找函数。当我们找到一个节点，其对应的前缀和用户输入的内容一致时，算法将扩展该节点的所有子树直到获取到前$n$个候选项。
-
-\begin{algorithmic}[1]
-\Function{Look-Up}{$T, k, n$}
-  \If{$T = $ NIL}
-     \State \Return $\phi$
-  \EndIf
-  \State $prefix \gets$ NIL
-  \Repeat
-    \State $match \gets$ FALSE
-    \For{$\forall (k_i, T_i) \in $ \Call{Children}{$T$}}
-      \If{$k$ is prefix of $k_i$}
-        \State \Return \Call{Expand}{$T_i, prefix, n$}
-      \EndIf
-      \If{$k_i$ is prefix of $k$}
-        \State $match \gets$ TRUE
-        \State $k \gets k - k_i$
-        \State $T \gets T_i$
-        \State $prefix \gets prefix + k_i$
-        \State break
-      \EndIf
-    \EndFor
-  \Until{$\lnot match$}
-  \State \Return $\phi$
-\EndFunction
-\end{algorithmic}
-
-其中函数\textproc{Expand}($T, prefix, n$)选取$n$个子树，这些子树在$T$中有同样的前缀。它的实现为广度优先遍历（BFS），本书最后一章对包括广度优先在内的搜索算法有详细的介绍。
-
-\begin{algorithmic}[1]
-\Function{Expand}{$T, prefix, n$}
-  \State $R \gets \phi$
-  \State $Q \gets \{(prefix, T)\}$
-  \While{$|R| < n \land |Q| > 0$}
-    \State $(k, T) \gets$ \Call{Pop}{$Q$}
-    \If{\Call{Data}{$T$} $\neq$ NIL}
-      \State $R \gets R \cup \{(k, $ \Call{Data}{$T$} $)\}$
-    \EndIf
-    \For{$\forall (k_i, T_i) \in$ \Call{Children}{$T$}}
-      \State \Call{Push}{$Q, (k + k_i, T_i)$}
-    \EndFor
-  \EndWhile
-\EndFunction
-\end{algorithmic}
-
-下面的Python例子程序实现了一个电子词典。它使用了标准库中的\texttt{find}函数来判断一个字符串是否是另一个的前缀。
-
-\lstset{language=Python}
-\begin{lstlisting}
-import string
-
-def patricia_lookup(t, key, n):
-    if t is None:
-        return None
-    prefix = ""
-    while True:
-        match = False
-        for k, tr in t.children.items():
-            if string.find(k, key) == 0: # 如果是前缀
-                return expand(prefix+k, tr, n)
-            if string.find(key, k) ==0:
-                match = True
-                key = key[len(k):]
-                t = tr
-                prefix += k
-                break
-        if not match:
-            return None
-
-def expand(prefix, t, n):
-    res = []
-    q = [(prefix, t)]
-    while len(res)<n and len(q)>0:
-        (s, p) = q.pop(0)
-        if p.value is not None:
-            res.append((s, p.value))
-        for k, tr in p.children.items():
-            q.append((s+k, tr))
-    return res
-\end{lstlisting}
-
-这一算法也可以用递归的方式加以实现。如果待查找的字符串为空，我们从当前节点扩展出前$n$个子节点作为候选项；否则，我们递归地在有共同前缀的子分支中查找。
+如果候选单词太多，一种方案是只显示前10个，如果用户查找的单词不在其中，他可以浏览更多的候选项。如果待查找的字符串为空，我们从当前节点扩展出前$n$个子节点作为候选项；否则，我们递归地在有共同前缀的子分支中查找。
 
 在支持惰性求值（lazy evaluation）的编程环境中，一种简单直观的方法是惰性扩展全部的子节点，然后根据需要取前$n$个。记前缀树前缀树为$T = (v, C)$，下面的函数枚举所有以$k$开头的内容。
 
@@ -1436,7 +1351,13 @@ enum(C) = \left \{
 \right.
 \ee
 
-其中$mapAppend(k, L) = \{(k + k_i, v_i)| (k_i, v_i) \in L\}$。它将前缀$k$添加到列表$L$中的所有key-value对的key前面。
+其中$mapAppend(k, L) = \{(k + k_i, v_i)| (k_i, v_i) \in L\}$。它将前缀$k$添加到列表$L$中的所有key-value对的key前面\footnote{可以进一步抽象为对第一个元素进行映射。在Haskell中，使用范畴论中的箭头概念，$mapAppend$可被表示为$map(first(k+), L)$}。
+
+函数$enum$也可用$concatMap$的概念定义（亦称为$flatMap$）\footnote{效果上相当于先对每个元素进行映射，然后将结果连接起来。通常使用build-foldr来消除中间结果中的列表}。
+
+\be
+enum(C) = concatMap(\lambda_{(k, T)} . mapAppend(k, findAll(T, \phi)))
+\ee
 
 函数$find(C, k)$定义如下。如果子树为空，结果也为空；否则，它首先检查$k_1$映射的子树$T_1$。如果$k_1$和$k$相等，就调用$mapAppend$向$T_1$所有子分支的key前增加前缀$k$；如果$k_1$是$k$的前缀，算法就递归地查找所有以$k - k_1$开头的子分支；反之，如果$k$是$k_1$的前缀，则$T_1$的所有子分支都是候选项。否则，算法跳过第一对映射，继续处理剩余的其他映射。
 
@@ -1445,9 +1366,8 @@ find(C, k) = \left \{
   \begin{array}
   {r@{\quad:\quad}l}
   \phi & C = \phi \\
-  mapAppend(k, findAll(T_1, \phi)) & k_1 = k \\
+  mapAppend(k_1, findAll(T_1, \phi)) & k \sqsubset k_1 \\
   mapAppend(k_1, findAll(T_1, k - k_1)) & k_1 \sqsubset k \\
-  findAll(T_1, \phi) & k \sqsubset k_1 \\
   find(C', k) & otherwise
   \end{array}
 \right.
@@ -1457,30 +1377,108 @@ find(C, k) = \left \{
 
 \lstset{language=Haskell}
 \begin{lstlisting}[style=Haskell]
-findAll :: Patricia a -> Key -> [(Key, a)]
-findAll t [] =
-    case value t of
-      Nothing -> enum $ children t
-      Just x  -> ("", x):(enum $ children t)
-    where
-      enum [] = []
-      enum (p:ps) = (mapAppend (fst p) (findAll (snd p) [])) ++ (enum ps)
-findAll t k = find' (children t) k where
-    find' [] _ = []
-    find' (p:ps) k
-          | (fst p) == k
-              = mapAppend k (findAll (snd p) [])
-          | (fst p) `Data.List.isPrefixOf` k
-              = mapAppend (fst p) (findAll (snd p) (k `diff` (fst p)))
-          | k `Data.List.isPrefixOf` (fst p)
-              = findAll (snd p) []
-          | otherwise = find' ps k
-    diff x y = drop (length y) x
+import Control.Arrow (first)
 
-mapAppend s lst = map (\p->(s++(fst p), snd p)) lst
+get n t k = take n $ findAll t k
+
+findAll :: Eq k => PrefixTree k v -> [k] -> [([k], v)]
+findAll (PrefixTree Nothing cs) [] = enum cs
+findAll (PrefixTree (Just x) cs) [] = ([], x) : enum cs
+findAll (PrefixTree _ cs) k = find' cs k
+  where
+    find' [] _ = []
+    find' ((k', t') : ps) k
+          | k `isPrefixOf` k'
+              = map (first (k' ++)) (findAll t' [])
+          | k' `isPrefixOf` k
+              = map (first (k' ++)) (findAll t' $ drop (length k') k)
+          | otherwise = find' ps k
+
+enum :: Eq k => [([k], PrefixTree k v)] -> [([k], v)]
+enum = concatMap (\(k, t) -> map (first (k ++)) (findAll t []))
 \end{lstlisting}
 
 在Haskell这样的惰性求值编程环境中，前$n$个候选项可以通过$take(n, findAll(T, k))$来获取。附录A给出了$take$函数的详细定义。
+
+也可以用命令式的方式实现电子词典。下面的算法复用了前面定义的前缀树查找函数。当我们找到一个节点，其对应的前缀和用户输入的内容一致时，算法将扩展该节点的所有子树直到获取到前$n$个候选项。
+
+\begin{algorithmic}[1]
+\Function{Look-Up}{$T, k, n$}
+  \If{$T = $ NIL}
+     \State \Return $\phi$
+  \EndIf
+  \State $prefix \gets$ NIL
+  \Repeat
+    \State $match \gets$ FALSE
+    \For{$\forall (k_i, T_i) \in $ \Call{Children}{$T$}}
+      \If{$k$ is prefix of $k_i$}
+        \State \Return \Call{Expand}{$prefix + k _i, T_i, n$}
+      \EndIf
+      \If{$k_i$ is prefix of $k$}
+        \State $match \gets$ TRUE
+        \State $k \gets k - k_i$
+        \State $T \gets T_i$
+        \State $prefix \gets prefix + k_i$
+        \State break
+      \EndIf
+    \EndFor
+  \Until{$\lnot match$}
+  \State \Return $\phi$
+\EndFunction
+\end{algorithmic}
+
+其中函数\textproc{Expand}($T, prefix, n$)选取$n$个子树，这些子树在$T$中有同样的前缀。它的实现为广度优先遍历（BFS），本书最后一章对包括广度优先在内的搜索算法有详细的介绍。
+
+\begin{algorithmic}[1]
+\Function{Expand}{$prefix, T, n$}
+  \State $R \gets \phi$
+  \State $Q \gets \{(prefix, T)\}$
+  \While{$|R| < n \land Q$ is not empty}
+    \State $(k, T) \gets$ \Call{Pop}{$Q$}
+    \If{\Call{Data}{$T$} $\neq$ NIL}
+      \State $R \gets R \cup \{(k, $ \Call{Data}{$T$} $)\}$
+    \EndIf
+    \For{$\forall (k_i, T_i) \in$ \Call{Children}{$T$} in sorted order}
+      \State \Call{Push}{$Q, (k + k_i, T_i)$}
+    \EndFor
+  \EndWhile
+\EndFunction
+\end{algorithmic}
+
+下面的Python例子程序实现了一个电子词典。它使用了标准库中的\texttt{find}函数来判断一个字符串是否是另一个的前缀。
+
+\lstset{language=Python}
+\begin{lstlisting}
+def lookup(t, key, n):
+    if t is None:
+        return []
+    prefix = ""
+    while True:
+        match = False
+        for k, tr in t.subtrees.items():
+            if string.find(k, key) == 0: # key is prefix of k
+                return expand(prefix + k, tr, n)
+            if string.find(key, k) ==0:
+                match = True
+                key = key[len(k):]
+                t = tr
+                prefix += k
+                break
+        if not match:
+            break
+    return []
+
+def expand(prefix, t, n):
+    res = []
+    q = [(prefix, t)]
+    while len(res)<n and q:
+        (s, p) = q.pop(0)
+        if p.value is not None:
+            res.append((s, p.value))
+        for k, tr in sorted(p.subtrees.items()):
+            q.append((s + k, tr))
+    return res
+\end{lstlisting}
 
 %=====================================
 % T9
