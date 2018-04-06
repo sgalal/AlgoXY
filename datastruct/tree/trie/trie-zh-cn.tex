@@ -827,35 +827,7 @@ struct Trie* create_node() {
 \subsection{查找}
 \index{trie!查找}
 
-在字符Trie中查找某个key时，我们同样需要逐一检查key中的每个字符。在子分支中找到字符对应的分支。如果没有任何分支对应该字符，查找就立即以失败结束。当检查完最后一个字符后，当前节点中存储的数据就是最终查找结果。
-
-\begin{algorithmic}[1]
-\Function{Look-Up}{$T, key$}
-  \If{$T = $ NIL}
-    \State \Return not found
-  \EndIf
-  \For{each $c$ in $key$}
-    \If{\Call{Children}{$T$}[$c$] = NIL}
-      \State \Return not found
-    \EndIf
-    \State $T \gets $ \Call{Children}{$T$}[$c$]
-  \EndFor
-  \State \Return \Call{Data}{$T$}
-\EndFunction
-\end{algorithmic}
-
-下面的ANSI C例子程序实现了查找算法。当查找失败时，它返回空指针NULL。
-
-\lstset{language=C}
-\begin{lstlisting}
-void* lookup(struct Trie* t, const char* key) {
-    while (*key && t && t->children[*key - 'a'])
-        t = t->children[*key++ - 'a'];
-    return (*key || !t) ? NULL : t->data;
-}
-\end{lstlisting}
-
-查找算法也可以用递归实现。我们从第一个字符开始，如果它对应到某个子分支，则在这个子分支上递归查找剩余的字符。记Trie为$(v, C)$，若待查找的key不为空，则记为$K = k_1k_2...k_n$。第一个字符为$k_1$，剩余的字符为$K'$。
+查找时，我们从第一个字符开始，如果它对应到某个子分支，则在这个子分支上递归查找剩余的字符。记Trie为$(v, C)$，若待查找的key不为空，则记为$K = k_1k_2...k_n$。第一个字符为$k_1$，剩余的字符为$K'$。
 
 \be
 lookup(T, K) = \left \{
@@ -891,9 +863,38 @@ find t (k:ks) = case lookup k (children t) of
                   Just t' -> find t' ks
 \end{lstlisting}
 
+也可以用命令式方法实现查找。我们逐一检查待查找整数的每个字符。在子分支中找到对应的分支。当检查完最后一个字符后，当前节点中存储的数据就是查找结果。
+
+\begin{algorithmic}[1]
+\Function{Look-Up}{$T, key$}
+  \If{$T = $ NIL}
+    \State \Return not found
+  \EndIf
+  \For{each $c$ in $key$}
+    \If{\Call{Children}{$T$}[$c$] = NIL}
+      \State \Return not found
+    \EndIf
+    \State $T \gets $ \Call{Children}{$T$}[$c$]
+  \EndFor
+  \State \Return \Call{Data}{$T$}
+\EndFunction
+\end{algorithmic}
+
+下面的ANSI C例子程序实现了查找算法。当查找失败时，它返回空指针NULL。
+
+\lstset{language=C}
+\begin{lstlisting}
+void* lookup(struct Trie* t, const char* key) {
+    while (*key && t && t->children[*key - 'a'])
+        t = t->children[*key++ - 'a'];
+    return (*key || !t) ? NULL : t->data;
+}
+\end{lstlisting}
+
+
 \begin{Exercise}
 \begin{itemize}
-\item 在命令式实现中，请用其他容器类数据结构来管理字符Trie中的子树
+\item 在命令式实现中，请用其他容器类数据结构来管理字符Trie中的子树。不同的容器类型会怎样影响性能？
 \end{itemize}
 \end{Exercise}
 
@@ -904,21 +905,21 @@ find t (k:ks) = case lookup k (children t) of
 \index{Patricia}
 \index{前缀树}
 
-和整数Trie一样，字符Trie的空间利用率很低。我们可以用同样的方法将字符Trie压缩成前缀树。
+和整数Trie一样，字符Trie的空间利用率很低。我们可以用同样的方法将Trie压缩成前缀树。
 
 % ================================================================
-%                 Definition of Alphabetic 前缀树 Tree
+%                 Definition of Alphabetic 前缀树
 % ================================================================
 \subsection{定义}
 
-字符前缀树是一种特殊的前缀树，每个节点包含若干分支。所有的子节点拥有一个最长公共前缀串。Patrica中不存在只含有一个子分支的节点，否则最长公共前缀的长度就可以增加，因而和“最长”的性质相矛盾。
+字符前缀树是一种特殊的前缀树，每个节点包含若干分支。所有的子节点拥有一个最长公共前缀串。树中不存在只含有一个子分支的节点，否则最长公共前缀的长度就可以增加，因而和“最长”的性质相矛盾。
 
-如果把图\ref{fig:trie-of-26}中Trie的所有仅含有一个子分支的节点压缩，转换成前缀树，可以得到一棵如图\ref{fig:patricia-tree}的前缀树前缀树。
+如果把图\ref{fig:trie-of-26}中仅含有一个子分支的节点压缩，可以得到一棵如图\ref{fig:patricia-tree}的前缀树。
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.5]{img/patricia-tree.ps}
-  \caption{一棵前缀树前缀树，含有key：a、an、another、bool、boy和zoo}
+  \caption{一棵前缀树，含有key：a、an、another、bool、boy和zoo}
   \label{fig:patricia-tree}
 \end{figure}
 
@@ -928,22 +929,22 @@ find t (k:ks) = case lookup k (children t) of
 
 \lstset{language=Haskell}
 \begin{lstlisting}[style=Haskell]
-type Key = String
+data PrefixTree k v = PrefixTree { value :: Maybe v
+                                 , children :: [([k], PrefixTree k v)]}
 
-data Patricia a = Patricia { value :: Maybe a
-                           , children :: [(Key, Patricia a)]}
+empty = PrefixTree Nothing []
 
-empty = Patricia Nothing []
+leaf x = PrefixTree (Just x) []
 \end{lstlisting}
 
 下面的Python例子代码重用了Trie来定义前缀树。
 
 \lstset{language=Python}
-\begin{lstlisting}o
-class Patricia:
+\begin{lstlisting}
+class PrefixTree:
     def __init__(self, value = None):
         self.value = value
-        self.children = {}
+        self.subtrees = {}
 \end{lstlisting}
 
 % ================================================================
@@ -952,7 +953,7 @@ class Patricia:
 \subsection{插入}
 \index{前缀树!插入}
 
-当把一个字符串$s$作为key插入前缀树时，若树为空，需要创建一个叶子节点，如图\ref{fig:patricia-insert}（a）所示。否则，我们需要逐一检查子分支映射。如果存在某个子分支$T_i$对应到字符串$s_i$，并且$s_i$和$s$存在共同的前缀，我们需要分叉出一个新的分支$T_j$。具体来说，我们需要创建一个新的内部分支节点，将其映射到公共前缀，然后将$T_i$和$T_j$作为这一新节点的两个子树。$T_i$和$T_j$共有这一公共前缀。如图\ref{fig:patricia-insert}（b）所示。但是这里存在两种特殊情况：一种是$s$为$s_i$的前缀，如图\ref{fig:patricia-insert}（c）所示；另外一种是$s_i$为$s$的前缀，如图\ref{fig:patricia-insert}（d）所示。
+插入字符串$s$时，若树为空，则创建一个叶子节点，如图\ref{fig:patricia-insert}（a）所示。否则，我们逐一检查子分支映射。如果存在某个子分支$T_i$对应到字符串$s_i$，并且$s_i$和$s$存在共同的前缀，我们分叉出一个新的分支$T_j$。具体来说，我们创建一个新的内部分支节点，将其映射到公共前缀，然后将$T_i$和$T_j$作为新节点的两棵子树。$T_i$和$T_j$共有这一前缀。如图\ref{fig:patricia-insert}（b）所示。这里存在两种特殊情况：一种是$s$为$s_i$的前缀，如图\ref{fig:patricia-insert}（c）所示；另外一种是$s_i$为$s$的前缀，如图\ref{fig:patricia-insert}（d）所示。
 
 \begin{figure}[htbp]
   \centering
@@ -964,130 +965,7 @@ class Patricia:
   \label{fig:patricia-insert}
 \end{figure}
 
-插入算法可以描述如下：
-
-\begin{algorithmic}[1]
-\Function{Insert}{$T, k, v$}
-  \If{$T = $ NIL}
-   \State $T \gets$ \Call{Empty-Node}{}
-  \EndIf
-  \State $p \gets T$
-  \Loop
-    \State $match \gets$ FALSE
-    \For{each $(s_i, T_i) \in$ \Call{Children}{$p$}}
-      \If{$k = s_i$}
-        \State \Call{Value}{$p$} $\gets v$
-        \State \Return $T$
-      \EndIf
-      \State $c \gets$ \Call{LCP}{$k, s_i$}
-      \State $k_1 \gets k - c$
-      \State $k_2 \gets s_i - c$
-      \If{$c \neq $ NIL}
-        \State $match \gets$ TRUE
-        \If{$k_2 = $ NIL} \Comment{$s_i$是$k$的前缀}
-          \State $p \gets T_i$
-          \State $k \gets k_1$
-          \State break
-        \Else \Comment{分支出一个新叶子节点}
-          \State \Call{Children}{$p$} $\gets$ \Call{Children}{$p$} $\cup \{$ ($c$, \Call{Branch}{$k_1, v, k_2, T_i$}) $\}$
-          \State \textproc{Delete}(\Call{Children}{$p$}, $(s_i, T_i)$)
-          \State \Return $T$
-        \EndIf
-      \EndIf
-    \EndFor
-    \If{$\lnot match$} \Comment{增加一个新叶子节点}
-      \State \Call{Children}{$p$} $\gets$ \Call{Children}{$p$} $\cup \{$ ($k$, \Call{Create-Leaf}{$v$}) $\}$
-      \State \Return $T$
-    \EndIf
-  \EndLoop
-  \State \Return $T$
-\EndFunction
-\end{algorithmic}
-
-上述算法中，函数\textproc{LCP}寻找两个字符串的最长公共前缀。例如字符串bool和boy的最长公共前缀为bo。字符串的减号（-）运算用以给出两个字符串的不同部分。例如bool - bo = ol。函数\textproc{Branch}负责创建分支节点并更新对应的key。
-
-为了获取最长公共前缀，我们可以逐一比较两个字符串的字符，直到遇到不相同的字符为止。
-
-\begin{algorithmic}[1]
-\Function{LCP}{$A, B$}
-  \State $i \gets 1 $
-  \While{$i \leq |A| \land i \leq |B| \land A[i] = B[i]$}
-    \State $i \gets i + 1$
-  \EndWhile
-  \State \Return $A[1...i-1]$
-\EndFunction
-\end{algorithmic}
-
-分支出新叶子节点时存在两种情况。\textproc{Branch}($s_1, T_1, s_2, T_2$)的参数是两个不同的key和两棵树。如果$s_1$为空，说明一个字符串是另一个的前缀。例如把字符串an插入到一棵前缀为another的树中。这种情况结果是$T_2$成为了$T_1$的一棵子树。否则，如果$s_1$不为空，我们需要创建出一个新的分支节点，并令$T_1$和$T_2$分别为新节点的两棵子树。
-
-\begin{algorithmic}[1]
-\Function{Branch}{$s_1, T_1, s_2, T_2$}
-  \If{$s_1 = \phi$}
-    \State \Call{Children}{$T_1$} $\gets$ \Call{Children}{$T_1$} $\cup \{(s_2, T_2)\}$
-    \State \Return $T_1$
-  \EndIf
-  \State $T \gets$ \Call{Empty-Node}{}
-  \State \Call{Children}{$T$} $\gets \{(s_1, T_1), (s_2, T_2)\}$
-  \State \Return $T$
-\EndFunction
-\end{algorithmic}
-
-下面的Python例子程序实现了前缀树的插入算法。
-
-\lstset{language=Python}
-\begin{lstlisting}
-def insert(t, key, value = None):
-    if t is None:
-        t = Patricia()
-    node = t
-    while True:
-        match = False
-        for k, tr in node.children.items():
-            if key == k: # 覆盖原先内容即可
-                node.value = value
-                return t
-            (prefix, k1, k2) = lcp(key, k)
-            if prefix != "":
-                match = True
-                if k2 == "":
-                    # 例如将``another''插入前缀为``an''的树，继续遍历
-                    node = tr
-                    key = k1
-                    break
-                else: # 分支出一个新叶子节点
-                    node.children[prefix] = branch(k1, Patricia(value), k2, tr)
-                    del node.children[k]
-                    return t
-        if not match: # 增加一个新叶子节点
-            node.children[key] = Patricia(value)
-            return t
-    return t
-\end{lstlisting}
-
-其中查找最长公共前缀和分支出新节点的函数实现如下：
-
-\begin{lstlisting}
-# 返回\texttt{(p, s1', s2')}, 其中\texttt{p}是\texttt{lcp}，\texttt{s1'=s1-p}，\texttt{s2'=s2-p}
-def lcp(s1, s2):
-    j = 0
-    while j < len(s1) and j < len(s2) and s1[j] == s2[j]:
-        j += 1
-    return (s1[0:j], s1[j:], s2[j:])
-
-def branch(key1, tree1, key2, tree2):
-    if key1 == "":
-        # 例如将``an''插入到前缀为``another''的树中
-        tree1.children[key2] = tree2
-        return tree1
-    t = Patricia()
-    t.children[key1] = tree1
-    t.children[key2] = tree2
-    return t
-\end{lstlisting}
-
-插入算法也可以用递归的方式实现。我们从根节点开始，在子树中查找匹配的key。匹配意味着含有公共前缀。如果待插入的key已经存在，我们既可以选择覆盖以前的数据，也可以用链表来存储多个数据。如果没有任何子树匹配，我们就创建一个新的叶子节点，并添加到子树中去。
-
-记前缀树为$T = (v, C)$，函数$insert(T, k, v')$将key$k$和数据$v'$插入到$T$中。
+记前缀树为$T = (v, C)$，函数$insert(T, k, v')$将字符串$k$和数据$v'$插入到$T$中。
 
 \be
 insert(T, k, v') = (v, ins(C, k, v'))
@@ -1109,7 +987,7 @@ ins(C, k, v') = \left \{
 
 第一行处理映射为空的边界情况。我们创建一个叶子节点，将$v'$存入其中，然后将$k$映射到这个节点上。并返回这一映射对。第二行处理待插入的key已经存在的情况，我们用新数据$v'$覆盖了原来的数据。其中$C_{T_1}$表示子树$T_1$的所有子分支映射。第三行处理$k$和第一个映射对中的key匹配的情况。最后一行继续查找剩余的子树映射。
 
-如果两个key$A$和$B$含有非空的公共前缀，我们定义它们匹配。
+我们称两个串$A$和$B$匹配当且仅当它们含有非空的公共前缀。
 
 \be
 match(A, B) = A \neq \phi \land B \neq \phi \land a_1 = b_1
@@ -1117,7 +995,7 @@ match(A, B) = A \neq \phi \land B \neq \phi \land a_1 = b_1
 
 其中$a_1$和$b_1$分别是$A$和$B$不为空时的第一个字符。
 
-函数$branch(k_1, v, k_2, T_2)$的参数包括两个key，一个数据$v$和一棵树$T_2$。它查找两个key的最长公共前缀$k = lcp(k_1, k_2)$，记前缀之后不同的部分分别为：$k_1' = k_1 - k$和$k_2' = k_2 - k$。我们首先要处理两种边界情况：$k_1$为$k_2$的前缀，或者$k_2$为$k_1$的前缀。对于第一种情况，我们创建一个新的叶子节点，将$v$存入其中，将$k$映射到这个节点上。然后令$(k_2', T_2)$为唯一的子树映射。对于第二种情况，我们递归地将$k_1$和$v$插入$T_2$。否则，我们需要创建一个分支节点，将其作为最长公共前缀$k$的映射。这一分支节点有两个子树，一个是$(k_2', T_2)$, 另外一个是一个叶子节点，存有数据$v$，并且是$k_1'$的映射。
+函数$branch(k_1, v, k_2, T_2)$的参数包括两个串$k_1$和$k_2$，数据$v$和一棵树$T_2$。它查找两个串的最长公共前缀$k = lcp(k_1, k_2)$，记前缀后不同的部分为：$k_1' = k_1 - k$和$k_2' = k_2 - k$。我们首先要处理两种边界情况：$k_1$为$k_2$的前缀，或者$k_2$为$k_1$的前缀。对于第一种情况，我们创建一个新的叶子节点，将$v$存入其中，将$k$映射到这个节点上。然后令$(k_2', T_2)$为唯一的子树映射。对于第二种情况，我们递归地将$k_1$和$v$插入$T_2$。否则，我们需要创建一个分支节点，将其作为最长公共前缀$k$的映射。这一分支节点有两个子树，一个是$(k_2', T_2)$, 另外一个是一个叶子节点，存有数据$v$，并且是$k_1'$的映射。
 
 \be
 branch(k_1, v, k_2, T_2) = \left \{
@@ -1156,34 +1034,161 @@ lcp(A, B) = \left \{
 
 \lstset{language=Haskell}
 \begin{lstlisting}[style=Haskell]
-insert t k x = Patricia (value t) (ins (children t) k x) where
-    ins []     k x = [(k, Patricia (Just x) [])]
-    ins (p:ps) k x
-        | (fst p) == k
-            = (k, Patricia (Just x) (children (snd p))):ps --overwrite
-        | match (fst p) k
-            = (branch k x (fst p) (snd p)):ps
+import Data.List (isPrefixOf)
+
+insert :: Eq k => PrefixTree k v -> [k] -> v -> PrefixTree k v
+insert t ks x = PrefixTree (value t) (ins (children t) ks x) where
+    ins []     ks x = [(ks, leaf x)]
+    ins (p@(ks', t') : ps) ks x
+        | ks' == ks
+            = (ks, PrefixTree (Just x) (children t')) : ps  -- overwrite
+        | match ks' ks
+            = (branch ks x ks' t') : ps
         | otherwise
-            = p:(ins ps k x)
+            = p : (ins ps ks x)
 
 match x y = x /= [] && y /= [] && head x == head y
 
-branch k1 x k2 t2
-    | k1 == k
+branch :: Eq k => [k] -> v -> [k] -> PrefixTree k v -> ([k], PrefixTree k v)
+branch ks1 x ks2 t2
+    | ks1 == ks
         -- ex: insert "an" into "another"
-        = (k, Patricia (Just x) [(k2', t2)])
-    | k2 == k
+        = (ks, PrefixTree (Just x) [(ks2', t2)])
+    | ks2 == ks
         -- ex: insert "another" into "an"
-        = (k, insert t2 k1' x)
-    | otherwise = (k, Patricia Nothing [(k1', leaf x), (k2', t2)])
+        = (ks, insert t2 ks1' x)
+    | otherwise = (ks, PrefixTree Nothing [(ks1', leaf x), (ks2', t2)])
    where
-      k = lcp k1 k2
-      k1' = drop (length k) k1
-      k2' = drop (length k) k2
+      ks = lcp ks1 ks2
+      m = length ks
+      ks1' = drop m ks1
+      ks2' = drop m ks2
 
+lcp :: Eq k => [k] -> [k] -> [k]
 lcp [] _ = []
 lcp _ [] = []
-lcp (x:xs) (y:ys) = if x == y then x:(lcp xs ys) else []
+lcp (x:xs) (y:ys) = if x==y then x : (lcp xs ys) else []
+\end{lstlisting}
+
+命令式的插入算法描述如下：
+
+\begin{algorithmic}[1]
+\Function{Insert}{$T, k, v$}
+  \If{$T = $ NIL}
+   \State $T \gets$ \Call{Empty-Node}{}
+  \EndIf
+  \State $p \gets T$
+  \Loop
+    \State $match \gets$ FALSE
+    \For{each $(s_i, T_i) \in$ \Call{Children}{$p$}}
+      \If{$k = s_i$}
+        \State \Call{Value}{$p$} $\gets v$
+        \State \Return $T$
+      \EndIf
+      \State $c \gets$ \Call{LCP}{$k, s_i$}
+      \State $k_1 \gets k - c$
+      \State $k_2 \gets s_i - c$
+      \If{$c \neq $ NIL}
+        \State $match \gets$ TRUE
+        \If{$k_2 = $ NIL} \Comment{$s_i$是$k$的前缀}
+          \State $p \gets T_i$
+          \State $k \gets k_1$
+          \State break
+        \Else \Comment{分支出一个新叶子节点}
+          \State \textproc{Add}(\Call{Children}{$p$}, ($c$, \textproc{Branch}($k_1$, \Call{Leaf}{$v$}, $k_2$, $T_i$)))
+          \State \textproc{Delete}(\Call{Children}{$p$}, $(s_i, T_i)$)
+          \State \Return $T$
+        \EndIf
+      \EndIf
+    \EndFor
+    \If{$\lnot match$} \Comment{增加一个新叶子节点}
+      \State \textproc{Add}(\Call{Children}{$p$}, ($k$, \Call{Leaf}{$v$}))
+      \State break
+    \EndIf
+  \EndLoop
+  \State \Return $T$
+\EndFunction
+\end{algorithmic}
+
+上述算法中，函数\textproc{LCP}寻找两个字符串的最长公共前缀。例如字符串bool和boy的最长公共前缀为bo。字符串的减号（-）运算用以给出两个字符串的不同部分。例如bool - bo = ol。函数\textproc{Branch}负责创建分支节点并更新对应的key。
+
+为了获取最长公共前缀，我们可以逐一比较两个字符串的字符，直到遇到不相同的字符为止。
+
+\begin{algorithmic}[1]
+\Function{LCP}{$A, B$}
+  \State $i \gets 1 $
+  \While{$i \leq |A| \land i \leq |B| \land A[i] = B[i]$}
+    \State $i \gets i + 1$
+  \EndWhile
+  \State \Return $A[1...i-1]$
+\EndFunction
+\end{algorithmic}
+
+分支出新叶子节点时存在两种情况。\textproc{Branch}($s_1, T_1, s_2, T_2$)的参数是两个不同的key和两棵树。如果$s_1$为空，说明一个字符串是另一个的前缀。例如把字符串an插入到一棵前缀为another的树中。这种情况结果是$T_2$成为了$T_1$的一棵子树。否则，如果$s_1$不为空，我们需要创建出一个新的分支节点，并令$T_1$和$T_2$分别为新节点的两棵子树。
+
+\begin{algorithmic}[1]
+\Function{Branch}{$s_1, T_1, s_2, T_2$}
+  \If{$s_1 = \phi$}
+    \State \textproc{Add}(\Call{Children}{$T_1$}, $(s_2, T_2)$)
+    \State \Return $T_1$
+  \EndIf
+  \State $T \gets$ \Call{Empty-Node}{}
+  \State \Call{Children}{$T$} $\gets \{(s_1, T_1), (s_2, T_2)\}$
+  \State \Return $T$
+\EndFunction
+\end{algorithmic}
+
+下面的Python例子程序实现了前缀树的插入算法。
+
+\lstset{language=Python}
+\begin{lstlisting}
+def insert(t, key, value = None):
+    if t is None:
+        t = PrefixTree()
+    node = t
+    while True:
+        match = False
+        for k, tr in node.children.items():
+            if key == k: # 覆盖原先数据
+                node.value = value
+                return t
+            prefix, k1, k2 = lcp(key, k)
+            if prefix != "":
+                match = True
+                if k2 == "":
+                    # 例如将``another''插入前缀为``an''的树，继续遍历
+                    node = tr
+                    key = k1
+                    break
+                else: # 分支出一个新叶子节点
+                    node.children[prefix] = branch(k1, Patricia(value), k2, tr)
+                    del node.children[k]
+                    return t
+        if not match: # 增加一个新叶子节点
+            node.children[key] = PrefixTree(value)
+            return t
+    return t
+\end{lstlisting}
+
+其中查找最长公共前缀和分支出新节点的函数实现如下：
+
+\begin{lstlisting}
+# 返回\texttt{(p, s1', s2')}, 其中\texttt{p}是\texttt{lcp}，\texttt{s1'=s1-p}，\texttt{s2'=s2-p}
+def lcp(s1, s2):
+    j = 0
+    while j < len(s1) and j < len(s2) and s1[j] == s2[j]:
+        j += 1
+    return (s1[0:j], s1[j:], s2[j:])
+
+def branch(key1, tree1, key2, tree2):
+    if key1 == "":
+        # 例如将``an''插入到前缀为``another''的树中
+        tree1.children[key2] = tree2
+        return tree1
+    t = PrefixTree()
+    t.children[key1] = tree1
+    t.children[key2] = tree2
+    return t
 \end{lstlisting}
 
 
