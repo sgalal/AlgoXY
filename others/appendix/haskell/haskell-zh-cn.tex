@@ -1,7 +1,7 @@
 \ifx\wholebook\relax \else
 % ------------------------
 
-\documentclass{article}
+\documentclass[UTF8]{article}
 %------------------- Other types of document example ------------------------
 %
 %\documentclass[twocolumn]{IEEEtran-new}
@@ -10,7 +10,7 @@
 %
 %-----------------------------------------------------------------------------
 %\input{../../../common.tex}
-\input{../../../common-en.tex}
+\input{../../../common-zh-cn.tex}
 
 \setcounter{page}{1}
 
@@ -22,7 +22,7 @@
 %                 COVER PAGE
 % ================================================================
 
-\title{HaskellÀı×Ó³ÌĞò}
+\title{Haskellä¾‹å­ç¨‹åº}
 
 \author{Larry~LIU~Xinyu
 \thanks{{\bfseries Larry LIU Xinyu } \newline
@@ -32,19 +32,19 @@
 \maketitle
 \fi
 
-\markboth{HaskellÀı×Ó³ÌĞò}{Elementary Algorithms}
+\markboth{Haskellä¾‹å­ç¨‹åº}{Elementary Algorithms}
 
 \ifx\wholebook\relax
-\chapter{HaskellÀı×Ó³ÌĞò}
+\chapter{Haskellä¾‹å­ç¨‹åº}
 \numberwithin{Exercise}{chapter}
 \fi
 
-±¾¸½Â¼ÁĞ³öÁË¸÷¸öÕÂ½ÚÖĞ¶ÔÓ¦µÄHaskellÀı×Ó³ÌĞò¡£
+æœ¬é™„å½•åˆ—å‡ºäº†å„ä¸ªç« èŠ‚ä¸­å¯¹åº”çš„Haskellä¾‹å­ç¨‹åºã€‚
 
-\subsection{×îĞ¡¿ÉÓÃÊı×ÖÎÊÌâ}
-·Ö¶øÖÎÖ®µÄ×îĞ¡¿ÉÓÃÊı×ÖÎÊÌâ½â·¨¡£
+\subsection{æœ€å°å¯ç”¨æ•°å­—é—®é¢˜}
+åˆ†è€Œæ²»ä¹‹çš„æœ€å°å¯ç”¨æ•°å­—é—®é¢˜è§£æ³•ã€‚
 
-\lstset{language=Haskell}
+\lstset{language=Haskell, frame=single}
 \begin{lstlisting}
 import Data.List
 
@@ -58,8 +58,8 @@ bsearch xs l u | xs == [] = l
       (as, bs) = partition (<=m) xs
 \end{lstlisting}
 
-\subsection{Õı¹æÊı£¨¹şÃ÷Êı£©ÎÊÌâ}
-Ñ°ÕÒÖ»°üº¬2¡¢3¡¢»ò5ÎªÒò×ÓµÄµÚ$k$¸öÊı¡£ÏÂÃæµÄ·½·¨Ê¹ÓÃÁËHaskellµÄ¶èĞÔÇóÖµÌØĞÔºÍÎŞÇîÁ÷¡£
+\subsection{æ­£è§„æ•°ï¼ˆå“ˆæ˜æ•°ï¼‰é—®é¢˜}
+å¯»æ‰¾åªåŒ…å«2ã€3ã€æˆ–5ä¸ºå› å­çš„ç¬¬$k$ä¸ªæ•°ã€‚ä¸‹é¢çš„æ–¹æ³•ä½¿ç”¨äº†Haskellçš„æƒ°æ€§æ±‚å€¼ç‰¹æ€§å’Œæ— ç©·æµã€‚
 
 \begin{lstlisting}
 merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
@@ -69,12 +69,12 @@ merge (x:xs) (y:ys) | x <y = x : merge xs (y:ys)
 ns = 1:merge (map (*2) ns) (merge (map (*3) ns) (map (*5) ns))
 \end{lstlisting}
 
-ÏÂÃæµÄ´úÂë¸ø³öµÚ1500¸öÕı¹æÊı¡£
+ä¸‹é¢çš„ä»£ç ç»™å‡ºç¬¬1500ä¸ªæ­£è§„æ•°ã€‚
 \begin{verbatim}
 last $ take 1500 ns
 \end{verbatim}
 
-ÎÒÃÇÒ²¿ÉÒÔÊ¹ÓÃÈı¸ö¶ÓÁĞÀ´²úÉúÕı¹æÊı¡£
+æˆ‘ä»¬ä¹Ÿå¯ä»¥ä½¿ç”¨ä¸‰ä¸ªé˜Ÿåˆ—æ¥äº§ç”Ÿæ­£è§„æ•°ã€‚
 
 \begin{lstlisting}
 ks 1 xs _ = xs
@@ -88,20 +88,20 @@ ks n xs (q2, q3, q5) = ks (n-1) (xs++[x]) update
 takeN n = ks n [1] ([2], [3], [5])
 \end{lstlisting}
 
-Ö´ĞĞ\texttt{last \$ takeN 1500}¼´²úÉúµÚ1500¸öÕı¹æÊı859963392¡£
+æ‰§è¡Œ\texttt{last \$ takeN 1500}å³äº§ç”Ÿç¬¬1500ä¸ªæ­£è§„æ•°859963392ã€‚
 
-\section{¶ş²æËÑË÷Ê÷}
+\section{äºŒå‰æœç´¢æ ‘}
 
-\subsection{¶ş²æËÑË÷Ê÷µÄ¶¨Òå}
+\subsection{äºŒå‰æœç´¢æ ‘çš„å®šä¹‰}
 
-¶ş²æËÑË÷Ê÷µÄ´úÊıÊı¾İÀàĞÍ¶¨Òå¡£
+äºŒå‰æœç´¢æ ‘çš„ä»£æ•°æ•°æ®ç±»å‹å®šä¹‰ã€‚
 
 \begin{lstlisting}
 data Tree a = Empty
             | Node (Tree a) a (Tree a)
 \end{lstlisting}
 
-\subsection{²åÈë}
+\subsection{æ’å…¥}
 
 \begin{lstlisting}
 insert Empty k = Node Empty k Empty
@@ -109,14 +109,14 @@ insert (Node l x r) k | k < x = Node (insert l k) x r
                       | otherwise = Node l x (insert r k)
 \end{lstlisting}
 
-\subsection{½«¶ş²æËÑË÷Ê÷×ª»»ÎªÓĞĞòÁĞ±í}
+\subsection{å°†äºŒå‰æœç´¢æ ‘è½¬æ¢ä¸ºæœ‰åºåˆ—è¡¨}
 
 \begin{lstlisting}
 toList Empty = []
 toList (Node l x r) = toList l ++ [x] ++ toList r
 \end{lstlisting}
 
-\subsection{¶ş²æËÑË÷Ê÷µÄ²éÕÒ}
+\subsection{äºŒå‰æœç´¢æ ‘çš„æŸ¥æ‰¾}
 
 \begin{lstlisting}
 lookup Empty _ = Empty
@@ -125,7 +125,7 @@ lookup t@(Node l k r) x | k == x = t
                         | otherwise = lookup r x
 \end{lstlisting}
 
-\subsection{´Ó¶ş²æËÑË÷Ê÷ÖĞÉ¾³ıÔªËØ}
+\subsection{ä»äºŒå‰æœç´¢æ ‘ä¸­åˆ é™¤å…ƒç´ }
 
 \begin{lstlisting}
 delete Empty _ = Empty
@@ -138,11 +138,11 @@ delete (Node l k r) x | x < k = (Node (delete l x) k r)
                           where k' = min r
 \end{lstlisting}
 
-\section{ºìºÚÊ÷}
+\section{çº¢é»‘æ ‘}
 
-\subsection{²åÈë}
+\subsection{æ’å…¥}
 
-Ê¹ÓÃÄ£Ê½Æ¥ÅäµÄºìºÚÊ÷²åÈëËã·¨¡£
+ä½¿ç”¨æ¨¡å¼åŒ¹é…çš„çº¢é»‘æ ‘æ’å…¥ç®—æ³•ã€‚
 
 \begin{lstlisting}
 data Color = R | B
@@ -170,15 +170,15 @@ balance color l k r = Node color l k r
 
 \end{lstlisting}
 
-\subsection{É¾³ı}
+\subsection{åˆ é™¤}
 
-Ê¹ÓÃ¡°Ë«ÖØºÚÉ«¡±¸ÅÄîÊµÏÖµÄºìºÚÊ÷É¾³ıËã·¨¡£
+ä½¿ç”¨â€œåŒé‡é»‘è‰²â€æ¦‚å¿µå®ç°çš„çº¢é»‘æ ‘åˆ é™¤ç®—æ³•ã€‚
 
 \begin{lstlisting}
-data Color = R | B | BB deriving (Show, Eq) -- BBÎªË«ÖØºÚÉ«
+data Color = R | B | BB deriving (Show, Eq) -- BBä¸ºåŒé‡é»‘è‰²
 data RBTree a = Empty
               | Node Color (RBTree a) a (RBTree a)
-              | BBEmpty -- Ë«ÖØºÚÉ«¿Õ½Úµã
+              | BBEmpty -- åŒé‡é»‘è‰²ç©ºèŠ‚ç‚¹
 
 min::RBTree a -> a
 min (Node _ Empty x _) = x
@@ -194,7 +194,7 @@ delete t x = blackenRoot (del t x) where
     del (Node color l k r) x
         | x < k = fixDB color (del l x) k r
         | x > k = fixDB color l k (del r x)
-        -- x == k, É¾³ı´Ë½Úµã
+        -- x == k, åˆ é™¤æ­¤èŠ‚ç‚¹
         | isEmpty l = if color==B then makeBlack r else r
         | isEmpty r = if color==B then makeBlack l else l
         | otherwise = fixDB color l k' (del r k') where k'= min r
@@ -202,13 +202,13 @@ delete t x = blackenRoot (del t x) where
     blackenRoot _ = Empty
 
 makeBlack::RBTree a -> RBTree a
-makeBlack (Node B l k r) = Node BB l k r -- Ë«ÖØºÚÉ«
+makeBlack (Node B l k r) = Node BB l k r -- åŒé‡é»‘è‰²
 makeBlack (Node _ l k r) = Node B l k r
 makeBlack Empty = BBEmpty
 makeBlack t = t
 
 fixDB::Color -> RBTree a -> a -> RBTree a -> RBTree a
--- ĞÖµÜ½ÚµãÎªºÚÉ«£¬ÓĞÒ»¸öºìÉ«µÄÖ¶×Ó
+-- å…„å¼ŸèŠ‚ç‚¹ä¸ºé»‘è‰²ï¼Œæœ‰ä¸€ä¸ªçº¢è‰²çš„ä¾„å­
 fixDB color a@(Node BB _ _ _) x (Node B (Node R b y c) z d) =
       Node color (Node B (makeBlack a) x b) y (Node B c z d)
 fixDB color BBEmpty x (Node B (Node R b y c) z d) =
@@ -225,12 +225,12 @@ fixDB color (Node B (Node R a x b) y c) z d@(Node BB _ _ _) =
       Node color (Node B a x b) y (Node B c z (makeBlack d))
 fixDB color (Node B (Node R a x b) y c) z BBEmpty =
       Node color (Node B a x b) y (Node B c z Empty)
--- ĞÖµÜÎªºìÉ«
+-- å…„å¼Ÿä¸ºçº¢è‰²
 fixDB B a@(Node BB _ _ _) x (Node R b y c) = fixDB B (fixDB R a x b) y c
 fixDB B a@BBEmpty x (Node R b y c) = fixDB B (fixDB R a x b) y c
 fixDB B (Node R a x b) y c@(Node BB _ _ _) = fixDB B a x (fixDB R b y c)
 fixDB B (Node R a x b) y c@BBEmpty = fixDB B a x (fixDB R b y c)
--- ĞÖµÜºÍÁ½¸öÖ¶×Ó¶¼ÊÇºÚÉ«¡£
+-- å…„å¼Ÿå’Œä¸¤ä¸ªä¾„å­éƒ½æ˜¯é»‘è‰²ã€‚
 fixDB color a@(Node BB _ _ _) x (Node B b y c) =
       makeBlack (Node color (makeBlack a) x (Node R b y c))
 fixDB color BBEmpty x (Node B b y c) =
@@ -239,8 +239,241 @@ fixDB color (Node B a x b) y c@(Node BB _ _ _) = m
       akeBlack (Node color (Node R a x b) y (makeBlack c))
 fixDB color (Node B a x b) y BBEmpty =
       makeBlack (Node color (Node R a x b) y Empty)
--- ÆäËûÇé¿ö
+-- å…¶ä»–æƒ…å†µ
 fixDB color l k r = Node color l k r
+\end{lstlisting}
+
+\section{åŸºæ•°æ ‘}
+
+\subsection{æ•´æ•°Trie}
+å°ç«¯æ•´æ•°Trie.
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=æ•´æ•°Trieçš„ä»£æ•°æ•°æ®ç±»å‹å®šä¹‰]
+data IntTrie a = Empty
+               | Branch (IntTrie a) (Maybe a) (IntTrie a)
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=æ•´æ•°Trieçš„æ’å…¥ç®—æ³•]
+insert t 0 x = Branch (left t) (Just x) (right t)
+insert t k x
+    | even k = Branch (insert (left t) (k `div` 2) x) (value t) (right t)
+    | otherwise = Branch (left t) (value t) (insert (right t) (k `div` 2) x)
+
+left (Branch l _ _) = l
+left Empty = Empty
+
+right (Branch _ _ r) = r
+right Empty = Empty
+
+value (Branch _ v _) = v
+value Empty = Nothing
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=æ•´æ•°Trieçš„æŸ¥æ‰¾ç®—æ³•]
+search Empty k = Nothing
+search t 0 = value t
+search t k = if even k then search (left t) (k `div` 2)
+             else search (right t) (k `div` 2)
+\end{lstlisting}
+
+\subsection{æ•´æ•°å‰ç¼€æ ‘}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=æ•´æ•°å‰ç¼€æ ‘çš„å®šä¹‰]
+type Key = Int
+type Prefix = Int
+type Mask = Int
+
+data IntTree a = Empty
+               | Leaf Key a
+               | Branch Prefix Mask (IntTree a) (IntTree a)
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=æ•´æ•°å‰ç¼€æ ‘çš„æ’å…¥]
+import Data.Bits
+
+insert t k x
+   = case t of
+       Empty -> Leaf k x
+       Leaf k' x' -> if k==k' then Leaf k x
+                     else join k (Leaf k x) k' t -- t@(Leaf k' x')
+       Branch p m l r
+          | match k p m -> if zero k m
+                           then Branch p m (insert l k x) r
+                           else Branch p m l (insert r k x)
+          | otherwise -> join k (Leaf k x) p t -- t@(Branch p m l r)
+
+join p1 t1 p2 t2 = if zero p1 m then Branch p m t1 t2
+                                else Branch p m t2 t1
+    where
+      (p, m) = lcp p1 p2
+
+lcp :: Prefix -> Prefix -> (Prefix, Mask)
+lcp p1 p2 = (p, m) where
+    m = bit (highestBit (p1 `xor` p2))
+    p = mask p1 m
+
+highestBit x = if x == 0 then 0 else 1 + highestBit (shiftR x 1)
+
+mask x m = (x .&. complement (m-1)) -- complement means bit-wise not.
+
+zero x m = x .&. (shiftR m 1) == 0
+
+match k p m = (mask k m) == p
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=æ•´æ•°å‰ç¼€æ ‘çš„æŸ¥æ‰¾]
+search t k
+  = case t of
+      Empty -> Nothing
+      Leaf k' x -> if k == k' then Just x else Nothing
+      Branch p m l r
+             | match k p m -> if zero k m then search l k
+                              else search r k
+             | otherwise -> Nothing
+\end{lstlisting}
+
+\subsection{å­—ç¬¦Trie}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=å­—ç¬¦Trieçš„å®šä¹‰]
+data Trie a = Trie { value :: Maybe a
+                   , children :: [(Char, Trie a)]}
+
+empty = Trie Nothing []
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=å­—ç¬¦Trieçš„æ’å…¥]
+insert t []     x = Trie (Just x)  (children t)
+insert t (k:ks) x = Trie (value t) (ins (children t) k ks x) where
+    ins [] k ks x = [(k, (insert empty ks x))]
+    ins (p:ps) k ks x = if fst p == k
+                        then (k, insert (snd p) ks x):ps
+                        else p:(ins ps k ks x)
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=å­—ç¬¦Trieçš„æŸ¥æ‰¾]
+find t [] = value t
+find t (k:ks) = case lookup k (children t) of
+                  Nothing -> Nothing
+                  Just t' -> find t' ks
+\end{lstlisting}
+
+\subsection{å­—ç¬¦å‰ç¼€æ ‘}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=å­—ç¬¦å‰ç¼€æ ‘çš„å®šä¹‰]
+data PrefixTree k v = PrefixTree { value :: Maybe v
+                                 , children :: [([k], PrefixTree k v)]}
+
+empty = PrefixTree Nothing []
+
+leaf x = PrefixTree (Just x) []
+\end{lstlisting}
+
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=å‰ç¼€æ ‘çš„æ’å…¥]
+import Data.List (isPrefixOf)
+
+insert :: Eq k => PrefixTree k v -> [k] -> v -> PrefixTree k v
+insert t ks x = PrefixTree (value t) (ins (children t) ks x) where
+    ins []     ks x = [(ks, leaf x)]
+    ins (p@(ks', t') : ps) ks x
+        | ks' == ks
+            = (ks, PrefixTree (Just x) (children t')) : ps  -- overwrite
+        | match ks' ks
+            = (branch ks x ks' t') : ps
+        | otherwise
+            = p : (ins ps ks x)
+
+match x y = x /= [] && y /= [] && head x == head y
+
+branch :: Eq k => [k] -> v -> [k] -> PrefixTree k v -> ([k], PrefixTree k v)
+branch ks1 x ks2 t2
+    | ks1 == ks
+        -- ex: insert "an" into "another"
+        = (ks, PrefixTree (Just x) [(ks2', t2)])
+    | ks2 == ks
+        -- ex: insert "another" into "an"
+        = (ks, insert t2 ks1' x)
+    | otherwise = (ks, PrefixTree Nothing [(ks1', leaf x), (ks2', t2)])
+   where
+      ks = lcp ks1 ks2
+      m = length ks
+      ks1' = drop m ks1
+      ks2' = drop m ks2
+
+-- longest common prefix
+lcp :: Eq k => [k] -> [k] -> [k]
+lcp [] _ = []
+lcp _ [] = []
+lcp (x:xs) (y:ys) = if x==y then x : (lcp xs ys) else []
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=å­—ç¬¦å‰ç¼€æ ‘çš„æŸ¥æ‰¾]
+find :: Eq k => PrefixTree k v -> [k] -> Maybe v
+find t = find' (children t) where
+    find' [] _ = Nothing
+    find' (p@(ks', t') : ps) ks
+          | ks' == ks = value t'
+          | ks' `isPrefixOf` ks = find t' (diff ks ks')
+          | otherwise = find' ps ks
+    diff ks1 ks2 = drop (length (lcp ks1 ks2)) ks1
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=åœ¨å‰ç¼€æ ‘ä¸­æŸ¥æ‰¾æœ€å¤š$n$ä¸ªç»“æœ]
+import Control.Arrow (first)
+
+get n t k = take n $ findAll t k
+
+findAll :: Eq k => PrefixTree k v -> [k] -> [([k], v)]
+findAll (PrefixTree Nothing cs) [] = enum cs
+findAll (PrefixTree (Just x) cs) [] = ([], x) : enum cs
+findAll (PrefixTree _ cs) k = find' cs k
+  where
+    find' [] _ = []
+    find' ((k', t') : ps) k
+          | k `isPrefixOf` k'
+              = map (first (k' ++)) (findAll t' [])
+          | k' `isPrefixOf` k
+              = map (first (k' ++)) (findAll t' $ drop (length k') k)
+          | otherwise = find' ps k
+
+enum :: Eq k => [([k], PrefixTree k v)] -> [([k], v)]
+enum = concatMap (\(k, t) -> map (first (k ++)) (findAll t []))
+\end{lstlisting}
+
+\lstset{language=Haskell}
+\begin{lstlisting}[caption=T9æŸ¥æ‰¾]
+import qualified Data.Map as Map
+
+mapT9 = Map.fromList [('1', ",."), ('2', "abc"), ('3', "def"), ('4', "ghi"),
+                      ('5', "jkl"), ('6', "mno"), ('7', "pqrs"), ('8', "tuv"),
+                      ('9', "wxyz")]
+
+rmapT9 = Map.fromList $ concatMap (\(d, s) -> [(c, d) | c <- s]) $ Map.toList mapT9
+
+digits = map (\c -> Map.findWithDefault '#' c rmapT9)
+
+findT9 :: PrefixTree Char v -> String -> [String]
+findT9 t [] = [""]
+findT9 t k = concatMap find prefixes
+  where
+    n = length k
+    find (s, t') = map (take n . (s++)) $ findT9 t' (k `diff` s)
+    diff x y = drop (length y) x
+    prefixes = [(s, t') | (s, t') <- children t, let ds = digits s in
+                          ds `isPrefixOf` k || k `isPrefixOf` ds]
 \end{lstlisting}
 
 \ifx\wholebook\relax \else
