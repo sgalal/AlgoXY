@@ -1443,7 +1443,6 @@ def branch[K, V] (key1: List[K], v: V,
   }
 }
 
-// the longest common prefix
 def lcp[K] (xs: List[K], ys: List[K]): List[K] =
   if (!xs.isEmpty && !ys.isEmpty && xs.head == ys.head) {
     xs.head :: lcp(xs.tail, ys.tail)
@@ -2102,7 +2101,7 @@ Function $find$ takes a passed in prefix $S$, and a sub-tree $T'$ to look up fur
 find(S, T') = \{ take(n, S + s_i) | s_i \in findT9(T', D - S) \}
 \ee
 
-Where $n = |D|$ is the length of the input digits. Function $take(n, L)$ takes the first $n$ elements from the list $L$. If the length of the list is less then $n$, or the elements are taken.
+Where $n = |D|$ is the length of the input digits. Function $take(n, L)$ takes the first $n$ elements from the list $L$. If the length of the list is less then $n$, all the elements are taken.
 
 The following example Scala program implements the T9 look up algorithm
 with prefix tree.
