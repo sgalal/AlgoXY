@@ -1,41 +1,31 @@
-HEADER =
-SOURCE = list-en.tex
-OBJECT = list-en
-OBJECT2 = list-cpptp-en
+SRC = list
+OBJ = $(SRC)-en.pdf
+OBJ_CN = $(SRC)-zh-cn.pdf
 TEX = xelatex
 
 .PHONY: all
 
-all: pdf
+all: tex
 
 cpp:
 	$(MAKE) cpp -C src
 
-c:
-	$(MAKE) c -C src
-
 haskell:
 	$(MAKE) haskell -C src
-
-tool:
-	$(MAKE) tool -C src
 
 image:
 	$(MAKE) -C img
 
-pdf: image
-	$(TEX) $(OBJECT)
-	$(TEX) $(OBJECT)
+tex: $(OBJ) $(OBJ_CN)
 
-tex: pdf
+%.pdf: %.tex image
+	$(TEX) $<
+	$(TEX) $<
 
-cpptp:
-	latex $(OBJECT2)
-	latex $(OBJECT2)
-
-html: image
-	htlatex.bat $(OBJECT) "html, imgdir:img/"
+html:
+	htlatex $(OBJECT) "html, imgdir:img/"
 	mv *.png img/
 
 clean:
-	rm -f *.aux *.dvi *.log *.out *.pdf *~
+	rm -f *.4ct *.4tc *.aux *.css *.dvi *.html
+	rm -f *.idv *.lg *.log *.out *.pdf *.tmp *.xref *.cache *.zip *~

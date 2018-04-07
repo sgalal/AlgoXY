@@ -584,7 +584,7 @@ case class T[A] (c: Color, left: Tree[A], key: A, right: Tree[A]) extends Tree[A
 
 函数\texttt{addBlack}将红色节点染成黑色，将黑色节点染成双重黑色。它同样可以对空节点重新染色。
 
-\end{lstlisting}
+\begin{lstlisting}
 def addBlack[A](tr: Tree[A]): Tree[A] = tr match {
   case T(B, l, k, r) => T(BB, l, k, r)
   case T(_, l, k, r) => T(B, l, k, r)
