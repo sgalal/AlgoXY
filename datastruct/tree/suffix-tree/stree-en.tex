@@ -24,8 +24,8 @@
 
 \title{Suffix Tree}
 
-\author{Larry~LIU~Xinyu
-\thanks{{\bfseries Larry LIU Xinyu } \newline
+\author{LIU~Xinyu
+\thanks{{\bfseries LIU Xinyu } \newline
   Email: liuxinyu95@gmail.com \newline}
   }
 
@@ -48,19 +48,15 @@
 \label{introduction}
 \index{Suffix tree}
 
-Suffix Tree is an important data structure.
-It can be used to realize many important string operations particularly
-fast\cite{wiki-suffix-tree}. It is
-also widely used in bio-information area such as DNA pattern
-matching\cite{ukkonen-presentation}.
-Weiner introduced suffix tree in 1973\cite{weiner73}.
-The latest on-line construction algorithm was found in 1995\cite{ukkonen95}.
+Suffix Tree is a powerful data structure in text and DNA string manipulation\cite{wiki-suffix-tree},
+\cite{ukkonen-presentation}. Weiner introduced suffix tree in 1973\cite{weiner73}.
+The first on-line linear time construction algorithm was found in 1995\cite{ukkonen95}.
 
-The suffix tree for a string $S$ is a special Patricia.
-Each edge is labeled with some sub-string of $S$.
+Given a string $S$, the suffix tree of the string is a special tree that
+every edge is labeled with some sub-string of $S$.
 Each suffix of $S$ corresponds to exactly one path
 from the root to a leaf. Figure \ref{fig:stree-banana} shows the suffix tree for
-English word `banana'.
+word `banana'.
 
 \begin{figure}[htbp]
   \centering
@@ -68,17 +64,18 @@ English word `banana'.
   \caption{The suffix tree for `banana'} \label{fig:stree-banana}
 \end{figure}
 
-All suffixes, 'banana', 'anana', 'nana', 'ana', 'na', 'a', '' can
-be found in the above tree. Among them the first 3 suffixes are explicitly
-shown; others are implicitly represented. The reason for why 'ana, 'na', 'a',
-and '' are not shown is because they are prefixes of the others.
-In order to show all suffixes explicitly, we can append a special pad
-terminal symbol, which doesn't occur in other places in the string.
+All suffixes, `banana', `anana', `nana', `ana', `na', `a', `' can
+be found in this tree. Among them the first 3 suffixes are explicitly
+shown; others are implicitly represented. The reason for why `ana, `na', `a',
+and `' are not shown is because they are prefixes of the others.
+In order to show all suffixes explicitly, we can append a special
+terminal symbol to the string.
 Such terminator is typically
-denoted as '\$'. By this means, there is no suffix being the prefix of the others.
+denoted as `\$'. It doesn't occur in other places in the string.
+By this way, no suffix is the prefix of the others.
 
-Although the suffix tree for 'banana' is simple, the
-suffix tree for 'bananas', as shown in figure \ref{fig:stree-bananas}, is quite different.
+Although the suffix tree for `banana' is simple, the
+suffix tree for `bananas', as shown in figure \ref{fig:stree-bananas}, is quite different.
 
 \begin{figure}[htbp]
   \centering
@@ -87,53 +84,56 @@ suffix tree for 'bananas', as shown in figure \ref{fig:stree-bananas}, is quite 
 \end{figure}
 
 To create suffix suffix tree for a given string, we can utilize the
-insertion algorithm explained in previous chapter for Patricia.
+insertion algorithm explained in the chapter of Radix tree.
+
+\be
+T_S(S) = fold(insert, \phi, \{s | s \sqsupseteq S\})
+\ee
+
+Where $s \sqsupseteq S$ means $s$ is suffix of $S$. This method inserts
+all the strings in the suffixes set to a compacted trie.
+to populate the suffixes of $S$, we can define a function $sfx(S)$. If
+the string is empty, the result is one empty string; otherwise, $S$
+itself is one suffix, the others can be given by recursively call
+$sfx(S')$, where $S'$ is $S$ that drops the first character.
+
+\be
+sfx(S) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  \{ \phi \} & S = \phi \\
+  \{S\} \cup sfx(S') & otherwise
+  \end{array}
+\right.
+\ee
+
+We can also call the insertion algorithm interatively to build the
+suffix tree.
 
 \begin{algorithmic}[1]
 \Function{Suffix-Tree}{$S$}
   \State $T \gets$ NIL
-  \For{$i \gets 1$ to $|S|$}
-    \State $T \gets$ \textproc{Patricia-Insert}($T$, \Call{Right}{$S, i$})
+  \State $n \gets |S|$
+  \For{$i \gets 1$ to $n$}
+    \State $T \gets$ \Call{Insert}{$T$, $S[i...n]$}
   \EndFor
   \State \Return $T$
 \EndFunction
 \end{algorithmic}
 
-For non-empty string $S=s_1s_2...s_i...s_n$ of length $n = |S|$, function
-\textproc{Right}($S, i$) $= s_is_{i+1}...s_n$. It extracts the sub-string of $S$
-from the $i$-th character to the last one. This straightforward algorithm
-can also be defined as below.
-
-\be
-suffix_T(S) = fold(insert_{Patricia}, \phi, suffixes(S))
-\ee
-
-Where function $suffixes(S)$ gives all the suffixes for string $S$. If
-the string is empty, the result is one empty string; otherwise, $S$
-itself is one suffix, the others can be given by recursively call
-$suffixes(S')$, where $S'$ is given by drop the first character from $S$.
-
-\be
-suffixes(S) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  \{ \phi \} & S = \phi \\
-  \{S\} \cup suffixes(S') & otherwise
-  \end{array}
-\right.
-\ee
+Where $S[i...n]$ represents the substring of $S$ from the $i$-th character to $n$.
 
 This solution constructs suffix tree in $O(n^2)$ time, for string of length $n$.
 It totally inserts $n$ suffixes to the tree, and each
 insertion takes linear time proportion to the length of the suffix.
-The efficiency isn't good enough.
 
-In this chapter, we firstly explain a fast on-line suffix trie construction
-solution by using suffix link concept. Because trie isn't space efficient,
-we next introduce a linear time on-line suffix tree construction algorithm
-found by Ukkonen. and show
-how to solve some interesting string manipulation problems with
-suffix tree.
+Although many text matching problems can be solved with suffix tree in linear
+time, the overall performance would downgrade with such building algorithm.
+In the following sections, we firstly introduce the concept of suffix link,
+then developed a on-line suffix trie construction mthod. Next, we introduce
+the linear time on-line suffix tree construction algorithm
+found by Ukkonen. and show how to use suffix tree to efficiently solve
+string matching problems.
 
 % ================================================================
 %                 Suffix Trie
@@ -142,7 +142,7 @@ suffix tree.
 \label{suffix-trie}
 \index{Suffix trie}
 
-Just likes the relationship between trie and Patricia, Suffix trie has much simpler
+Likes the relationship between trie and prefix tree, Suffix trie has much simpler
 structure than suffix tree. Figure \ref{fig:strie-banana} shows the suffix trie for
 'banana'.
 
@@ -876,7 +876,7 @@ This defines a generic radix tree building function. It takes an
 edge function, and a set of strings. $X$ can be all suffixes of
 a string, so that we get suffix trie or suffix tree. We'll also
 explain later that $X$ can be all prefixes, which lead to normal
-prefix trie or Patricia.
+prefix trie or prefix tree.
 
 Suppose all the strings are built from a character set $\Sigma$.
 When build the tree, if the string is empty, $X$ only contains
@@ -936,7 +936,7 @@ edgeTrie(X) = (\phi, X)
 \ee
 
 We can also realize an edge function, that extracts the longest common prefix.
-Such edge function builds a Patricia.
+Such edge function builds a compact prefix tree.
 Denote the strings as $X = \{x_1, x_2, ..., x_n\}$, for the each string $x_i$,
 let the initial character be $c_i$, and the rest characters in $x_i$ as $W_i$.
 If there is only one string in $X$, the longest common prefix is definitely
@@ -988,7 +988,7 @@ suffixTree(S) = build(edgeTree, suffixes(S))
 \ee
 
 Because the $build(edge, X)$ is generic, it can be used to build other radix trees, such
-as the normal prefix trie and Patricia.
+as the normal prefix trie and prefix tree.
 
 \be
 trie(S) = build(edgeTrie, prefixes(S))
