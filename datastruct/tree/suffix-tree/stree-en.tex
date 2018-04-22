@@ -135,6 +135,175 @@ and the linear time on-line suffix tree construction algorithm
 found by Ukkonen. Fially, we show how to use suffix tree to solve
 string matching problems.
 
+\subsubsection{Functional suffix tree construction}
+\index{Suffix tree!functional construction}
+
+Giegerich and Kurtz found Ukkonen's algorithm
+can be transformed to McCreight's algorithm\cite{GieKur97}.
+The three suffix tree construction algorithms found by
+Weiner, McCreight, and Ukkonen are all bound to $O(n)$ time.
+Giegerich and Kurtz conjectured any sequential
+suffix tree construction method doesn't base on
+suffix links, active suffixes, etc., fails to meet the
+$O(n)$-criterion.
+
+There is implementation in PLT/Scheme\cite{plt-stree} based on
+Ukkonen's algorithm, However, it updates suffix links during the
+processing, which is not purely functional.
+
+A lazy suffix tree construction method is discussed in \cite{GieKur95}.
+And this method is contributed to Haskell Hackage by Bryan O'Sullivan.
+\cite{Hackage-STree}. The method depends on the lazy evaluation property.
+The tree won't be constructed until it is traversed.
+However, it can't ensure the $O(n)$ performance
+if the programming environments or languages don't support
+lazy evaluation.
+
+The following Haskell program defines the suffix tree. A suffix tree
+is either a leaf, or a branch containing multiple sub trees. Each
+sub tree is bound to a string.
+
+\lstset{language=Haskell}
+\begin{lstlisting}
+data Tr = Lf | Br [(String, Tr)] deriving (Eq)
+type EdgeFunc = [String]->(String, [String])
+\end{lstlisting}
+
+The edge function extracts a common prefix from a list of strings.
+The prefix returned by edge function may not be the longest one,
+empty string is also allowed. The exact behavior can be customized
+with different edge functions.
+
+\[
+build(edge, X)
+\]
+
+This defines a generic radix tree building function. It takes an
+edge function, and a set of strings. $X$ can be all suffixes of
+a string, so that we get suffix trie or suffix tree. We'll also
+explain later that $X$ can be all prefixes, which lead to normal
+prefix trie or prefix tree.
+
+Suppose all the strings are built from a character set $\Sigma$.
+When build the tree, if the string is empty, $X$ only contains
+one empty string as well. The result tree is an empty leaf;
+Otherwise, we examine every character in $\Sigma$, group
+the strings in $X$ with their initial characters, the apply
+the edge function to these groups.
+
+\be
+build(edge, X) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  leaf & X = \{ \phi \} \\
+  \begin{array}{ll}
+    branch(\{(\{c\} \cup p, & build(edge, X')) | \\
+                            & c \in \Sigma, \\
+                            & G \in \{ group(X, c) \}, \\
+                            & (p, X') \in \{ edge(G) \} \})
+  \end{array} & otherwise
+  \end{array}
+\right.
+\ee
+
+The algorithm categorizes all suffixes by the
+first letter in several groups. It removes the first letter for each element in every group.
+For example, the suffixes $\{$``acac'', ``cac'', ``ac'', ``c''$\}$ are
+categorized to groups $\{$('a', [``cac'', ``c'']), ('c', [``ac'', ``''])$\}$.
+
+\be
+group(X, c) = \{C' | \{c_1\} \cup C' \in X, c_1 = c\}
+\ee
+
+Function $group$ enumerates all suffixes in $X$, for each one, denote the first
+character as $c_1$, the rest characters as $C'$. If $c_1$ is same as
+the given character $c$, then $C'$ is collected.
+
+Below example Haskell program implements the generic radix tree building algorithm.
+
+\begin{lstlisting}
+alpha = ['a'..'z']++['A'..'Z']
+
+lazyTree::EdgeFunc -> [String] -> Tr
+lazyTree edge = build where
+    build [[]] = Lf
+    build ss = Br [(a:prefix, build ss') |
+                         a<-alpha,
+                         xs@(x:_) <-[[cs | c:cs<-ss, c==a]],
+                         (prefix, ss')<-[edge xs]]
+\end{lstlisting}
+
+Different edge functions produce different radix trees. Since edge function
+extracts common prefix from a set of strings. The simplest one constantly
+uses the empty string as the common prefix. This edge function builds a trie.
+
+\be
+edgeTrie(X) = (\phi, X)
+\ee
+
+We can also realize an edge function, that extracts the longest common prefix.
+Such edge function builds a compact prefix tree.
+Denote the strings as $X = \{x_1, x_2, ..., x_n\}$, for the each string $x_i$,
+let the initial character be $c_i$, and the rest characters in $x_i$ as $W_i$.
+If there is only one string in $X$, the longest common prefix is definitely
+this string; If there are two strings start with different initial characters,
+the longest common prefix is empty; Otherwise,it means all the strings
+share the same initial character. This character definitely belongs to
+the longest common prefix. We can remove it from all strings, and recursively
+call the edge function.
+
+\be
+edgeTree(X) = \left \{
+  \begin{array}
+  {r@{\quad:\quad}l}
+  (x_1, \{ \phi \}) & X = \{ x_1 \} \\
+  (\phi, X) & |X| > 1, \exists x_i \in X, c_i \neq c_1 \\
+  (\{c_1\} \cup p, Y) & (p, Y) = edgeTree(\{ W_i | x_i \in X \})
+  \end{array}
+\right.
+\ee
+
+Here are some examples for $edgeTree$ function.
+\[
+\begin{array}{l}
+edgeTree(\{ \text{``an'', ``another'', ``and''}\}) = (\text{``an''}, \{\text{``'', ``other'', ``d''}\}) \\
+edgeTree(\{ \text{``bool'', ``foo, ``bar''}\}) = (\text{``''}, \{\text{``bool'', ``fool'', ``bar''}\})
+\end{array}
+\]
+
+The following example Haskell program implements this edge function.
+
+\begin{lstlisting}
+edgeTree::EdgeFunc
+edgeTree [s] = (s, [[]])
+edgeTree awss@((a:w):ss) | null [c|c:_<-ss, a/=c] = (a:prefix, ss')
+                         | otherwise              = ("", awss)
+                         where (prefix, ss') = edgeTree (w:[u| _:u<-ss])
+edgeTree ss = ("", ss)
+\end{lstlisting}
+
+For any given string, we can build suffix trie and suffix tree by feeding suffixes to these
+two edge functions.
+
+\be
+suffixTrie(S) = build(edgeTrie, suffixes(S))
+\ee
+
+\be
+suffixTree(S) = build(edgeTree, suffixes(S))
+\ee
+
+Because the $build(edge, X)$ is generic, it can be used to build other radix trees, such
+as the normal prefix trie and prefix tree.
+
+\be
+trie(S) = build(edgeTrie, prefixes(S))
+\ee
+
+\be
+tree(S) = build(edgeTree, prefixes(S))
+\ee
+
 % ================================================================
 %                 Suffix Trie
 % ================================================================
@@ -828,175 +997,6 @@ def canonize(t, node, str_ref):
             break
     return (node, l)
 \end{lstlisting}
-
-\subsubsection{Functional suffix tree construction}
-\index{Suffix tree!functional construction}
-
-Giegerich and Kurtz found Ukkonen's algorithm
-can be transformed to McCreight's algorithm\cite{GieKur97}.
-The three suffix tree construction algorithms found by
-Weiner, McCreight, and Ukkonen are all bound to $O(n)$ time.
-Giegerich and Kurtz conjectured any sequential
-suffix tree construction method doesn't base on
-suffix links, active suffixes, etc., fails to meet the
-$O(n)$-criterion.
-
-There is implementation in PLT/Scheme\cite{plt-stree} based on
-Ukkonen's algorithm, However, it updates suffix links during the
-processing, which is not purely functional.
-
-A lazy suffix tree construction method is discussed in \cite{GieKur95}.
-And this method is contributed to Haskell Hackage by Bryan O'Sullivan.
-\cite{Hackage-STree}. The method depends on the lazy evaluation property.
-The tree won't be constructed until it is traversed.
-However, it can't ensure the $O(n)$ performance
-if the programming environments or languages don't support
-lazy evaluation.
-
-The following Haskell program defines the suffix tree. A suffix tree
-is either a leaf, or a branch containing multiple sub trees. Each
-sub tree is bound to a string.
-
-\lstset{language=Haskell}
-\begin{lstlisting}
-data Tr = Lf | Br [(String, Tr)] deriving (Eq)
-type EdgeFunc = [String]->(String, [String])
-\end{lstlisting}
-
-The edge function extracts a common prefix from a list of strings.
-The prefix returned by edge function may not be the longest one,
-empty string is also allowed. The exact behavior can be customized
-with different edge functions.
-
-\[
-build(edge, X)
-\]
-
-This defines a generic radix tree building function. It takes an
-edge function, and a set of strings. $X$ can be all suffixes of
-a string, so that we get suffix trie or suffix tree. We'll also
-explain later that $X$ can be all prefixes, which lead to normal
-prefix trie or prefix tree.
-
-Suppose all the strings are built from a character set $\Sigma$.
-When build the tree, if the string is empty, $X$ only contains
-one empty string as well. The result tree is an empty leaf;
-Otherwise, we examine every character in $\Sigma$, group
-the strings in $X$ with their initial characters, the apply
-the edge function to these groups.
-
-\be
-build(edge, X) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  leaf & X = \{ \phi \} \\
-  \begin{array}{ll}
-    branch(\{(\{c\} \cup p, & build(edge, X')) | \\
-                            & c \in \Sigma, \\
-                            & G \in \{ group(X, c) \}, \\
-                            & (p, X') \in \{ edge(G) \} \})
-  \end{array} & otherwise
-  \end{array}
-\right.
-\ee
-
-The algorithm categorizes all suffixes by the
-first letter in several groups. It removes the first letter for each element in every group.
-For example, the suffixes $\{$``acac'', ``cac'', ``ac'', ``c''$\}$ are
-categorized to groups $\{$('a', [``cac'', ``c'']), ('c', [``ac'', ``''])$\}$.
-
-\be
-group(X, c) = \{C' | \{c_1\} \cup C' \in X, c_1 = c\}
-\ee
-
-Function $group$ enumerates all suffixes in $X$, for each one, denote the first
-character as $c_1$, the rest characters as $C'$. If $c_1$ is same as
-the given character $c$, then $C'$ is collected.
-
-Below example Haskell program implements the generic radix tree building algorithm.
-
-\begin{lstlisting}
-alpha = ['a'..'z']++['A'..'Z']
-
-lazyTree::EdgeFunc -> [String] -> Tr
-lazyTree edge = build where
-    build [[]] = Lf
-    build ss = Br [(a:prefix, build ss') |
-                         a<-alpha,
-                         xs@(x:_) <-[[cs | c:cs<-ss, c==a]],
-                         (prefix, ss')<-[edge xs]]
-\end{lstlisting}
-
-Different edge functions produce different radix trees. Since edge function
-extracts common prefix from a set of strings. The simplest one constantly
-uses the empty string as the common prefix. This edge function builds a trie.
-
-\be
-edgeTrie(X) = (\phi, X)
-\ee
-
-We can also realize an edge function, that extracts the longest common prefix.
-Such edge function builds a compact prefix tree.
-Denote the strings as $X = \{x_1, x_2, ..., x_n\}$, for the each string $x_i$,
-let the initial character be $c_i$, and the rest characters in $x_i$ as $W_i$.
-If there is only one string in $X$, the longest common prefix is definitely
-this string; If there are two strings start with different initial characters,
-the longest common prefix is empty; Otherwise,it means all the strings
-share the same initial character. This character definitely belongs to
-the longest common prefix. We can remove it from all strings, and recursively
-call the edge function.
-
-\be
-edgeTree(X) = \left \{
-  \begin{array}
-  {r@{\quad:\quad}l}
-  (x_1, \{ \phi \}) & X = \{ x_1 \} \\
-  (\phi, X) & |X| > 1, \exists x_i \in X, c_i \neq c_1 \\
-  (\{c_1\} \cup p, Y) & (p, Y) = edgeTree(\{ W_i | x_i \in X \})
-  \end{array}
-\right.
-\ee
-
-Here are some examples for $edgeTree$ function.
-\[
-\begin{array}{l}
-edgeTree(\{ \text{``an'', ``another'', ``and''}\}) = (\text{``an''}, \{\text{``'', ``other'', ``d''}\}) \\
-edgeTree(\{ \text{``bool'', ``foo, ``bar''}\}) = (\text{``''}, \{\text{``bool'', ``fool'', ``bar''}\})
-\end{array}
-\]
-
-The following example Haskell program implements this edge function.
-
-\begin{lstlisting}
-edgeTree::EdgeFunc
-edgeTree [s] = (s, [[]])
-edgeTree awss@((a:w):ss) | null [c|c:_<-ss, a/=c] = (a:prefix, ss')
-                         | otherwise              = ("", awss)
-                         where (prefix, ss') = edgeTree (w:[u| _:u<-ss])
-edgeTree ss = ("", ss)
-\end{lstlisting}
-
-For any given string, we can build suffix trie and suffix tree by feeding suffixes to these
-two edge functions.
-
-\be
-suffixTrie(S) = build(edgeTrie, suffixes(S))
-\ee
-
-\be
-suffixTree(S) = build(edgeTree, suffixes(S))
-\ee
-
-Because the $build(edge, X)$ is generic, it can be used to build other radix trees, such
-as the normal prefix trie and prefix tree.
-
-\be
-trie(S) = build(edgeTrie, prefixes(S))
-\ee
-
-\be
-tree(S) = build(edgeTree, prefixes(S))
-\ee
 
 % ================================================================
 %               Suffix tree applications
