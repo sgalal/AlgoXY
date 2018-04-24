@@ -138,30 +138,16 @@ string matching problems.
 \subsubsection{Functional suffix tree construction}
 \index{Suffix tree!functional construction}
 
-Giegerich and Kurtz found Ukkonen's algorithm
-can be transformed to McCreight's algorithm\cite{GieKur97}.
-The three suffix tree construction algorithms found by
-Weiner, McCreight, and Ukkonen are all bound to $O(n)$ time.
-Giegerich and Kurtz conjectured any sequential
-suffix tree construction method doesn't base on
-suffix links, active suffixes, etc., fails to meet the
-$O(n)$-criterion.
+In this section, we'll introduce a lazy suffix tree construction method
+developed in \cite{GieKur95} and \cite{Hackage-STree}.
+The method depends on the lazy evaluation. The tree won't be constructed
+until it is traversed. However, it can't ensure the linear time performance
+in strict evaluation environment.
 
-There is implementation in PLT/Scheme\cite{plt-stree} based on
-Ukkonen's algorithm, However, it updates suffix links during the
-processing, which is not purely functional.
-
-A lazy suffix tree construction method is discussed in \cite{GieKur95}.
-And this method is contributed to Haskell Hackage by Bryan O'Sullivan.
-\cite{Hackage-STree}. The method depends on the lazy evaluation property.
-The tree won't be constructed until it is traversed.
-However, it can't ensure the $O(n)$ performance
-if the programming environments or languages don't support
-lazy evaluation.
-
-The following Haskell program defines the suffix tree. A suffix tree
+We can reuse the prefix tree definition. A suffix tree
 is either a leaf, or a branch containing multiple sub trees. Each
-sub tree is bound to a string.
+sub tree is bound to a string. Below example Haskell program defines
+the suffix tree.
 
 \lstset{language=Haskell}
 \begin{lstlisting}
@@ -170,9 +156,9 @@ type EdgeFunc = [String]->(String, [String])
 \end{lstlisting}
 
 The edge function extracts a common prefix from a list of strings.
-The prefix returned by edge function may not be the longest one,
-empty string is also allowed. The exact behavior can be customized
-with different edge functions.
+The prefix returned by edge function is not necessarity the longest one.
+Empty string is also allowed. The exact behavior can be customized
+with the specific edge function.
 
 \[
 build(edge, X)
@@ -1426,6 +1412,21 @@ Ukkonen gave the first on-line construction algorithms from
 left to right. All the three algorithms are linear time ($O(n)$).
 And some research shows the relationship among these 3 algorithms.
 \cite{GieKur97}
+
+Giegerich and Kurtz found Ukkonen's algorithm
+can be transformed to McCreight's algorithm\cite{GieKur97}.
+The three suffix tree construction algorithms found by
+Weiner, McCreight, and Ukkonen are all bound to $O(n)$ time.
+Giegerich and Kurtz conjectured any sequential
+suffix tree construction method doesn't base on
+suffix links, active suffixes, etc., fails to meet the
+$O(n)$-criterion.
+
+There is implementation in PLT/Scheme\cite{plt-stree} based on
+Ukkonen's algorithm, However, it updates suffix links during the
+processing, which is not purely functional.
+
+
 
 \begin{thebibliography}{99}
 
