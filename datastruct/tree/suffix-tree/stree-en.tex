@@ -160,13 +160,15 @@ The prefix returned by edge function is not necessarity the longest one.
 Empty string is also allowed. The exact behavior can be customized
 with the specific edge function.
 
+By using the edge function and a set of strings, we can define a generic
+radix tree building function.
+
 \[
 build(edge, X)
 \]
 
-This defines a generic radix tree building function. It takes an
-edge function, and a set of strings. $X$ can be all suffixes of
-a string, so that we get suffix trie or suffix tree. We'll also
+If $X$ contains all the suffixes of a string, it will build the suffix trie
+or suffix tree. We'll also
 explain later that $X$ can be all prefixes, which lead to normal
 prefix trie or prefix tree.
 
@@ -174,7 +176,7 @@ Suppose all the strings are built from a character set $\Sigma$.
 When build the tree, if the string is empty, $X$ only contains
 one empty string as well. The result tree is an empty leaf;
 Otherwise, we examine every character in $\Sigma$, group
-the strings in $X$ with their initial characters, the apply
+the strings in $X$ with their initial characters, then apply
 the edge function to these groups.
 
 \be
@@ -183,10 +185,10 @@ build(edge, X) = \left \{
   {r@{\quad:\quad}l}
   leaf & X = \{ \phi \} \\
   \begin{array}{ll}
-    branch(\{(\{c\} \cup p, & build(edge, X')) | \\
-                            & c \in \Sigma, \\
-                            & G \in \{ group(X, c) \}, \\
-                            & (p, X') \in \{ edge(G) \} \})
+    branch(\{(cp, & build(edge, X')) | \\
+                 & c \in \Sigma, \\
+                 & G \in \{ group(X, c) \}, \\
+                 & (p, X') \in \{ edge(G) \} \})
   \end{array} & otherwise
   \end{array}
 \right.
@@ -195,10 +197,10 @@ build(edge, X) = \left \{
 The algorithm categorizes all suffixes by the
 first letter in several groups. It removes the first letter for each element in every group.
 For example, the suffixes $\{$``acac'', ``cac'', ``ac'', ``c''$\}$ are
-categorized to groups $\{$('a', [``cac'', ``c'']), ('c', [``ac'', ``''])$\}$.
+categorized to groups $\{$(`a', [``cac'', ``c'']), (`c', [``ac'', ``''])$\}$.
 
 \be
-group(X, c) = \{C' | \{c_1\} \cup C' \in X, c_1 = c\}
+group(X, c) = \{C' | c_1C' \in X, c_1 = c\}
 \ee
 
 Function $group$ enumerates all suffixes in $X$, for each one, denote the first
@@ -218,6 +220,9 @@ lazyTree edge = build where
                          xs@(x:_) <-[[cs | c:cs<-ss, c==a]],
                          (prefix, ss')<-[edge xs]]
 \end{lstlisting}
+
+This example program uses a small trick the \texttt{xs@(x:\_) <- ...} will filter
+out the empty group. It means no string starts with the given character.
 
 Different edge functions produce different radix trees. Since edge function
 extracts common prefix from a set of strings. The simplest one constantly
