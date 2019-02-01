@@ -1833,15 +1833,35 @@ void wmerge(Key* xs, int i, int m, int j, int n, int w) {
 \EndProcedure
 \end{algorithmic}
 
-和前面的死板原地归并排序不同，这一方法在归并中并不shift元素。未排序部分的长度不断递减：$\frac{n}{2}, \frac{n}{4}, \frac{n}{8}, ...$，总共需要$O(\lg n)$步完成排序。每次递归对剩余部分的一半排序，然后使用线性时间进行归并。
+和前面的死板原地归并排序不同，这一方法在归并中并不shift元素。未排序部分的长度不断递减：$\dfrac{n}{2}, \dfrac{n}{4}, \dfrac{n}{8}, ...$，总共需要$O(\lg n)$步完成排序。每次递归对剩余部分的一半排序，然后使用线性时间进行归并。
 
 记对$n$个元素排序所花费的时间为$T(n)$，我们有如下的等式：
 
 \be
 T(n) = T(\frac{n}{2}) + c \frac{n}{2} + T(\frac{n}{4}) + c \frac{3n}{4} + T(\frac{n}{8}) + c \frac{7n}{8} + ...
+\label{eq:in-place-sort-time}
 \ee
 
-使用裂项求和（telescoping）方法解此方程，可以得到结果$O(n \lg n)$。具体的解方程过程留给读者作为练习。
+对于一半的元素，花费的时间为：
+
+\be
+T(\frac{n}{2}) = T(\frac{n}{4}) + c \frac{n}{4} + T(\frac{n}{8}) + c \frac{3n}{8} + T(\frac{n}{16}) + c \frac{7n}{16} + ...
+\label{eq:in-place-sort-time-half}
+\ee
+
+两式相减(\ref{eq:in-place-sort-time}) - (\ref{eq:in-place-sort-time-half})得：
+
+\[
+T(n) - T(\frac{n}{2}) = T(\frac{n}{2}) + c n (\frac{1}{2} + \frac{1}{2} + ... )
+\]
+
+共有$\lg n$个$\dfrac{1}{2}$相加，由此得到计算时间的递归关系为：
+
+\[
+T(n) = 2 T(\frac{1}{2}) + c n \lg n
+\]
+
+使用裂项求和（telescoping）方法解此方程，可以得到结果$O(n \lg^2 n)$。
 
 下面的C语言例子程序给出了这一算法的完整实现，它使用了前面给出的\texttt{wmerge}函数。
 
