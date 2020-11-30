@@ -15,19 +15,4 @@ jobs:
         run: |
           sed -i 's/SimSun/Noto Serif CJK SC/; s/SimHei/Noto Sans CJK SC/; s/Consolas/FreeMono/' prelude.sty
           sed -i 's/\(\documentclass.*{ctexbook}\)/\1\n\\defaultCJKfontfeatures{Scale=0.962216}/' algoxy-zh-cn.tex
-      - name: Build
-        uses: xu-cheng/texlive-action/full@v1
-        with:
-          run: |
-            apk add make imagemagick graphviz font-noto-cjk ttf-freefont
-            make
-      - name: After build
-        run: |
-          export GIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
-          mv algoxy-en.pdf "algoxy-en-$GIT_HASH.pdf"
-          mv algoxy-zh-cn.pdf "algoxy-zh-cn-$GIT_HASH.pdf"
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: algoxy
-          path: algoxy-*.pdf
+          cat algoxy-zh-cn.tex
